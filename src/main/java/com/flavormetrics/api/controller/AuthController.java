@@ -1,6 +1,7 @@
 package com.flavormetrics.api.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,17 +22,19 @@ public class AuthController {
         this.userService = userService;
     }
 
-    @PostMapping("path")
-    public ResponseEntity<Data<UserDto>> register(@RequestBody Data<RegisterRequest> requestBody) {
-        return ResponseEntity.ok(userService.registerUser(requestBody.data()));
+    @PostMapping("/register")
+    public ResponseEntity<Data<UserDto>> register(
+            @RequestBody Data<RegisterRequest> requestBody,
+            Authentication authentication) {
+
+        return ResponseEntity.ok(userService.registerUser(requestBody.data(), authentication));
     }
 
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody LoginRequest data) {
-        //TODO: process POST /login request
-        
+        // TODO: process POST /login request
+
         return null;
     }
-    
-    
+
 }

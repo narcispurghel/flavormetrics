@@ -1,6 +1,8 @@
-package com.flavormetrics.api.exception;
+package com.flavormetrics.api.exception.impl;
 
 import org.springframework.http.HttpStatusCode;
+
+import com.flavormetrics.api.exception.ApiException;
 
 public class DuplicateEmailException extends ApiException {
 

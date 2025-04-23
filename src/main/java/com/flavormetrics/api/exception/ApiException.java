@@ -8,28 +8,28 @@ public abstract class ApiException extends RuntimeException {
     private final HttpStatusCode httpStatusCode;
     private final String path;
 
-    ApiException(String message, String description, HttpStatusCode httpStatusCode, String path) {
+    protected ApiException(String message, String description, HttpStatusCode httpStatusCode, String path) {
         super(message);
         this.description = description;
         this.httpStatusCode = httpStatusCode;
         this.path = path;
     }
 
-    ApiException(String description, HttpStatusCode httpStatusCode, String path, Throwable cause) {
+    protected ApiException(String description, HttpStatusCode httpStatusCode, String path, Throwable cause) {
         super(cause);
         this.description = description;
         this.httpStatusCode = httpStatusCode;
         this.path = path;
     }
 
-    ApiException(String message, String description, HttpStatusCode httpStatusCode, String path, Throwable cause) {
+    protected ApiException(String message, String description, HttpStatusCode httpStatusCode, String path, Throwable cause) {
         super(message, cause);
         this.description = description;
         this.httpStatusCode = httpStatusCode;
         this.path = path;
     }
 
-    ApiException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace,
+    protected ApiException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace,
             String description, HttpStatusCode httpStatusCode, String path) {
         super(message, cause, enableSuppression, writableStackTrace);
         this.description = description;

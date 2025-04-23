@@ -16,7 +16,7 @@ public class SecurityConfig {
         return http
                 .authorizeHttpRequests(request -> {
                     request.requestMatchers(publicEndpoints).permitAll();
-                    request.requestMatchers("/api/test/auth").hasAnyRole("ADMIN", "USER", "NUTRITIONS");
+                    request.requestMatchers("/api/test/auth").hasAnyRole("ADMIN", "USER", "NUTRITIONIST");
                     request.anyRequest().authenticated();
                 })
                 .formLogin(AbstractHttpConfigurer::disable)
