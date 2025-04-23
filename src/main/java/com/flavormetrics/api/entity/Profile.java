@@ -1,11 +1,12 @@
 package com.flavormetrics.api.entity;
 
-import com.flavormetrics.api.enums.DietaryPreferenceType;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import com.flavormetrics.api.model.enums.DietaryPreferenceType;
 
 @Entity
 @Table(name = "profile", schema = "profile")

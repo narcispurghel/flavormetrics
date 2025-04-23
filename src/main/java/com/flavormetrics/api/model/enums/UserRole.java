@@ -1,4 +1,4 @@
-package com.flavormetrics.api.enums;
+package com.flavormetrics.api.model.enums;
 
 import java.util.ArrayList;
 import java.util.List;

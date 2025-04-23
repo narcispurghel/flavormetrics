@@ -15,7 +15,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(request -> {
-                    request.requestMatchers("/api/**").permitAll();
+                    request.requestMatchers(publicEndpoints).permitAll();
                     request.requestMatchers("/api/test/auth").hasAnyRole("ADMIN", "USER", "NUTRITIONS");
                     request.anyRequest().authenticated();
                 })
@@ -26,4 +26,11 @@ public class SecurityConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 .build();
     }
+
+    final String[] publicEndpoints = {
+            "/test",
+            "/static/**",
+            "/",
+            "/favicon.ico"
+    };
 }
