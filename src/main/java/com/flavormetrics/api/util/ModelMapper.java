@@ -1,8 +1,6 @@
 package com.flavormetrics.api.util;
 
-import java.util.UUID;
-
-import com.flavormetrics.api.entity.User;
+import com.flavormetrics.api.entity.user.User;
 import com.flavormetrics.api.model.UserDto;
 
 public class ModelMapper {
@@ -17,13 +15,14 @@ public class ModelMapper {
             return null;
         }
 
-        UUID profileId = user.getProfile() == null ? null : user.getProfile().getId();
+        //TODO actualize UserDto
+        //UUID profileId = user.getProfile() == null ? null : user.getProfile().getId();
 
         return new UserDto(
-                user.getId(),
-                user.getEmail(),
+                user.getUserDetails().getId(),
+                user.getUserDetails().getUsername(),
                 user.getFirstName(),
                 user.getLastName(),
-                profileId);
+                null);
     }
 }

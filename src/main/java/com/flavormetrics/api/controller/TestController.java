@@ -17,4 +17,9 @@ public class TestController {
     public ResponseEntity<String> hello() {
         return new ResponseEntity<>("hello from flavormetrics", HttpStatus.OK);
     }
+
+    @GetMapping("/api/test/protected")
+    public String testProtectedEndpoint() {
+        return "hello from protected";
+    }
 }

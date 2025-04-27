@@ -1,12 +1,13 @@
 package com.flavormetrics.api.entity;
 
+import com.flavormetrics.api.entity.user.User;
+import com.flavormetrics.api.entity.user.impl.RegularUser;
+import com.flavormetrics.api.model.enums.DietaryPreferenceType;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import com.flavormetrics.api.model.enums.DietaryPreferenceType;
 
 @Entity
 @Table(name = "profile", schema = "profile")
@@ -25,11 +26,12 @@ public class Profile {
     private List<Allergy> allergies = new ArrayList<>();
 
     @OneToOne(mappedBy = "profile")
-    private User user;
+    private RegularUser user;
 
-    public Profile() {}
+    public Profile() {
+    }
 
-    public Profile(DietaryPreferenceType dietaryPreference, List<Allergy> allergies, User user) {
+    public Profile(DietaryPreferenceType dietaryPreference, List<Allergy> allergies, RegularUser user) {
         this.dietaryPreference = dietaryPreference;
         this.allergies = allergies;
         this.user = user;
@@ -63,7 +65,7 @@ public class Profile {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(RegularUser user) {
         this.user = user;
     }
 }
