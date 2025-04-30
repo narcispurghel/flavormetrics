@@ -18,9 +18,6 @@ public class Email {
     @Column(nullable = false)
     private String value;
 
-    @OneToOne(mappedBy = "username")
-    private UserDetails userDetails;
-
     public Email() {
         // Explicit no args constructor for JPA
     }
@@ -32,7 +29,6 @@ public class Email {
     public static class Builder {
 
         private String value;
-        private UserDetails userDetails;
 
         public Builder(String value) {
 
@@ -44,35 +40,24 @@ public class Email {
                         "email.value"
                 );
             }
-
             this.value = value;
         }
 
-        public Builder setValue(String value) {
+        public Builder value(String value) {
             this.value = value;
             return this;
         }
-
-        public Builder setUserDetails(UserDetails value) {
-            this.userDetails = value;
-            return this;
-        }
-
 
         public Email build() {
             return new Email(this);
         }
     }
 
-    public UUID getId() {
+    public UUID id() {
         return id;
     }
 
-    public String getValue() {
+    public String value() {
         return value;
-    }
-
-    public UserDetails getUserDetails() {
-        return userDetails;
     }
 }

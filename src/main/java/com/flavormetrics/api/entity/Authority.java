@@ -1,5 +1,6 @@
 package com.flavormetrics.api.entity;
 
+import com.flavormetrics.api.entity.user.User;
 import com.flavormetrics.api.exception.impl.InvalidArgumentException;
 import com.flavormetrics.api.model.enums.RoleType;
 import jakarta.persistence.*;
@@ -22,8 +23,8 @@ public class Authority implements GrantedAuthority {
     private RoleType role = RoleType.ROLE_USER;
 
     @ManyToOne
-    @JoinColumn(name = "user_details_id")
-    private UserDetails userDetails;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public Authority() {
         // Explicit no args constructor for JPA
@@ -32,14 +33,12 @@ public class Authority implements GrantedAuthority {
     private Authority(Builder builder) {
         this.id = builder.id;
         this.role = builder.role;
-        this.userDetails = builder.userDetails;
     }
 
     public static class Builder {
-
         private UUID id;
-        private final RoleType role;
-        private UserDetails userDetails;
+        private RoleType role;
+        private User user;
 
         public Builder(RoleType role) {
 
@@ -55,13 +54,13 @@ public class Authority implements GrantedAuthority {
             this.role = role;
         }
 
-        public Builder setId(UUID id) {
+        public Builder id(UUID id) {
             this.id = id;
             return this;
         }
 
-        public Builder setUserDetails(UserDetails userDetails) {
-            this.userDetails = userDetails;
+        public Builder user(User user) {
+            this.user = user;
             return this;
         }
 
@@ -78,12 +77,12 @@ public class Authority implements GrantedAuthority {
         return role;
     }
 
-    public UserDetails getUserDetails() {
-        return userDetails;
-    }
-
     @Override
     public String getAuthority() {
         return role.name();
+    }
+
+    public User getUser() {
+        return user;
     }
 }

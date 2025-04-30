@@ -13,7 +13,7 @@ import com.flavormetrics.api.model.request.RegisterRequest;
 import com.flavormetrics.api.model.response.LoginResponse;
 import com.flavormetrics.api.repository.NutritionistRepository;
 import com.flavormetrics.api.repository.RegularUserRepository;
-import com.flavormetrics.api.service.JwtService;
+import com.flavormetrics.api.service.JWTService;
 import com.flavormetrics.api.service.UserService;
 import com.flavormetrics.api.util.ModelMapper;
 import jakarta.transaction.Transactional;
@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
 
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
-    private final JwtService jwtService;
+    private final JWTService jwtService;
     private final UserFactory userFactory;
     private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     private final RegularUserRepository regularUserRepository;
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(
             AuthenticationManager authenticationManager,
             UserDetailsService userDetailsService,
-            JwtService jwtService,
+            JWTService jwtService,
             UserFactory userFactory,
             RegularUserRepository regularUserRepository,
             NutritionistRepository nutritionistRepository) {
@@ -60,7 +60,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public Data<UserDto> registerUser(RegisterRequest data, Authentication authentication) {
-
         if (data.role() == RoleType.ROLE_ADMIN) {
             throw new NotAllowedRequestException(
                     "Bad request",
@@ -68,9 +67,7 @@ public class UserServiceImpl implements UserService {
                     HttpStatus.BAD_REQUEST,
                     "data.role");
         }
-
         boolean isEmailUsed = existsByEmail(data.email(), data.role());
-
         if (isEmailUsed) {
             throw new DuplicateEmailException(
                     "Invalid email",
@@ -78,9 +75,7 @@ public class UserServiceImpl implements UserService {
                     HttpStatus.CONFLICT,
                     "data.email");
         }
-
         boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
-
         if (isAuthenticated) {
             throw new NotAllowedRequestException(
                     "Bad request",
@@ -88,7 +83,6 @@ public class UserServiceImpl implements UserService {
                     HttpStatus.BAD_REQUEST,
                     "");
         }
-
         var user = userFactory.getUser(
                 data.role(),
                 data.email(),
@@ -96,24 +90,19 @@ public class UserServiceImpl implements UserService {
                 data.lastName(),
                 data.password()
         );
-
         user = switch (user) {
             case RegularUser u -> regularUserRepository.save(u);
             case Nutritionist n -> nutritionistRepository.save(n);
             default -> null;
         };
-
         logger.info("User created: {}", user);
-
         return Data.body(ModelMapper.toUserDto(user));
     }
 
     @Override
     @Transactional
     public LoginResponse authenticate(LoginRequest data, Authentication authentication) {
-
         boolean isAuthenticated = authentication.isAuthenticated();
-
         if (isAuthenticated) {
             throw new NotAllowedRequestException(
                     "Invalid request",
@@ -121,33 +110,26 @@ public class UserServiceImpl implements UserService {
                     HttpStatus.BAD_REQUEST,
                     "");
         }
-
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 data.email(),
                 data.password()
         );
-
         Authentication authenticationWithUser = authenticationManager.authenticate(authToken);
         SecurityContextHolder.getContext().setAuthentication(authenticationWithUser);
-
         UserDetails user = userDetailsService.loadUserByUsername(data.email());
         String jwtToken = jwtService.generateToken(user);
         List<String> roles = user.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
-
-
         return new LoginResponse(user.getUsername(), roles, jwtToken);
     }
 
     @Override
     public boolean existsByEmail(String email, RoleType role) {
         return switch (role) {
-            case ROLE_USER -> regularUserRepository.existsByUserDetails_Username_Value(email);
+            case ROLE_USER -> regularUserRepository.existsByUsername_Value(email);
             case ROLE_NUTRITIONIST -> false;
             case ROLE_ADMIN -> false;
         };
     }
-
-
 }

@@ -2,6 +2,7 @@ package com.flavormetrics.api.service.impl;
 
 import com.flavormetrics.api.factory.UserFactory;
 import com.flavormetrics.api.model.enums.RoleType;
+import com.flavormetrics.api.repository.RegularUserRepository;
 import com.flavormetrics.api.service.UserService;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -14,7 +15,7 @@ import java.util.UUID;
 class UserServiceImplTest {
 
     @Mock
-    private UserRepository userRepository;
+    private RegularUserRepository userRepository;
 
     @Mock
     private Authentication authentication;

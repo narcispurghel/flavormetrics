@@ -15,14 +15,10 @@ public class ModelMapper {
             return null;
         }
 
-        //TODO actualize UserDto
-        //UUID profileId = user.getProfile() == null ? null : user.getProfile().getId();
-
         return new UserDto(
-                user.getUserDetails().getId(),
-                user.getUserDetails().getUsername(),
+                user.getId(),
+                user.getUsername(),
                 user.getFirstName(),
-                user.getLastName(),
-                null);
+                user.getLastName());
     }
 }

@@ -1,7 +1,11 @@
 package com.flavormetrics.api.exception;
 
 import com.flavormetrics.api.model.response.ApiErrorResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -19,17 +23,4 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, e.getHttpStatusCode());
     }
-
-/*    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleApiExceptions(Exception e) {
-
-        ApiErrorResponse response = new ApiErrorResponse(
-                "Unexpected error occurred",
-                e.getMessage(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                null);
-
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-    }*/
-
 }

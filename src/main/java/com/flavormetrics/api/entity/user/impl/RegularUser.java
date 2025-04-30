@@ -2,6 +2,7 @@ package com.flavormetrics.api.entity.user.impl;
 
 import com.flavormetrics.api.entity.Profile;
 import com.flavormetrics.api.entity.user.User;
+import com.flavormetrics.api.model.enums.RoleType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -20,15 +21,15 @@ public class RegularUser extends User {
     }
 
     private RegularUser(Builder builder) {
+        super(builder);
         this.profile = builder.profile;
     }
 
-    public static class Builder {
-
+    public static class Builder extends User.Builder<Builder> {
         private Profile profile;
 
-        public Builder() {
-            // TODO ad argument
+        public Builder(String password, String username, RoleType role) {
+            super(password, username, role);
         }
 
         public Builder profile(Profile profile) {

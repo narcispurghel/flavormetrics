@@ -1,6 +1,9 @@
 package com.flavormetrics.api.config;
 
-import com.flavormetrics.api.service.JwtService;
+import com.flavormetrics.api.security.CustomAccessDeniedHandler;
+import com.flavormetrics.api.security.JWTAuthEntryPoint;
+import com.flavormetrics.api.security.JWTFilter;
+import com.flavormetrics.api.service.JWTService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -15,18 +18,17 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = false)
 public class SecurityConfig {
 
-    private final String[] publicApiEndpoints = {
+    private static final String[] publicApiEndpoints = {
             "/test",
             "/static/**",
             "/",
@@ -35,22 +37,29 @@ public class SecurityConfig {
             "/api/auth/login",
     };
 
-    private final String[] swaggerEndpoints = {
+    private static final String[] swaggerEndpoints = {
             "/v3/api-docs.yaml",
             "/v3/api-docs/**",
             "/swagger-resources/**",
             "/swagger-ui/**",
-            "/swagger-ui.html",
+            "/swagger-ui/index.html",
             "/webjars/**"
     };
 
-    private final JwtService jwtService;
+    private final JWTService jwtService;
     private final UserDetailsService userDetailsService;
     private final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+    private final JWTFilter jwtFilter;
+    private final JWTAuthEntryPoint jwtAuthEntryPoint;
 
-    public SecurityConfig(JwtService jwtService, UserDetailsService userDetailsService) {
+    public SecurityConfig(JWTService jwtService,
+                          UserDetailsService userDetailsService,
+                          JWTFilter jwtFilter,
+                          JWTAuthEntryPoint jwtAuthEntryPoint) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.jwtFilter = jwtFilter;
+        this.jwtAuthEntryPoint = jwtAuthEntryPoint;
     }
 
     @Bean
@@ -69,14 +78,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authenticationManager(authenticationManager())
-                .oauth2ResourceServer(oAuthConfig ->
-                        oAuthConfig.jwt(Customizer.withDefaults()))
+                .exceptionHandling(e -> {
+                    e.authenticationEntryPoint(jwtAuthEntryPoint);
+                })
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
-    }
-
-    @Bean
-    public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withSecretKey(jwtService.getSecretKey()).build();
     }
 
     @Bean
@@ -86,14 +92,12 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager() {
-
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(passwordEncoder());
         provider.setUserDetailsService(userDetailsService);
-
         return new ProviderManager(provider);
     }
 
-    private String[] getPublicEndpoints() {
+    public static String[] getPublicEndpoints() {
         List<String> publicEndpointsTemp = new ArrayList<>();
         publicEndpointsTemp.addAll(List.of(swaggerEndpoints));
         publicEndpointsTemp.addAll(List.of(publicApiEndpoints));
@@ -101,7 +105,6 @@ public class SecurityConfig {
         for (int i = 0; i < publicEndpointsTemp.size(); ++i) {
             publicEndpoints[i] = publicEndpointsTemp.get(i);
         }
-        logger.debug("publicEndpoints: {}", (Object) publicEndpoints);
         return publicEndpoints;
     }
 }

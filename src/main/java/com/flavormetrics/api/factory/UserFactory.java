@@ -1,17 +1,15 @@
 package com.flavormetrics.api.factory;
 
 import com.flavormetrics.api.entity.Authority;
-import com.flavormetrics.api.entity.UserDetails;
 import com.flavormetrics.api.entity.user.User;
 import com.flavormetrics.api.entity.user.impl.Nutritionist;
 import com.flavormetrics.api.entity.user.impl.RegularUser;
-import com.flavormetrics.api.exception.impl.InvalidArgumentException;
 import com.flavormetrics.api.model.enums.RoleType;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class UserFactory {
@@ -27,12 +25,6 @@ public class UserFactory {
             case ROLE_ADMIN -> null;
             case ROLE_USER -> createRegularUser(role, username, firstName, lastName, password);
             case ROLE_NUTRITIONIST -> createNutritionistUser(role, username, firstName, lastName, password);
-            default -> throw new InvalidArgumentException(
-                    "Invalid role",
-                    "role should be value from RoleType",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "user.role"
-            );
         };
     }
 
@@ -40,34 +32,25 @@ public class UserFactory {
                                         String lastName, String password) {
         Authority authority = new Authority.Builder(role)
                 .build();
-        UserDetails details = new UserDetails.Builder(passwordEncoder.encode(password), username, role)
+        List<Authority> authorities = List.of(authority);
+        return new Nutritionist.Builder(passwordEncoder.encode(password), username, role)
+                .firstName(firstName)
+                .lastName(lastName)
+                .updatedAt(LocalDateTime.now())
+                .authorities(authorities)
                 .build();
-        details.getAuthorities().add(authority);
-
-        User user = new Nutritionist.Builder()
-                .build();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setUserDetails(details);
-        user.setUpdatedAt(LocalDateTime.now());
-
-        return user;
     }
 
     private RegularUser createRegularUser(RoleType role, String username, String firstName,
                                           String lastName, String password) {
         Authority authority = new Authority.Builder(role)
                 .build();
-        UserDetails details = new UserDetails.Builder(passwordEncoder.encode(password), username, role)
+        List<Authority> authorities = List.of(authority);
+        return new RegularUser.Builder(passwordEncoder.encode(password), username, role)
+                .firstName(firstName)
+                .lastName(lastName)
+                .updatedAt(LocalDateTime.now())
+                .authorities(authorities)
                 .build();
-        details.getAuthorities().add(authority);
-
-        RegularUser user = new RegularUser();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setUserDetails(details);
-        user.setUpdatedAt(LocalDateTime.now());
-
-        return user;
     }
 }

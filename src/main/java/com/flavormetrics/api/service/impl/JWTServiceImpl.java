@@ -1,0 +1,167 @@
+package com.flavormetrics.api.service.impl;
+
+import com.flavormetrics.api.entity.JWT;
+import com.flavormetrics.api.exception.impl.JWTException;
+import com.flavormetrics.api.repository.JWTRepository;
+import com.flavormetrics.api.service.JWTService;
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+
+import java.text.ParseException;
+import java.time.Instant;
+import java.util.Date;
+import java.util.Objects;
+import java.util.UUID;
+
+@Service
+public class JWTServiceImpl implements JWTService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JWTServiceImpl.class);
+    private final JWTRepository jwtRepository;
+    private static final RSAKey privateKey = generateRSAKey();
+    private static final String ISSUER = "flavormetrics";
+
+    @Value("${security.jwt.expiration-time}")
+    private long expirationTime;
+
+    protected JWTServiceImpl(JWTRepository jwtRepository) {
+        this.jwtRepository = jwtRepository;
+    }
+
+
+    @Override
+    @Transactional
+    public String generateToken(UserDetails details) {
+        final JWSSigner signer;
+        try {
+            signer = new RSASSASigner(privateKey);
+        } catch (JOSEException e) {
+            throw new JWTException("Invalid private key", e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signer"
+            );
+        }
+        final JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .jwtID(getId().toString())
+                .expirationTime(getExpirationDate(expirationTime))
+                .claim("roles", details.getAuthorities())
+                .issuer(ISSUER)
+                .issueTime(getIssueDate())
+                .subject(details.getUsername())
+                .audience("") // TODO replace with a client
+                .build();
+        final JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256)
+                .keyID(privateKey.getKeyID())
+                .build();
+        final SignedJWT signedJWT = new SignedJWT(header, claims);
+        try {
+            signedJWT.sign(signer);
+        } catch (JOSEException e) {
+            throw new JWTException("Invalid signedJWT", e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signedJWT"
+            );
+        }
+        return signedJWT.serialize();
+    }
+
+
+    @Override
+    @Transactional
+    public UUID getId() {
+        JWT jwt = new JWT.Builder()
+                .build();
+        jwt = jwtRepository.save(jwt);
+        LOGGER.info("Getting JWT id: {}", jwt.id());
+        return jwt.id();
+    }
+
+    @Override
+    public RSAKey getPublicKey() {
+        return privateKey.toPublicJWK();
+    }
+
+    @Override
+    public boolean isTokenValid(String token) {
+        if (token == null) {
+            return false;
+        }
+        final SignedJWT signedJWT;
+        try {
+            signedJWT = SignedJWT.parse(token);
+        } catch (ParseException e) {
+            throw new JWTException("Cannot parse JWT", e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid.signedJWT");
+        }
+        final JWSVerifier verifier;
+        try {
+            verifier = new RSASSAVerifier(getPublicKey());
+        } catch (JOSEException e) {
+            throw new JWTException("Cannot create JWT verifier", e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid.verifier");
+        }
+        try {
+            return signedJWT.verify(verifier)
+                    && Objects.nonNull(signedJWT.getHeader())
+                    && Objects.nonNull(signedJWT.getPayload())
+                    && Objects.nonNull(signedJWT.getJWTClaimsSet())
+                    && Objects.nonNull(signedJWT.getJWTClaimsSet().getClaim("roles"))
+                    && Objects.equals(ISSUER, signedJWT.getJWTClaimsSet().getIssuer())
+                    && new Date().before(signedJWT.getJWTClaimsSet().getExpirationTime());
+        } catch (JOSEException | ParseException e) {
+            throw new JWTException("Cannot verify JWT", e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid");
+        }
+    }
+
+    @Override
+    public String extractUsername(String token) {
+        if (token == null) {
+            return null;
+        }
+        final SignedJWT signedJWT;
+        try {
+            signedJWT = SignedJWT.parse(token);
+        } catch (ParseException e) {
+            throw new JWTException("Cannot parse JWT", e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid.signedJWT");
+        }
+        try {
+            return signedJWT.getJWTClaimsSet().getSubject();
+        } catch (ParseException e) {
+            throw new JWTException("Cannot verify JWT", e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid");
+        }
+    }
+
+    private Date getExpirationDate(long expiration) {
+        LOGGER.info("JWT expiration time: {}", new Date(Instant.now().getEpochSecond() + expiration));
+        return new Date(Instant.now().getEpochSecond() + expiration);
+    }
+
+    private Date getIssueDate() {
+        return new Date(Instant.now().getEpochSecond());
+    }
+
+    private static RSAKey generateRSAKey() {
+        String keyId = UUID.randomUUID().toString();
+        try {
+            return new RSAKeyGenerator(2048)
+                    .keyID(keyId)
+                    .generate();
+        } catch (JOSEException e) {
+            throw new JWTException("Key generation failed", e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signedJWT"
+            );
+        }
+    }
+}

@@ -2,6 +2,7 @@ package com.flavormetrics.api.entity.user.impl;
 
 import com.flavormetrics.api.entity.Recipe;
 import com.flavormetrics.api.entity.user.User;
+import com.flavormetrics.api.model.enums.RoleType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
@@ -22,17 +23,18 @@ public class Nutritionist extends User {
     }
 
     private Nutritionist(Builder builder) {
+        super(builder);
         this.recipes = builder.recipes;
     }
 
-    public static class Builder {
+    public static class Builder extends User.Builder<Builder> {
         private List<Recipe> recipes;
 
-        public Builder() {
-            // TODO add argument
+        public Builder(String password, String username, RoleType role) {
+            super(password, username, role);
         }
 
-        public Builder setReceipes(List<Recipe> recipes) {
+        public Builder receipes(List<Recipe> recipes) {
             this.recipes = recipes;
             return this;
         }
@@ -42,7 +44,7 @@ public class Nutritionist extends User {
         }
     }
 
-    public List<Recipe> getReceipes() {
+    public List<Recipe> receipes() {
         return recipes;
     }
 }

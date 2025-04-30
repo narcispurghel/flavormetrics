@@ -8,7 +8,6 @@ public record UserDto(
         @JsonIgnore UUID id,
         String email,
         String firstName,
-        String lastName,
-        UUID profileId) {
+        String lastName) {
 
 }
