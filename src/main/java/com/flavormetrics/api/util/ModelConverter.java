@@ -1,0 +1,190 @@
+package com.flavormetrics.api.util;
+
+import com.flavormetrics.api.entity.*;
+import com.flavormetrics.api.entity.user.User;
+import com.flavormetrics.api.entity.user.impl.RegularUser;
+import com.flavormetrics.api.model.*;
+import com.flavormetrics.api.model.response.AddRecipeResponse;
+import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
+import com.flavormetrics.api.model.response.RegisterResponse;
+
+import java.util.List;
+
+public class ModelConverter {
+
+    private ModelConverter() {
+
+    }
+
+    public static RegisterResponse registerResponse(User user) {
+        if (user == null) {
+            return null;
+        }
+
+        return new RegisterResponse.Builder()
+                .userId(user.getId())
+                .role(user.getAuthorities().getFirst().getRole())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .username(user.getUsername())
+                .buid();
+    }
+
+    public static Ingredient toIngredient(IngredientDto ingredientDto) {
+        if (ingredientDto == null) {
+            return null;
+        }
+        Ingredient ingredient = new Ingredient();
+        ingredient.setId(ingredientDto.id());
+        ingredient.setName(ingredientDto.name());
+        ingredient.setRecipes(ingredientDto.recipes());
+        return ingredient;
+    }
+
+    public static RecipeDto toRecipeDto(Recipe recipe) {
+        if (recipe == null) {
+            return null;
+        }
+        List<com.flavormetrics.api.model.IngredientDto> ingredients = recipe.getIngredients().stream()
+                .map(ModelConverter::toIngredientDto)
+                .toList();
+        return new RecipeDto.Builder()
+                .id(recipe.getId())
+                .name(recipe.getName())
+                .ingredients(ingredients)
+                .nutritionist(recipe.getNutritionist())
+                .build();
+                
+    }
+
+    private static com.flavormetrics.api.model.IngredientDto toIngredientDto(Ingredient ingredient) {
+        if (ingredient == null) {
+            return null;
+        }
+        return new com.flavormetrics.api.model.IngredientDto.Builder()
+                .name(ingredient.getName())
+                .id(ingredient.getId())
+                .recipes(ingredient.getRecipes())
+                .build();
+    }
+
+    public static AddRecipeResponse toAddRecipeResponse(Recipe recipe) {
+        if (recipe == null) {
+            return null;
+        }
+        List<IngredientDto> ingredients = recipe.getIngredients().stream()
+                .map(ModelConverter::toIngredientDto)
+                .toList();
+        return new AddRecipeResponse(
+                recipe.getId(),
+                recipe.getName(),
+                recipe.getNutritionist().getUsername(),
+                ingredients);
+    }
+
+    public static RecipesByNutritionistResponse toRecipesByNutritionistResponse(String username, List<Recipe> recipes) {
+        if (username == null || recipes == null) {
+            return null;
+        }
+        List<RecipeDto> recipesDto = recipes.stream()
+                .map(ModelConverter::toRecipeDto)
+                .toList();
+        return new RecipesByNutritionistResponse(username, recipesDto);
+    }
+
+    public static Profile toProfile(ProfileDto profileDto) {
+        if (profileDto == null) {
+            return null;
+        }
+        List<Allergy> allergies = profileDto.allergies()
+                .stream()
+                .map(ModelConverter::toAllergy)
+                .toList();
+        Profile profile = new Profile();
+        profile.setId(profile.getId());
+        profile.setUser(profile.getUser());
+        profile.setDietaryPreference(profileDto.dietaryPreference());
+        profile.setAllergies(allergies);
+        return profile;
+    }
+
+    private static Allergy toAllergy(AllergyDto allergyDto) {
+        if (allergyDto == null) {
+            return null;
+        }
+        Allergy allergy = new Allergy();
+        allergy.setType(allergyDto.type());
+        allergy.setDescription(allergyDto.description());
+        allergy.setId(allergy.getId());
+        return allergy;
+    }
+
+    public static ProfileDto toProfileDto(Profile profile) {
+        if (profile == null) {
+            return null;
+        }
+        List<AllergyDto> allergies = profile.getAllergies()
+                .stream()
+                .map(ModelConverter::toAllergyDto)
+                .toList();
+        return new ProfileDto.Builder()
+                .id(profile.getId())
+                .userId(profile.getId())
+                .dietaryPreference(profile.getDietaryPreference())
+                .allergies(allergies)
+                .build();
+
+    }
+
+    private static RegularUserDto toRegularUserDto(RegularUser user) {
+        if (user == null) {
+            return null;
+        }
+        List<AuthorityDto> authorities = user.getAuthorities()
+                .stream()
+                .map(ModelConverter::toAuthority)
+                .toList();
+        return new RegularUserDto.Builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .authorities(authorities)
+                .accountNonExpired(user.isAccountNonExpired())
+                .credentialsNonExpired(user.isCredentialsNonExpired())
+                .enabled(user.isEnabled())
+                .accountNonLocked(user.isAccountNonLocked())
+                .profileDto(ModelConverter.toProfileDto(user.getProfile()))
+                .password(user.getPassword())
+                .updatedAt(user.getUpdatedAt())
+                .createdAt(user.getCreatedAt())
+                .build();
+    }
+
+    private static AuthorityDto toAuthority(Authority authority) {
+        if (authority == null) {
+            return null;
+        }
+        return new AuthorityDto.Builder()
+                .id(authority.getId())
+                .user(ModelConverter.toUserDto(authority.getUser()))
+                .role(authority.getRole())
+                .build();
+    }
+
+    private static UserDto toUserDto(User user) {
+        //TODO add logic
+        return null;
+    }
+
+    private static AllergyDto toAllergyDto(Allergy allergy) {
+        if (allergy == null) {
+            return null;
+        }
+        return new AllergyDto.Builder()
+                .id(allergy.getId())
+                .type(allergy.getType())
+                .description(allergy.getDescription())
+                .build();
+    }
+}

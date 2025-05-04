@@ -61,7 +61,6 @@ public class JWTFilter extends OncePerRequestFilter {
             LOGGER.info("Getting authorization header from request");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 LOGGER.info("Invalid authorization header: {}, throwing JWTAuthenticationException", authHeader);
-                //return;
                 throw new JWTAuthenticationException("Missing or invalid authorization header");
             }
             final String JWT = authHeader.substring(7);
@@ -76,10 +75,17 @@ public class JWTFilter extends OncePerRequestFilter {
                     .orElseThrow(() ->
                             new UsernameNotFoundException("Cannot find an account associated with username: " + subject));
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    user.getUsername(),
+                    user,
                     user.getPassword(),
                     user.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authToken);
+            logger.info("Checking authentication");
+            boolean isAuth = SecurityContextHolder.getContext().getAuthentication().isAuthenticated();
+            if (isAuth) {
+                logger.info("Authentication success!");
+            } else {
+                logger.info("Authentication failed!");
+            }
             filterChain.doFilter(request, response);
         } catch (JWTAuthenticationException e) {
             LOGGER.info("Caught auth exception: {}", e.getMessage());

@@ -1,15 +1,13 @@
 package com.flavormetrics.api.service;
 
-import com.nimbusds.jose.jwk.RSAKey;
-import jakarta.transaction.Transactional;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.UUID;
 
-public interface JWTService {
-    String generateToken(UserDetails details);
+import com.flavormetrics.api.entity.user.User;
+import com.nimbusds.jose.jwk.RSAKey;
 
-    @Transactional
+public interface JWTService {
+    String generateToken(User details);
+
     UUID getId();
 
     RSAKey getPublicKey();

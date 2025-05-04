@@ -1,6 +1,7 @@
 package com.flavormetrics.api.service.impl;
 
 import com.flavormetrics.api.entity.JWT;
+import com.flavormetrics.api.entity.user.User;
 import com.flavormetrics.api.exception.impl.JWTException;
 import com.flavormetrics.api.repository.JWTRepository;
 import com.flavormetrics.api.service.JWTService;
@@ -16,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -28,36 +28,39 @@ import java.util.UUID;
 @Service
 public class JWTServiceImpl implements JWTService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JWTServiceImpl.class);
-    private final JWTRepository jwtRepository;
     private static final RSAKey privateKey = generateRSAKey();
     private static final String ISSUER = "flavormetrics";
+    private final JWTRepository jwtRepository;
 
     @Value("${security.jwt.expiration-time}")
     private long expirationTime;
 
-    protected JWTServiceImpl(JWTRepository jwtRepository) {
+    public JWTServiceImpl(JWTRepository jwtRepository) {
         this.jwtRepository = jwtRepository;
     }
 
-
     @Override
     @Transactional
-    public String generateToken(UserDetails details) {
+    public String generateToken(User user) {
+        if (user == null) {
+            throw new JWTException(
+                    "Cannot generate token", "User is null", HttpStatus.BAD_REQUEST, "token.user");
+        }
         final JWSSigner signer;
         try {
             signer = new RSASSASigner(privateKey);
         } catch (JOSEException e) {
             throw new JWTException("Invalid private key", e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signer"
-            );
+                    HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signer");
         }
+        final String userRole = user.getAuthorities().getFirst().getRole().name();
         final JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .jwtID(getId().toString())
                 .expirationTime(getExpirationDate(expirationTime))
-                .claim("roles", details.getAuthorities())
+                .claim("role", userRole)
                 .issuer(ISSUER)
                 .issueTime(getIssueDate())
-                .subject(details.getUsername())
+                .subject(user.getUsername())
                 .audience("") // TODO replace with a client
                 .build();
         final JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256)
@@ -68,21 +71,18 @@ public class JWTServiceImpl implements JWTService {
             signedJWT.sign(signer);
         } catch (JOSEException e) {
             throw new JWTException("Invalid signedJWT", e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signedJWT"
-            );
+                    HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signedJWT");
         }
         return signedJWT.serialize();
     }
 
-
     @Override
     @Transactional
     public UUID getId() {
-        JWT jwt = new JWT.Builder()
-                .build();
+        JWT jwt = new JWT();
         jwt = jwtRepository.save(jwt);
-        LOGGER.info("Getting JWT id: {}", jwt.id());
-        return jwt.id();
+        LOGGER.info("Getting JWT id: {}", jwt.getId());
+        return jwt.getId();
     }
 
     @Override
@@ -114,7 +114,7 @@ public class JWTServiceImpl implements JWTService {
                     && Objects.nonNull(signedJWT.getHeader())
                     && Objects.nonNull(signedJWT.getPayload())
                     && Objects.nonNull(signedJWT.getJWTClaimsSet())
-                    && Objects.nonNull(signedJWT.getJWTClaimsSet().getClaim("roles"))
+                    && Objects.nonNull(signedJWT.getJWTClaimsSet().getClaim("role"))
                     && Objects.equals(ISSUER, signedJWT.getJWTClaimsSet().getIssuer())
                     && new Date().before(signedJWT.getJWTClaimsSet().getExpirationTime());
         } catch (JOSEException | ParseException e) {
@@ -144,12 +144,12 @@ public class JWTServiceImpl implements JWTService {
     }
 
     private Date getExpirationDate(long expiration) {
-        LOGGER.info("JWT expiration time: {}", new Date(Instant.now().getEpochSecond() + expiration));
-        return new Date(Instant.now().getEpochSecond() + expiration);
+        LOGGER.info("JWT expiration time: {}", new Date(Instant.now().toEpochMilli() + expiration));
+        return new Date(Instant.now().toEpochMilli() + expiration);
     }
 
     private Date getIssueDate() {
-        return new Date(Instant.now().getEpochSecond());
+        return new Date(Instant.now().toEpochMilli());
     }
 
     private static RSAKey generateRSAKey() {
@@ -160,8 +160,7 @@ public class JWTServiceImpl implements JWTService {
                     .generate();
         } catch (JOSEException e) {
             throw new JWTException("Key generation failed", e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signedJWT"
-            );
+                    HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signedJWT");
         }
     }
 }

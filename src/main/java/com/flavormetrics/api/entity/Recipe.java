@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -24,7 +25,7 @@ public class Recipe {
     @JoinColumn(name = "nutritionist_id")
     private Nutritionist nutritionist;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "receipe_ingredient",
             joinColumns = {
@@ -35,73 +36,75 @@ public class Recipe {
             },
             schema = "food"
     )
-    private List<Ingredient> ingredients;
+    private List<Ingredient> ingredients = new ArrayList<>();
 
     public Recipe() {
-        // Explicit no args constructor for JPA
+        this.ingredients = new ArrayList<>();
     }
 
-    private Recipe(Builder builder) {
-        this.id = builder.id;
-        this.name = builder.name;
-        this.nutritionist = builder.nutritionist;
-        this.ingredients = builder.ingredients;
-    }
-
-    public static class Builder {
-        private UUID id;
-        private String name;
-        private Nutritionist nutritionist;
-        private List<Ingredient> ingredients = new ArrayList<>();
-
-        public Builder(String name, List<Ingredient> ingredients) {
-
-            if (name == null || name.isBlank()) {
-                throw new InvalidArgumentException(
-                        "Invalid name",
-                        "name must be non-nul and non-blank",
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        "recipe.name"
-                );
-            }
-
-            if (ingredients == null || ingredients.isEmpty()) {
-                throw new InvalidArgumentException(
-                        "Invalid ingredients",
-                        "ingredients must be non-nul and non-empty",
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        "recipe.ingredients"
-                );
-            }
-
-            this.name = name;
-            this.ingredients = ingredients;
+    public Recipe(String name, List<Ingredient> ingredients) {
+        if (name == null || name.isBlank()) {
+            throw new InvalidArgumentException(
+                    "Invalid name",
+                    "name must be non-null and non-blank",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "recipe.name"
+            );
         }
 
-        public Builder setId(UUID id) {
-            this.id = id;
-            return this;
+        if (ingredients == null || ingredients.isEmpty()) {
+            throw new InvalidArgumentException(
+                    "Invalid ingredients",
+                    "ingredients must be non-null and non-empty",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "recipe.ingredients"
+            );
         }
 
-        public Builder nutritionist(Nutritionist nutritionist) {
-            this.nutritionist = nutritionist;
-            return this;
-        }
+        this.name = name;
+        this.ingredients = ingredients;
     }
 
     public UUID getId() {
         return id;
     }
 
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Nutritionist getNutritionist() {
         return nutritionist;
     }
 
+    public void setNutritionist(Nutritionist nutritionist) {
+        this.nutritionist = nutritionist;
+    }
+
     public List<Ingredient> getIngredients() {
         return ingredients;
+    }
+
+    public void setIngredients(List<Ingredient> ingredients) {
+        this.ingredients = new ArrayList<>(ingredients);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Recipe recipe)) return false;
+        return Objects.equals(name, recipe.name) && Objects.equals(ingredients, recipe.ingredients);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, ingredients);
     }
 }

@@ -1,17 +1,16 @@
 package com.flavormetrics.api.entity.user;
 
-import com.flavormetrics.api.entity.Authority;
-import com.flavormetrics.api.entity.Email;
-import com.flavormetrics.api.exception.impl.InvalidArgumentException;
-import com.flavormetrics.api.exception.impl.MissingAuthorizationElementException;
-import com.flavormetrics.api.model.enums.RoleType;
-import jakarta.persistence.*;
-import org.springframework.http.HttpStatus;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import jakarta.persistence.*;
+import org.springframework.http.HttpStatus;
+
+import com.flavormetrics.api.entity.Authority;
+import com.flavormetrics.api.entity.Email;
+import com.flavormetrics.api.exception.impl.MissingAuthorizationElementException;
 
 @Entity
 @Table(name = "user", schema = "users")
@@ -29,156 +28,55 @@ public abstract class User implements org.springframework.security.core.userdeta
     private String lastName;
 
     @Column(nullable = false)
-    private boolean isAccountNonExpired;
+    private boolean isAccountNonExpired = true;
 
     @Column(nullable = false)
-    private boolean isAccountNonLocked;
+    private boolean isAccountNonLocked = true;
 
     @Column(nullable = false)
-    private boolean isCredentialsNonExpired;
+    private boolean isCredentialsNonExpired = true ;
 
     @Column(nullable = false)
-    private boolean isEnabled;
+    private boolean isEnabled = true ;
 
     @Column(nullable = false)
     private String password;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_email_id", nullable = false)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_email_id", nullable = false, unique = true)
     private Email username;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    @OneToMany(mappedBy = "user")
-    @Column(nullable = false)
-    private List<Authority> authorities;
-
-    protected <T extends Builder<T>> User(Builder<T> builder) {
-        this.id = builder.id;
-        this.firstName = builder.firstName;
-        this.lastName = builder.lastName;
-        this.password = builder.password;
-        this.isAccountNonExpired = builder.isAccountNonExpired;
-        this.isAccountNonLocked = builder.isAccountNonLocked;
-        this.isCredentialsNonExpired = builder.isCredentialsNonExpired;
-        this.isEnabled = builder.isEnabled;
-        this.username = builder.username;
-        this.updatedAt = builder.updatedAt;
-        this.createdAt = builder.createdAt;
-        this.authorities = builder.authorities;
-    }
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<Authority> authorities = new ArrayList<>();
 
     protected User() {
-        // Explicit no args constructor for JPA
+        // Prevent instantiation
     }
 
-    protected static class Builder<T extends Builder<T>> {
-        private UUID id;
-        private String firstName;
-        private String lastName;
-        private String password;
-        private boolean isAccountNonExpired;
-        private boolean isAccountNonLocked;
-        private boolean isCredentialsNonExpired;
-        private boolean isEnabled;
-        private Email username;
-        private LocalDateTime updatedAt;
-        private final LocalDateTime createdAt = LocalDateTime.now();
-        private List<Authority> authorities = new ArrayList<>();
+    protected User(String password, Email username) {
+        this.password = password;
+        this.username = username;
+	}
 
-        private Builder() {
-            // Prevent instantiation without required properties
-        }
-
-        protected Builder(String password, String username, RoleType role)  {
-            if (password == null || password.isBlank()) {
-                throw new InvalidArgumentException(
-                        "Invalid password",
-                        "password must be non-null and non-blank",
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        "userDetails.password"
-                );
-            }
-            if (username == null || username.isBlank()) {
-                throw new InvalidArgumentException(
-                        "Invalid username",
-                        "username must be non-null and non-blank",
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        "userDetails.username"
-                );
-            }
-            this.password = password;
-            this.username = new Email.Builder(username)
-                    .build();
-            this.authorities.add(new Authority.Builder(role)
-                    .build());
-        }
-
-        public T id(UUID id) {
-            this.id = id;
-            return (T) this;
-        }
-
-        public T firstName(String firstName) {
-            this.firstName = firstName;
-            return (T) this;
-        }
-
-        public T lastName(String lastName) {
-            this.lastName = lastName;
-            return (T) this;
-        }
-
-        public T accountNonExpired(boolean accountNonExpired) {
-            isAccountNonExpired = accountNonExpired;
-            return (T) this;
-        }
-
-        public T accountNonLocked(boolean accountNonLocked) {
-            isAccountNonLocked = accountNonLocked;
-            return (T) this;
-        }
-
-        public T credentialsNonExpired(boolean credentialsNonExpired) {
-            isCredentialsNonExpired = credentialsNonExpired;
-            return (T) this;
-        }
-
-        public T enabled(boolean enabled) {
-            isEnabled = enabled;
-            return (T) this;
-        }
-
-        public T updatedAt(LocalDateTime updatedAt) {
-            this.updatedAt = updatedAt;
-            return (T) this;
-        }
-
-        public T authorities(List<Authority> authorities) {
-            this.authorities = authorities;
-            return (T) this;
-        }
-    }
-
-    /**
-     * This method cannot return null because of org.springframework.security.core.userdetails.User contract
-     * Additional check for empty is implemented for authentication/authorization
-     *
+	/**
+     * This method cannot return null because of
+     * org.springframework.security.core.userdetails.User contract
      * @return a collection of Authority
      */
     @Override
     public List<Authority> getAuthorities() {
-        if (authorities == null || authorities.isEmpty()) {
+        if (authorities == null) {
             throw new MissingAuthorizationElementException(
                     "Invalid authorities",
                     "authorities should be a non-null and non-empty value",
                     HttpStatus.INTERNAL_SERVER_ERROR,
-                    "user.authorities"
-            );
+                    "user.authorities");
         }
         return authorities;
     }
@@ -189,10 +87,8 @@ public abstract class User implements org.springframework.security.core.userdeta
     }
 
     /**
-     * This method cannot return null because of org.springframework.security.core.userdetails.User contract
-     * Additional check for empty is implemented for authentication/authorization
-     *
-     * @return a populated String
+     * This method cannot return null because of
+     * org.springframework.security.core.userdetails.User contract
      */
     @Override
     public String getUsername() {
@@ -203,7 +99,7 @@ public abstract class User implements org.springframework.security.core.userdeta
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     "user.username");
         }
-        return username.value();
+        return username.getValue();
     }
 
     public UUID getId() {
@@ -244,5 +140,53 @@ public abstract class User implements org.springframework.security.core.userdeta
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setAccountNonExpired(boolean isAccountNonExpired) {
+        this.isAccountNonExpired = isAccountNonExpired;
+    }
+
+    public void setAccountNonLocked(boolean isAccountNonLocked) {
+        this.isAccountNonLocked = isAccountNonLocked;
+    }
+
+    public void setCredentialsNonExpired(boolean isCredentialsNonExpired) {
+        this.isCredentialsNonExpired = isCredentialsNonExpired;
+    }
+
+    public void setEnabled(boolean isEnabled) {
+        this.isEnabled = isEnabled;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setUsername(Email username) {
+        this.username = username;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setAuthorities(List<Authority> authorities) {
+        this.authorities = authorities;
     }
 }

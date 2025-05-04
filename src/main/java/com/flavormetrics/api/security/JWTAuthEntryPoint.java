@@ -1,8 +1,7 @@
 package com.flavormetrics.api.security;
 
-import com.flavormetrics.api.exception.impl.JWTAuthenticationException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -11,7 +10,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import com.flavormetrics.api.exception.impl.JWTAuthenticationException;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JWTAuthEntryPoint implements AuthenticationEntryPoint {
@@ -19,8 +21,8 @@ public class JWTAuthEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request,
-                         HttpServletResponse response,
-                         AuthenticationException e) throws IOException {
+            HttpServletResponse response,
+            AuthenticationException e) throws IOException {
         response.setContentType("application/json");
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         LOGGER.info("Caught auth exception: {}", e.getMessage());

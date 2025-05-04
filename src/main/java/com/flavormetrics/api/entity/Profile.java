@@ -1,6 +1,5 @@
 package com.flavormetrics.api.entity;
 
-import com.flavormetrics.api.entity.user.User;
 import com.flavormetrics.api.entity.user.impl.RegularUser;
 import com.flavormetrics.api.model.enums.DietaryPreferenceType;
 import jakarta.persistence.*;
@@ -31,7 +30,8 @@ public class Profile {
     public Profile() {
     }
 
-    public Profile(DietaryPreferenceType dietaryPreference, List<Allergy> allergies, RegularUser user) {
+    public Profile(DietaryPreferenceType dietaryPreference,
+            List<Allergy> allergies, RegularUser user) {
         this.dietaryPreference = dietaryPreference;
         this.allergies = allergies;
         this.user = user;
@@ -61,7 +61,7 @@ public class Profile {
         this.allergies = allergies;
     }
 
-    public User getUser() {
+    public RegularUser getUser() {
         return user;
     }
 

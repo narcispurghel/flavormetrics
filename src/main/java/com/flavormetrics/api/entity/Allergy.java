@@ -1,10 +1,8 @@
 package com.flavormetrics.api.entity;
 
-import jakarta.persistence.*;
-
-import java.util.UUID;
-
 import com.flavormetrics.api.model.enums.AllergyType;
+import jakarta.persistence.*;
+import java.util.UUID;
 
 @Entity
 @Table(name = "allergy", schema = "profile")
@@ -24,8 +22,7 @@ public class Allergy {
     @JoinColumn(name = "profile_id")
     private Profile profile;
 
-    public Allergy() {
-    }
+    public Allergy() {}
 
     public Allergy(AllergyType type) {
         if (type == null) {
