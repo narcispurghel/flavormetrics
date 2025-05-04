@@ -16,7 +16,6 @@ import com.flavormetrics.api.exception.impl.MissingAuthorizationElementException
 @Table(name = "user", schema = "users")
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class User implements org.springframework.security.core.userdetails.UserDetails {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
