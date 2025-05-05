@@ -230,7 +230,7 @@ public class Recipe {
     }
 
     public void setTags(List<Tag> tags) {
-        this.tags = tags;
+        this.tags = new ArrayList<>(tags);
     }
 
     public List<Rating> getRatings() {

@@ -3,6 +3,7 @@ package com.flavormetrics.api.entity;
 import com.flavormetrics.api.model.enums.TagType;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,7 +19,7 @@ public class Tag {
     private TagType type;
 
     @ManyToMany(mappedBy = "tags")
-    private List<Recipe> recipes;
+    private List<Recipe> recipes = new ArrayList<>();
 
     public Tag() {
         // No args constructor for JPA

@@ -3,7 +3,6 @@ package com.flavormetrics.api.controller;
 import com.flavormetrics.api.model.Data;
 import com.flavormetrics.api.model.RecipeDto;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
-import com.flavormetrics.api.model.response.AddRecipeResponse;
 import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
 import com.flavormetrics.api.service.RecipeService;
 import org.springframework.http.HttpStatus;
@@ -24,20 +23,20 @@ public class RecipeController {
     }
 
     @PostMapping("/protected/add")
-    public ResponseEntity<Data<AddRecipeResponse>> addRecipe(
+    public ResponseEntity<Data<RecipeDto>> addRecipe(
             @RequestBody Data<AddRecipeRequest> request,
             Authentication authentication) {
-        Data<AddRecipeResponse> responseBody = recipeService.add(request.data(), authentication);
+        Data<RecipeDto> responseBody = recipeService.add(request.data(), authentication);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(responseBody);
     }
 
     @PutMapping("/protected/update/{id}")
-    public ResponseEntity<Data<AddRecipeResponse>> updateRecipeById(
+    public ResponseEntity<Data<RecipeDto>> updateRecipeById(
             @PathVariable UUID id,
             @RequestBody Data<AddRecipeRequest> request,
             Authentication authentication) {
-        Data<AddRecipeResponse> responseBody = recipeService.updateById(id, request.data(), authentication);
+        Data<RecipeDto> responseBody = recipeService.updateById(id, request.data(), authentication);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(responseBody);
     }
@@ -55,7 +54,7 @@ public class RecipeController {
     }
 
     @GetMapping("/byId/{id}")
-    public ResponseEntity<Data<AddRecipeResponse>> getById(
+    public ResponseEntity<Data<RecipeDto>> getById(
             @PathVariable UUID id) {
         return ResponseEntity.ok(recipeService.getById(id));
     }

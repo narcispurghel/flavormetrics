@@ -48,13 +48,41 @@ public class ModelConverter {
         List<com.flavormetrics.api.model.IngredientDto> ingredients = recipe.getIngredients().stream()
                 .map(ModelConverter::toIngredientDto)
                 .toList();
+        List<TagDto> tags = recipe.getTags()
+                .stream()
+                .map(ModelConverter::toTagDto)
+                .toList();
+        List<RatingDto> ratings = recipe.getRatings()
+                .stream()
+                .map(ModelConverter::toRatingDto)
+                .toList();
         return new RecipeDto.Builder()
                 .id(recipe.getId())
+                .tags(tags)
+                .averageRating(recipe.getAverageRating())
+                .imageUrl(recipe.getImageUrl())
+                .difficulty(recipe.getDifficulty())
+                .cookTimeMinutes(recipe.getCookTimeMinutes())
+                .prepTimeMinutes(recipe.getPrepTimeMinutes())
+                .ratings(ratings)
+                .createdAt(recipe.getCreatedAt())
+                .updatedAt(recipe.getUpdatedAt())
                 .name(recipe.getName())
                 .ingredients(ingredients)
-                .nutritionist(recipe.getNutritionist())
+                .nutritionist(recipe.getNutritionist().getUsername())
                 .build();
-                
+
+    }
+
+    private static RatingDto toRatingDto(Rating rating) {
+        if (rating == null) {
+            return null;
+        }
+        return new RatingDto.Builder()
+                .username(rating.getUser().getUsername())
+                .recipeId(rating.getRecipe().getId())
+                .value(rating.getValue())
+                .build();
     }
 
     private static com.flavormetrics.api.model.IngredientDto toIngredientDto(Ingredient ingredient) {
@@ -72,7 +100,8 @@ public class ModelConverter {
         if (recipe == null) {
             return null;
         }
-        List<IngredientDto> ingredients = recipe.getIngredients().stream()
+        List<IngredientDto> ingredients = recipe.getIngredients()
+                .stream()
                 .map(ModelConverter::toIngredientDto)
                 .toList();
         return new AddRecipeResponse(
@@ -80,6 +109,13 @@ public class ModelConverter {
                 recipe.getName(),
                 recipe.getNutritionist().getUsername(),
                 ingredients);
+    }
+
+    private static TagDto toTagDto(Tag tag) {
+        if (tag == null) {
+            return null;
+        }
+        return new TagDto(tag.getType());
     }
 
     public static RecipesByNutritionistResponse toRecipesByNutritionistResponse(String username, List<Recipe> recipes) {
@@ -136,7 +172,7 @@ public class ModelConverter {
 
     }
 
-    private static RegularUserDto toRegularUserDto(RegularUser user) {
+    public static RegularUserDto toRegularUserDto(RegularUser user) {
         if (user == null) {
             return null;
         }
@@ -186,5 +222,14 @@ public class ModelConverter {
                 .type(allergy.getType())
                 .description(allergy.getDescription())
                 .build();
+    }
+
+    public static Tag toTag(TagDto tagDto) {
+        if (tagDto == null) {
+            return null;
+        }
+        Tag tag = new Tag();
+        tag.setType(tagDto.type());
+        return tag;
     }
 }

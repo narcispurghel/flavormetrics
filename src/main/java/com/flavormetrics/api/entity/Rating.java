@@ -1,5 +1,6 @@
 package com.flavormetrics.api.entity;
 
+import com.flavormetrics.api.entity.user.User;
 import com.flavormetrics.api.exception.impl.InvalidArgumentException;
 import jakarta.persistence.*;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,10 @@ public class Rating {
 
     @Column(name = "value", nullable = false)
     private Integer value;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "recipe_id")
@@ -59,5 +64,13 @@ public class Rating {
                     "rating.value");
         }
         this.value = value;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

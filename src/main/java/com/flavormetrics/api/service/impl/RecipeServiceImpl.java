@@ -2,6 +2,7 @@ package com.flavormetrics.api.service.impl;
 
 import com.flavormetrics.api.entity.Ingredient;
 import com.flavormetrics.api.entity.Recipe;
+import com.flavormetrics.api.entity.Tag;
 import com.flavormetrics.api.entity.user.impl.Nutritionist;
 import com.flavormetrics.api.exception.impl.InvalidArgumentException;
 import com.flavormetrics.api.exception.impl.NotAllowedRequestException;
@@ -18,12 +19,14 @@ import com.flavormetrics.api.repository.RecipeRepository;
 import com.flavormetrics.api.repository.UserRepository;
 import com.flavormetrics.api.service.RecipeService;
 import com.flavormetrics.api.util.ModelConverter;
+import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,7 +48,8 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public Data<AddRecipeResponse> add(AddRecipeRequest data, Authentication authentication) {
+    @Transactional
+    public Data<RecipeDto> add(AddRecipeRequest data, Authentication authentication) {
         if (data == null) {
             return null;
         }
@@ -70,18 +74,20 @@ public class RecipeServiceImpl implements RecipeService {
                 .orElseThrow(() -> new UsernameNotFoundException(authentication.getName()));
         Recipe recipe = RecipeFactory.getRecipe(data, nutritionist);
         recipe = recipeRepository.save(recipe);
-        return Data.body(ModelConverter.toAddRecipeResponse(recipe));
+        return Data.body(ModelConverter.toRecipeDto(recipe));
     }
 
     @Override
-    public Data<AddRecipeResponse> getById(UUID id) {
+    @Transactional
+    public Data<RecipeDto> getById(UUID id) {
         Recipe recipe = recipeRepository.getRecipeById(id)
                 .orElseThrow(() -> new RecipeNotFoundException(
                         "Invalid id", "Cannot find recipe associated with id " + id, HttpStatus.NOT_FOUND, "recipe"));
-        return Data.body(ModelConverter.toAddRecipeResponse(recipe));
+        return Data.body(ModelConverter.toRecipeDto(recipe));
     }
 
     @Override
+    @Transactional
     public Data<RecipesByNutritionistResponse> getByNutritionist(String username) {
         if (userRepository.existsByUsername_Value(username)) {
             List<Recipe> recipes = recipeRepository.getRecipesByNutritionist_Username_Value(username);
@@ -91,12 +97,13 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public Data<AddRecipeResponse> updateById(UUID id, AddRecipeRequest data, Authentication authentication) {
+    @Transactional
+    public Data<RecipeDto> updateById(UUID id, AddRecipeRequest data, Authentication authentication) {
         if (id == null || data == null) {
             throw new InvalidArgumentException(
                     "Invalid id or data", "Missing id or data", HttpStatus.BAD_REQUEST, "data.recipe");
         }
-        Recipe recipe = recipeRepository.findById(id)
+        final Recipe recipe = recipeRepository.findById(id)
                 .orElseThrow(() -> new RecipeNotFoundException(
                         "Invalid id", "Cannot find a recipe associated with id " + id, HttpStatus.NOT_FOUND, "recipe.id"));
         if (!recipe.getNutritionist().getUsername().equals(authentication.getName())) {
@@ -110,13 +117,29 @@ public class RecipeServiceImpl implements RecipeService {
                 .stream()
                 .map(ModelConverter::toIngredient)
                 .toList();
+        final List<Tag> tags = data.tags().stream()
+                .map(tagDto -> {
+                    Tag tag = ModelConverter.toTag(tagDto);
+                    tag.getRecipes().add(recipe);
+                    return tag;
+                })
+                .toList();
+        recipe.setInstructions(data.instructions());
+        recipe.setUpdatedAt(LocalDateTime.now());
+        recipe.setImageUrl(data.imageUrl());
+        recipe.setCookTimeMinutes(data.cookTimeMinutes());
+        recipe.setDifficulty(data.difficulty());
+        recipe.setEstimatedCalories(data.estimatedCalories());
+        recipe.setPrepTimeMinutes(data.prepTimeMinutes());
+        recipe.setTags(tags);
         recipe.setIngredients(ingredients);
         recipe.setName(data.name());
-        recipe = recipeRepository.save(recipe);
-        return Data.body(ModelConverter.toAddRecipeResponse(recipe));
+        Recipe saved = recipeRepository.save(recipe);
+        return Data.body(ModelConverter.toRecipeDto(saved));
     }
 
     @Override
+    @Transactional
     public Data<String> deleteById(UUID id) {
         if (id == null) {
             throw new InvalidArgumentException(
@@ -127,6 +150,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
+    @Transactional
     public Data<List<RecipeDto>> getAll() {
         List<RecipeDto> recipes = recipeRepository.findAll()
                 .stream()
