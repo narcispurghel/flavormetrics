@@ -25,6 +25,10 @@ public record RegularUserDto(
         ProfileDto profile
 ) implements UserDto {
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static final class Builder {
         private UUID id;
         private String firstName;
@@ -39,6 +43,10 @@ public record RegularUserDto(
         private LocalDateTime createdAt;
         private List<AuthorityDto> authorities;
         private ProfileDto profileDto;
+
+        private Builder() {
+            // Prevent instantiation
+        }
 
         public Builder id(UUID id) {
             this.id = id;

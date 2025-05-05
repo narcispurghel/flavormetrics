@@ -51,8 +51,8 @@ public class Rating {
 
     /**
      * Sets rating's value
-     * @param value must be in interval [0, 5]
-     * @throws InvalidArgumentException in case value
+     * @param value must be in the interval [0, 5]
+     * @throws InvalidArgumentException in case the value 
      * is not in the range [0, 5]
      */
     public void setValue(Integer value) {

@@ -7,10 +7,19 @@ public record RatingDto(
         String username,
         Integer value
 ) {
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         private UUID recipeId;
         private String username;
         private Integer value;
+
+        private Builder() {
+            // Prevent instantiation
+        }
+
 
         public Builder recipeId(UUID recipeId) {
             this.recipeId = recipeId;

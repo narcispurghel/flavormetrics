@@ -10,10 +10,18 @@ public record AuthorityDto(
         UserDto user
 ) {
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         private UUID id;
         private RoleType role;
         private UserDto user;
+
+        private Builder() {
+            // Prevent instantiation
+        }
 
         public Builder id(UUID id) {
             this.id = id;

@@ -6,10 +6,17 @@ public record EmailDto(
         UUID id,
         String value
 ) {
+    public static Builder builder() {
+        return new Builder();
+    }
 
     public static class Builder {
         private UUID id;
         private String value;
+
+        private Builder() {
+            // Prevent instantiation
+        }
 
         public Builder id(UUID id) {
             this.id = id;

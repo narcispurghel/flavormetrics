@@ -56,7 +56,7 @@ public class ModelConverter {
                 .stream()
                 .map(ModelConverter::toRatingDto)
                 .toList();
-        return new RecipeDto.Builder()
+        return RecipeDto.builder()
                 .id(recipe.getId())
                 .tags(tags)
                 .averageRating(recipe.getAverageRating())
@@ -78,18 +78,18 @@ public class ModelConverter {
         if (rating == null) {
             return null;
         }
-        return new RatingDto.Builder()
+        return RatingDto.builder()
                 .username(rating.getUser().getUsername())
                 .recipeId(rating.getRecipe().getId())
                 .value(rating.getValue())
                 .build();
     }
 
-    private static com.flavormetrics.api.model.IngredientDto toIngredientDto(Ingredient ingredient) {
+    private static IngredientDto toIngredientDto(Ingredient ingredient) {
         if (ingredient == null) {
             return null;
         }
-        return new com.flavormetrics.api.model.IngredientDto.Builder()
+        return IngredientDto.builder()
                 .name(ingredient.getName())
                 .id(ingredient.getId())
                 .recipes(ingredient.getRecipes())
@@ -163,7 +163,7 @@ public class ModelConverter {
                 .stream()
                 .map(ModelConverter::toAllergyDto)
                 .toList();
-        return new ProfileDto.Builder()
+        return ProfileDto.builder()
                 .id(profile.getId())
                 .userId(profile.getId())
                 .dietaryPreference(profile.getDietaryPreference())
@@ -180,7 +180,7 @@ public class ModelConverter {
                 .stream()
                 .map(ModelConverter::toAuthority)
                 .toList();
-        return new RegularUserDto.Builder()
+        return RegularUserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .firstName(user.getFirstName())
@@ -201,7 +201,7 @@ public class ModelConverter {
         if (authority == null) {
             return null;
         }
-        return new AuthorityDto.Builder()
+        return AuthorityDto.builder()
                 .id(authority.getId())
                 .user(ModelConverter.toUserDto(authority.getUser()))
                 .role(authority.getRole())

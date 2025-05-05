@@ -13,10 +13,18 @@ public record IngredientDto(
         List<Recipe> recipes
 ) {
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         private UUID id;
         private String name;
         private List<Recipe> recipes;
+
+        private Builder() {
+            // Prevent instantiation
+        }
 
         public Builder id(UUID id) {
             this.id = id;

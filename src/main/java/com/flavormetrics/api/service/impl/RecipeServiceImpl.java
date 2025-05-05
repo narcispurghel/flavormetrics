@@ -11,7 +11,6 @@ import com.flavormetrics.api.factory.RecipeFactory;
 import com.flavormetrics.api.model.Data;
 import com.flavormetrics.api.model.RecipeDto;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
-import com.flavormetrics.api.model.response.AddRecipeResponse;
 import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
 import com.flavormetrics.api.repository.IngredientRepository;
 import com.flavormetrics.api.repository.NutritionistRepository;

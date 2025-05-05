@@ -1,6 +1,5 @@
 package com.flavormetrics.api.model;
 
-import com.flavormetrics.api.entity.user.impl.Nutritionist;
 import com.flavormetrics.api.model.enums.DifficultyType;
 
 import java.time.LocalDateTime;
@@ -25,6 +24,9 @@ public record RecipeDto(
         List<IngredientDto> ingredients,
         List<RatingDto> ratings
 ) {
+    public static Builder builder() {
+        return new Builder();
+    }
 
     public static class Builder {
         private UUID id;
@@ -42,6 +44,10 @@ public record RecipeDto(
         private List<TagDto> tags;
         private List<IngredientDto> ingredients;
         private List<RatingDto> ratings;
+
+        private Builder() {
+            // Prevent instantiation
+        }
 
         public Builder id(UUID id) {
             this.id = id;

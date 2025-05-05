@@ -16,11 +16,19 @@ public record ProfileDto(
         @JsonIgnore
         UUID userId
 ) {
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static final class Builder {
         private UUID id;
         private DietaryPreferenceType dietaryPreference = DietaryPreferenceType.NONE; // Default value
         private List<AllergyDto> allergies = new ArrayList<>();
         private UUID userId;
+
+        private Builder() {
+            // Prevent instantiation
+        }
 
         public Builder id(UUID id) {
             this.id = id;
