@@ -33,7 +33,8 @@ public class SecurityConfig {
             "/",
             "/favicon.ico",
             "/api/auth/register",
-            "/api/auth/login"
+            "/api/auth/login",
+            "/api/v1/recipe-image"
     };
     private static final String[] SWAGGER_ENDPOINTS = {
             "/v3/api-docs.yaml",
