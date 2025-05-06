@@ -6,13 +6,13 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "jwt", schema = "users")
-public class JWT {
+public class Jwt {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    public JWT() {
+    public Jwt() {
         // Explicit now args constructor for JPA
     }
 

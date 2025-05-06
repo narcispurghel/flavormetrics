@@ -1,8 +1,20 @@
 package com.flavormetrics.api.service.impl;
 
-import java.util.List;
-
+import com.flavormetrics.api.entity.user.User;
+import com.flavormetrics.api.exception.impl.DuplicateEmailException;
+import com.flavormetrics.api.exception.impl.NotAllowedRequestException;
+import com.flavormetrics.api.factory.UserFactory;
+import com.flavormetrics.api.model.Data;
+import com.flavormetrics.api.model.enums.RoleType;
+import com.flavormetrics.api.model.request.LoginRequest;
+import com.flavormetrics.api.model.request.RegisterRequest;
+import com.flavormetrics.api.model.response.LoginResponse;
 import com.flavormetrics.api.model.response.RegisterResponse;
+import com.flavormetrics.api.repository.UserRepository;
+import com.flavormetrics.api.service.AuthService;
+import com.flavormetrics.api.service.JWTService;
+import com.flavormetrics.api.util.ModelConverter;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -13,54 +25,35 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import com.flavormetrics.api.entity.user.User;
-import com.flavormetrics.api.entity.user.impl.Nutritionist;
-import com.flavormetrics.api.entity.user.impl.RegularUser;
-import com.flavormetrics.api.exception.impl.DuplicateEmailException;
-import com.flavormetrics.api.exception.impl.NotAllowedRequestException;
-import com.flavormetrics.api.factory.UserFactory;
-import com.flavormetrics.api.model.Data;
-import com.flavormetrics.api.model.enums.RoleType;
-import com.flavormetrics.api.model.request.LoginRequest;
-import com.flavormetrics.api.model.request.RegisterRequest;
-import com.flavormetrics.api.model.response.LoginResponse;
-import com.flavormetrics.api.repository.NutritionistRepository;
-import com.flavormetrics.api.repository.RegularUserRepository;
-import com.flavormetrics.api.repository.UserRepository;
-import com.flavormetrics.api.service.JWTService;
-import com.flavormetrics.api.service.AuthService;
-import com.flavormetrics.api.util.ModelConverter;
-
-import jakarta.transaction.Transactional;
+import java.util.List;
 
 @Service
 public class AuthServiceImpl implements AuthService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthServiceImpl.class);
+
     private final AuthenticationManager authenticationManager;
     private final JWTService jwtService;
-    private final UserFactory userFactory;
-    private final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
-    private final RegularUserRepository regularUserRepository;
-    private final NutritionistRepository nutritionistRepository;
     private final UserRepository userRepository;
 
     public AuthServiceImpl(
             AuthenticationManager authenticationManager,
             JWTService jwtService,
-            UserFactory userFactory,
-            RegularUserRepository regularUserRepository,
-            NutritionistRepository nutritionistRepository,
             UserRepository userRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
-        this.userFactory = userFactory;
-        this.regularUserRepository = regularUserRepository;
-        this.nutritionistRepository = nutritionistRepository;
         this.userRepository = userRepository;
     }
 
     @Override
     @Transactional
     public Data<RegisterResponse> registerUser(RegisterRequest data, Authentication authentication) {
+        if (data == null) {
+            throw new NotAllowedRequestException(
+                    "Bad request",
+                    "Missing data",
+                    HttpStatus.BAD_REQUEST,
+                    "data");
+        }
         if (data.role() == RoleType.ROLE_ADMIN) {
             throw new NotAllowedRequestException(
                     "Bad request",
@@ -84,13 +77,10 @@ public class AuthServiceImpl implements AuthService {
                     HttpStatus.BAD_REQUEST,
                     "");
         }
-        var user = userFactory.createUser(data);
-        user = switch (user) {
-            case RegularUser u -> regularUserRepository.save(u);
-            case Nutritionist n -> nutritionistRepository.save(n);
-            default -> null;
-        };
-        logger.info("User created: {}", user);
+
+        var user = UserFactory.createUser(data);
+        user = userRepository.save(user);
+        LOGGER.info("User created: {}", user);
         return Data.body(ModelConverter.registerResponse(user));
     }
 

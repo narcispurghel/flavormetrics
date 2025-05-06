@@ -15,13 +15,13 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.flavormetrics.api.entity.Authority;
-import com.flavormetrics.api.entity.JWT;
+import com.flavormetrics.api.entity.Jwt;
 import com.flavormetrics.api.entity.user.User;
 import com.flavormetrics.api.model.enums.RoleType;
 import com.flavormetrics.api.repository.JWTRepository;
 
 @ExtendWith(MockitoExtension.class)
-class JWTServiceImplTest {
+class JwtServiceImplTest {
         private static final List<Authority> AUTHORITIES = List.of(
                         new Authority(RoleType.ROLE_USER));
         private static final String USERNAME = "test@email.com";
@@ -40,7 +40,7 @@ class JWTServiceImplTest {
 
         @Test
         void testThatTokenIsGenerated() {
-                final JWT jwtEntity = new JWT();
+                final Jwt jwtEntity = new Jwt();
                 jwtEntity.setId(JWT_ID);
                 Mockito.when(user.getAuthorities())
                                 .thenReturn(AUTHORITIES);

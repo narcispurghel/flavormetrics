@@ -1,6 +1,6 @@
 package com.flavormetrics.api.service.impl;
 
-import com.flavormetrics.api.entity.JWT;
+import com.flavormetrics.api.entity.Jwt;
 import com.flavormetrics.api.entity.user.User;
 import com.flavormetrics.api.exception.impl.JWTException;
 import com.flavormetrics.api.repository.JWTRepository;
@@ -79,7 +79,7 @@ public class JWTServiceImpl implements JWTService {
     @Override
     @Transactional
     public UUID getId() {
-        JWT jwt = new JWT();
+        Jwt jwt = new Jwt();
         jwt = jwtRepository.save(jwt);
         LOGGER.info("Getting JWT id: {}", jwt.getId());
         return jwt.getId();

@@ -37,3 +37,7 @@ build/
 
 ## Personal ##
 .test-personal/
+
+## Docker ##
+docker-compose.yml
+Dockerfile

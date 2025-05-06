@@ -25,10 +25,9 @@ import com.flavormetrics.api.security.JWTAuthEntryPoint;
 import com.flavormetrics.api.security.JWTFilter;
 
 @Configuration
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity(debug = false)
 public class SecurityConfig {
-
-    private static final String[] publicApiEndpoints = {
+    private static final String[] PUBLIC_API_ENDPOINTS = {
             "/test",
             "/static/**",
             "/",
@@ -36,8 +35,7 @@ public class SecurityConfig {
             "/api/auth/register",
             "/api/auth/login"
     };
-
-    private static final String[] swaggerEndpoints = {
+    private static final String[] SWAGGER_ENDPOINTS = {
             "/v3/api-docs.yaml",
             "/v3/api-docs/**",
             "/swagger-resources/**",
@@ -53,8 +51,9 @@ public class SecurityConfig {
             "/v3/api-docs/swagger-config"
     };
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
+
     private final UserDetailsService userDetailsService;
-    private final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
     private final JWTFilter jwtFilter;
     private final JWTAuthEntryPoint jwtAuthEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
@@ -112,8 +111,8 @@ public class SecurityConfig {
 
     public static String[] getPublicEndpoints() {
         List<String> publicEndpointsTemp = new ArrayList<>();
-        publicEndpointsTemp.addAll(List.of(swaggerEndpoints));
-        publicEndpointsTemp.addAll(List.of(publicApiEndpoints));
+        publicEndpointsTemp.addAll(List.of(SWAGGER_ENDPOINTS));
+        publicEndpointsTemp.addAll(List.of(PUBLIC_API_ENDPOINTS));
         String[] publicEndpoints = new String[publicEndpointsTemp.size()];
         for (int i = 0; i < publicEndpointsTemp.size(); ++i) {
             publicEndpoints[i] = publicEndpointsTemp.get(i);
