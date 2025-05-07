@@ -8,13 +8,13 @@ import java.util.UUID;
 public record AllergyDto(
         @JsonIgnore
         UUID id,
-        AllergyType type,
+        String name,
         String description
 ) {
 
     public static class Builder {
         private UUID id;
-        private AllergyType type;
+        private String name;
         private String description;
 
         public Builder id(UUID id) {
@@ -22,8 +22,8 @@ public record AllergyDto(
             return this;
         }
 
-        public Builder type(AllergyType type) {
-            this.type = type;
+        public Builder type(String name) {
+            this.name = name;
             return this;
         }
 
@@ -33,7 +33,7 @@ public record AllergyDto(
         }
 
         public AllergyDto build() {
-            return new AllergyDto(id, type, description);
+            return new AllergyDto(id, name, description);
         }
     }
 }

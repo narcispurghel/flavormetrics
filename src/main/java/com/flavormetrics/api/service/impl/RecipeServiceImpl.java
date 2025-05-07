@@ -1,24 +1,26 @@
 package com.flavormetrics.api.service.impl;
 
 import com.flavormetrics.api.entity.Ingredient;
+import com.flavormetrics.api.entity.Profile;
 import com.flavormetrics.api.entity.Recipe;
 import com.flavormetrics.api.entity.Tag;
 import com.flavormetrics.api.entity.user.impl.Nutritionist;
+import com.flavormetrics.api.exception.impl.ProfileNotFoundException;
 import com.flavormetrics.api.exception.impl.InvalidArgumentException;
 import com.flavormetrics.api.exception.impl.NotAllowedRequestException;
 import com.flavormetrics.api.exception.impl.RecipeNotFoundException;
 import com.flavormetrics.api.factory.RecipeFactory;
 import com.flavormetrics.api.model.Data;
+import com.flavormetrics.api.model.ProfileFilter;
 import com.flavormetrics.api.model.RecipeDto;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
-import com.flavormetrics.api.repository.IngredientRepository;
-import com.flavormetrics.api.repository.NutritionistRepository;
-import com.flavormetrics.api.repository.RecipeRepository;
-import com.flavormetrics.api.repository.UserRepository;
+import com.flavormetrics.api.repository.*;
 import com.flavormetrics.api.service.RecipeService;
 import com.flavormetrics.api.util.ModelConverter;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
@@ -35,15 +37,18 @@ public class RecipeServiceImpl implements RecipeService {
     private final IngredientRepository ingredientRepository;
     private final NutritionistRepository nutritionistRepository;
     private final UserRepository userRepository;
+    private final ProfileRepository profileRepository;
 
     public RecipeServiceImpl(RecipeRepository recipeRepository,
                              IngredientRepository ingredientRepository,
                              NutritionistRepository nutritionistRepository,
-                             UserRepository userRepository) {
+                             UserRepository userRepository,
+                             ProfileRepository profileRepository) {
         this.recipeRepository = recipeRepository;
         this.ingredientRepository = ingredientRepository;
         this.nutritionistRepository = nutritionistRepository;
         this.userRepository = userRepository;
+        this.profileRepository = profileRepository;
     }
 
     @Override
@@ -156,5 +161,28 @@ public class RecipeServiceImpl implements RecipeService {
                 .map(ModelConverter::toRecipeDto)
                 .toList();
         return Data.body(recipes);
+    }
+
+    @Override
+    @Transactional
+    public ProfileFilter getProfilePreferences(String username) {
+        Profile profile = profileRepository.findByUser_Username_Value(username)
+                .orElseThrow(() -> new ProfileNotFoundException(
+                        "Not found", "Invalid username or profile is not created", HttpStatus.NOT_FOUND, "profile"));
+        return new ProfileFilter(profile.getDietaryPreference(), profile.getAllergies());
+    }
+
+    @Override
+    @Transactional
+    public Data<List<RecipeDto>> findAllByProfilePreferences(ProfileFilter profileFilter) {
+        Pageable pageable = Pageable.ofSize(10);
+        Page<Recipe> recipesAsPage = recipeRepository.getAllByProfileFilters(
+                profileFilter.allergiesToString(), profileFilter.dietaryPreference().name(), pageable);
+        List<Recipe> recipes = recipesAsPage.getContent();
+        int pageNumber = pageable.getPageNumber();
+        List<RecipeDto> recipesDto = recipes.stream()
+                .map(ModelConverter::toRecipeDto)
+                .toList();
+        return Data.body(recipesDto);
     }
 }

@@ -1,19 +1,17 @@
 package com.flavormetrics.api.entity.user;
 
+import com.flavormetrics.api.entity.Authority;
+import com.flavormetrics.api.entity.Email;
+import com.flavormetrics.api.exception.impl.MissingAuthorizationElementException;
+import jakarta.persistence.*;
+import org.springframework.http.HttpStatus;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import jakarta.persistence.*;
-import org.springframework.http.HttpStatus;
-
-import com.flavormetrics.api.entity.Authority;
-import com.flavormetrics.api.entity.Email;
-import com.flavormetrics.api.exception.impl.MissingAuthorizationElementException;
-
 @Entity
-@Table(name = "user", schema = "users")
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class User implements org.springframework.security.core.userdetails.UserDetails {
     @Id

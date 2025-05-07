@@ -8,7 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import java.util.UUID;
 
 @Entity
-@Table(name = "authority", schema = "users")
+@Table(name = "authority")
 public class Authority implements GrantedAuthority {
 
     @Id

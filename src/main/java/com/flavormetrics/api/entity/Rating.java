@@ -5,11 +5,16 @@ import com.flavormetrics.api.exception.impl.InvalidArgumentException;
 import jakarta.persistence.*;
 import org.springframework.http.HttpStatus;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.UUID;
 
 @Entity
-@Table(name = "rating", schema = "food")
-public class Rating {
+@Table(name = "rating")
+public class Rating implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

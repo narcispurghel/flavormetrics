@@ -1,6 +1,7 @@
 package com.flavormetrics.api.service;
 
 import com.flavormetrics.api.model.Data;
+import com.flavormetrics.api.model.ProfileFilter;
 import com.flavormetrics.api.model.RecipeDto;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
@@ -21,4 +22,8 @@ public interface RecipeService {
     Data<String> deleteById(UUID id);
 
     Data<List<RecipeDto>> getAll();
+
+    ProfileFilter getProfilePreferences(String username);
+
+    Data<List<RecipeDto>> findAllByProfilePreferences(ProfileFilter profileFilter);
 }

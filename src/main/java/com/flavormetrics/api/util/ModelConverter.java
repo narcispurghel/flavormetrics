@@ -65,6 +65,8 @@ public class ModelConverter {
                 .cookTimeMinutes(recipe.getCookTimeMinutes())
                 .prepTimeMinutes(recipe.getPrepTimeMinutes())
                 .ratings(ratings)
+                .estimatedCalories(recipe.getEstimatedCalories())
+                .instructions(recipe.getInstructions())
                 .createdAt(recipe.getCreatedAt())
                 .updatedAt(recipe.getUpdatedAt())
                 .name(recipe.getName())
@@ -115,7 +117,7 @@ public class ModelConverter {
         if (tag == null) {
             return null;
         }
-        return new TagDto(tag.getType());
+        return new TagDto(tag.getName());
     }
 
     public static RecipesByNutritionistResponse toRecipesByNutritionistResponse(String username, List<Recipe> recipes) {
@@ -144,12 +146,12 @@ public class ModelConverter {
         return profile;
     }
 
-    private static Allergy toAllergy(AllergyDto allergyDto) {
+    public static Allergy toAllergy(AllergyDto allergyDto) {
         if (allergyDto == null) {
             return null;
         }
         Allergy allergy = new Allergy();
-        allergy.setType(allergyDto.type());
+        allergy.setName(allergyDto.name());
         allergy.setDescription(allergyDto.description());
         allergy.setId(allergy.getId());
         return allergy;
@@ -219,7 +221,7 @@ public class ModelConverter {
         }
         return new AllergyDto.Builder()
                 .id(allergy.getId())
-                .type(allergy.getType())
+                .type(allergy.getName())
                 .description(allergy.getDescription())
                 .build();
     }
@@ -229,7 +231,7 @@ public class ModelConverter {
             return null;
         }
         Tag tag = new Tag();
-        tag.setType(tagDto.type());
+        tag.setName(tagDto.name());
         return tag;
     }
 }

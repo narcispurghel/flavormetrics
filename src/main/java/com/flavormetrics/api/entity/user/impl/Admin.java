@@ -6,7 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "admins", schema = "users")
+@Table(name = "admin")
 public class Admin extends User {
 
     public Admin(String password, Email email) {

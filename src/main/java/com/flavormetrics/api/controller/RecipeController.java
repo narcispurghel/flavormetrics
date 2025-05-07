@@ -1,6 +1,7 @@
 package com.flavormetrics.api.controller;
 
 import com.flavormetrics.api.model.Data;
+import com.flavormetrics.api.model.ProfileFilter;
 import com.flavormetrics.api.model.RecipeDto;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RestController()
+@RestController
 @RequestMapping("/api/recipe")
 public class RecipeController {
     private final RecipeService recipeService;
@@ -63,5 +64,11 @@ public class RecipeController {
     public ResponseEntity<Data<RecipesByNutritionistResponse>> getByNutritionist(
             @PathVariable String username) {
         return ResponseEntity.ok(recipeService.getByNutritionist(username));
+    }
+
+    @GetMapping("/byProfile")
+    public ResponseEntity<Data<List<RecipeDto>>> getAllByProfile(Authentication authentication) {
+        ProfileFilter profileFilter = recipeService.getProfilePreferences(authentication.getName());
+        return ResponseEntity.ok(recipeService.findAllByProfilePreferences(profileFilter));
     }
 }

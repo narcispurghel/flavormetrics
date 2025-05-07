@@ -1,22 +1,25 @@
 package com.flavormetrics.api.entity;
 
-import com.flavormetrics.api.model.enums.TagType;
 import jakarta.persistence.*;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "tags", schema = "food")
-public class Tag {
+@Table(name = "tags")
+public class Tag implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tag_type", nullable = false)
-    private TagType type;
+    @Column(name = "name", nullable = false)
+    private String name;
 
     @ManyToMany(mappedBy = "tags")
     private List<Recipe> recipes = new ArrayList<>();
@@ -33,12 +36,12 @@ public class Tag {
         this.id = id;
     }
 
-    public TagType getType() {
-        return type;
+    public String getName() {
+        return name;
     }
 
-    public void setType(TagType type) {
-        this.type = type;
+    public void setName(String type) {
+        this.name = type;
     }
 
     public List<Recipe> getRecipes() {

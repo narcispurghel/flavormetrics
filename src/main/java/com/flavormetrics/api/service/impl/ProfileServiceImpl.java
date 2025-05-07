@@ -5,6 +5,7 @@ import com.flavormetrics.api.entity.user.impl.RegularUser;
 import com.flavormetrics.api.model.ProfileDto;
 import com.flavormetrics.api.exception.impl.ProfileAlreadyCreatedException;
 import com.flavormetrics.api.model.Data;
+import com.flavormetrics.api.model.RecipeDto;
 import com.flavormetrics.api.repository.ProfileRepository;
 import com.flavormetrics.api.repository.RegularUserRepository;
 import com.flavormetrics.api.service.ProfileService;
@@ -14,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class ProfileServiceImpl implements ProfileService {
@@ -29,9 +32,9 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     @Transactional
     public Data<ProfileDto> getProfile(Authentication authentication) {
-        ProfileDto profile = profileRepository.findByUser_Username_Value(authentication.getName())
+        Profile profile = profileRepository.findByUser_Username_Value(authentication.getName())
                 .orElse(null);
-        return Data.body(profile);
+        return Data.body(ModelConverter.toProfileDto(profile));
     }
 
     @Override

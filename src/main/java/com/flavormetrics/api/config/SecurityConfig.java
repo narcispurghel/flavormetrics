@@ -34,7 +34,7 @@ public class SecurityConfig {
             "/favicon.ico",
             "/api/auth/register",
             "/api/auth/login",
-            "/api/v1/recipe-image"
+            "/api/v1/recipe-image",
     };
     private static final String[] SWAGGER_ENDPOINTS = {
             "/v3/api-docs.yaml",
@@ -50,6 +50,10 @@ public class SecurityConfig {
             "/swagger-ui/swagger-ui.css",
             "/swagger-ui/swagger-initializer.js",
             "/v3/api-docs/swagger-config"
+    };
+    private static final String[] USER_ENDPOINTS = {
+            "/api/recipe/byProfile/**",
+            "/api/profile/**"
     };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
@@ -78,7 +82,7 @@ public class SecurityConfig {
                             .permitAll();
                     request.requestMatchers("/api/recipe/protected/**")
                             .hasRole("NUTRITIONIST");
-                    request.requestMatchers("/api/profile")
+                    request.requestMatchers(USER_ENDPOINTS)
                             .hasRole("USER");
                     request.anyRequest().authenticated();
                 })

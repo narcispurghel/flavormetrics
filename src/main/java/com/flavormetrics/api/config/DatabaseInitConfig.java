@@ -1,17 +1,21 @@
 package com.flavormetrics.api.config;
 
+import com.flavormetrics.api.entity.Allergy;
+import com.flavormetrics.api.entity.Profile;
 import com.flavormetrics.api.entity.Recipe;
 import com.flavormetrics.api.entity.user.User;
 import com.flavormetrics.api.entity.user.impl.Nutritionist;
+import com.flavormetrics.api.entity.user.impl.RegularUser;
 import com.flavormetrics.api.factory.RecipeFactory;
 import com.flavormetrics.api.factory.UserFactory;
+import com.flavormetrics.api.model.AllergyDto;
 import com.flavormetrics.api.model.IngredientDto;
 import com.flavormetrics.api.model.TagDto;
-import com.flavormetrics.api.model.enums.DifficultyType;
-import com.flavormetrics.api.model.enums.RoleType;
-import com.flavormetrics.api.model.enums.TagType;
+import com.flavormetrics.api.model.enums.*;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.model.request.RegisterRequest;
+import com.flavormetrics.api.repository.AllergyRepository;
+import com.flavormetrics.api.repository.ProfileRepository;
 import com.flavormetrics.api.repository.RecipeRepository;
 import com.flavormetrics.api.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -25,8 +29,13 @@ import java.util.List;
 public class DatabaseInitConfig {
 
     @Bean
-    CommandLineRunner initDb(UserRepository userRepository, RecipeRepository recipeRepository) {
+    CommandLineRunner initDb(UserRepository userRepository,
+                             RecipeRepository recipeRepository,
+                             ProfileRepository profileRepository,
+                             AllergyRepository allergyRepository) {
         return new CommandLineRunner() {
+            private static final String NUTRITIONIST_USERNAME = "nutritionist@flavormetrics.com";
+
             @Override
             public void run(String... args) throws Exception {
                 initUsers();
@@ -34,7 +43,7 @@ public class DatabaseInitConfig {
             }
 
             private void initRecipes() {
-                User user = userRepository.getByUsername_Value("nutritionist@flavormetrics.com");
+                User user = userRepository.getByUsername_Value(NUTRITIONIST_USERNAME);
                 List<IngredientDto> spaghettiBologneseIngredients = new ArrayList<>();
                 spaghettiBologneseIngredients.add(
                         IngredientDto.builder()
@@ -46,11 +55,17 @@ public class DatabaseInitConfig {
                                 .build());
                 spaghettiBologneseIngredients.add(
                         IngredientDto.builder()
-                                .name("Ground Beef")
+                                .name("GLUTEN")
                                 .build());
                 List<TagDto> tags = new ArrayList<>();
-                tags.add(new TagDto(TagType.ITALIAN));
-                tags.add(new TagDto(TagType.MEDIUM));
+                tags.add(new TagDto(TagType.ITALIAN.name()));
+                tags.add(new TagDto(TagType.VEGETARIAN.name()));
+                List<AllergyDto> allergies = new ArrayList<>();
+                AllergyDto allergy = new AllergyDto.Builder()
+                        .type(AllergyType.GLUTEN.name())
+                        .description(AllergyType.GLUTEN.getDescription())
+                        .build();
+                allergies.add(allergy);
                 AddRecipeRequest spaghettiBolognese = new AddRecipeRequest(
                         "Spaghetti Bolognese",
                         spaghettiBologneseIngredients,
@@ -60,14 +75,14 @@ public class DatabaseInitConfig {
                         30,
                         DifficultyType.MEDIUM,
                         600,
-                        tags);
-
+                        tags,
+                        allergies);
                 Recipe spaghettiBologneseRecipe = RecipeFactory.getRecipe(spaghettiBolognese, (Nutritionist) user);
                 recipeRepository.save(spaghettiBologneseRecipe);
             }
 
             private void initUsers() {
-                if (!userRepository.existsByUsername_Value("nutritionist@flavormetrics.com")) {
+                if (!userRepository.existsByUsername_Value(NUTRITIONIST_USERNAME)) {
                     RegisterRequest req = new RegisterRequest(
                             "nutritionist@flavormetrics.com",
                             "Test",
@@ -85,6 +100,15 @@ public class DatabaseInitConfig {
                             "testregular",
                             RoleType.ROLE_USER);
                     User user = UserFactory.createUser(req);
+                    Profile profile = new Profile();
+                    List<Allergy> allergies = new ArrayList<>();
+                    Allergy allergy = new Allergy(AllergyType.GLUTEN);
+                    allergy.setProfile(profile);
+                    allergies.add(allergy);
+                    profile.setAllergies(allergies);
+                    profile.setUser((RegularUser) user);
+                    profile.setDietaryPreference(DietaryPreferenceType.VEGETARIAN);
+                    ((RegularUser) user).setProfile(profile);
                     userRepository.save(user);
                 }
                 if (!userRepository.existsByUsername_Value("admin@flavormetrics.com")) {

@@ -4,13 +4,17 @@ import com.flavormetrics.api.entity.user.impl.RegularUser;
 import com.flavormetrics.api.model.enums.DietaryPreferenceType;
 import jakarta.persistence.*;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "profile", schema = "profile")
-public class Profile {
+@Table(name = "profile")
+public class Profile implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -21,10 +25,11 @@ public class Profile {
     @Column(nullable = false)
     private DietaryPreferenceType dietaryPreference = DietaryPreferenceType.NONE;
 
-    @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Allergy> allergies = new ArrayList<>();
 
     @OneToOne(mappedBy = "profile")
+    @JoinColumn(name = "user_id")
     private RegularUser user;
 
     public Profile() {

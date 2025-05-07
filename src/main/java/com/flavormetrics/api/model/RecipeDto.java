@@ -22,7 +22,8 @@ public record RecipeDto(
         LocalDateTime updatedAt,
         List<TagDto> tags,
         List<IngredientDto> ingredients,
-        List<RatingDto> ratings
+        List<RatingDto> ratings,
+        List<AllergyDto> allergies
 ) {
     public static Builder builder() {
         return new Builder();
@@ -44,6 +45,7 @@ public record RecipeDto(
         private List<TagDto> tags;
         private List<IngredientDto> ingredients;
         private List<RatingDto> ratings;
+        private List<AllergyDto> allergies;
 
         private Builder() {
             // Prevent instantiation
@@ -124,8 +126,14 @@ public record RecipeDto(
             return this;
         }
 
+        public Builder setAllergies(List<AllergyDto> allergies) {
+            this.allergies = allergies;
+            return this;
+        }
+
         public RecipeDto build() {
-            return new RecipeDto(id,
+            return new RecipeDto(
+                    id,
                     name,
                     nutritionist,
                     instructions,
@@ -139,7 +147,8 @@ public record RecipeDto(
                     updatedAt,
                     tags,
                     ingredients,
-                    ratings);
+                    ratings,
+                    allergies);
         }
     }
 }

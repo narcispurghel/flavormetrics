@@ -2,13 +2,17 @@ package com.flavormetrics.api.entity;
 
 import jakarta.persistence.*;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-@Table(name = "ingredient", schema = "food")
-public class Ingredient {
+@Table(name = "ingredient")
+public class Ingredient implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

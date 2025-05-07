@@ -6,6 +6,8 @@ import com.flavormetrics.api.model.enums.DifficultyType;
 import jakarta.persistence.*;
 import org.springframework.http.HttpStatus;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +15,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-@Table(name = "receipe", schema = "food")
-public class Recipe {
+@Table(name = "receipe")
+public class Recipe implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -62,8 +67,7 @@ public class Recipe {
             },
             inverseJoinColumns = {
                     @JoinColumn(name = "tag_id")
-            },
-            schema = "food"
+            }
     )
     @Column(name = "tags")
     private List<Tag> tags;
@@ -76,13 +80,15 @@ public class Recipe {
             },
             inverseJoinColumns = {
                     @JoinColumn(name = "ingredient_id")
-            },
-            schema = "food"
+            }
     )
     private List<Ingredient> ingredients = new ArrayList<>();
 
     @OneToMany(mappedBy = "recipe")
     private List<Rating> ratings = new ArrayList<>();
+
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<Allergy> allergies = new ArrayList<>();
 
     public Recipe() {
         // No args constructor for JPA
@@ -250,5 +256,13 @@ public class Recipe {
     @Override
     public int hashCode() {
         return Objects.hash(name, ingredients);
+    }
+
+    public List<Allergy> getAllergies() {
+        return allergies;
+    }
+
+    public void setAllergies(List<Allergy> allergies) {
+        this.allergies = allergies;
     }
 }
