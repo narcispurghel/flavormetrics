@@ -1,6 +1,9 @@
 package com.flavormetrics.api.repository;
 
 import com.flavormetrics.api.entity.Recipe;
+import com.flavormetrics.api.model.Data;
+import com.flavormetrics.api.model.RecipeDto;
+import com.flavormetrics.api.model.enums.DifficultyType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,7 +21,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
     List<Recipe> getRecipesByNutritionist_Username_Value(String username);
 
 
-    @Query("""
+    @Query(value = """
             select r
             from Recipe r
             join r.tags t
@@ -27,4 +30,17 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
             and (:dietaryPreferences is null or t.name in :dietaryPreferences)
             """)
     Page<Recipe> getAllByProfileFilters(List<String> allergies, String dietaryPreferences, Pageable pageable);
+
+    @Query(value = """
+            select r
+            from Recipe r
+            where (r.cookTimeMinutes <= :cookTimeMinutes)
+            and (r.estimatedCalories <= :estimatedCalories)
+            and (r.prepTimeMinutes <= :prepTimeMinutes)
+            and (r.difficulty = :difficulty)
+            """)
+    List<Recipe> findAllByDefaultFilter(int prepTimeMinutes,
+                                                 int cookTimeMinutes,
+                                                 int estimatedCalories,
+                                                 DifficultyType difficulty);
 }

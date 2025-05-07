@@ -26,8 +26,8 @@ public final class RecipeFactory {
                 .toList();
         final Recipe recipe = new Recipe();
         final List<Tag> tags = data.tags().stream()
-                .map(tagDto -> {
-                    Tag tag = ModelConverter.toTag(tagDto);
+                .map(tagType -> {
+                    Tag tag = ModelConverter.toTag(tagType);
                     tag.getRecipes().add(recipe);
                     return tag;
                 })

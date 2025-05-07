@@ -63,7 +63,7 @@ public class Profile implements Serializable {
     }
 
     public void setAllergies(List<Allergy> allergies) {
-        this.allergies = allergies;
+        this.allergies = new ArrayList<>(allergies);
     }
 
     public RegularUser getUser() {

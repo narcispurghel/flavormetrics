@@ -4,6 +4,7 @@ import com.flavormetrics.api.model.Data;
 import com.flavormetrics.api.model.ProfileFilter;
 import com.flavormetrics.api.model.RecipeDto;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
+import com.flavormetrics.api.model.RecipeDefaultFilter;
 import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
 import com.flavormetrics.api.service.RecipeService;
 import org.springframework.http.HttpStatus;
@@ -42,7 +43,7 @@ public class RecipeController {
                 .body(responseBody);
     }
 
-    @DeleteMapping("/protected/delte/{id}")
+    @DeleteMapping("/protected/delete/{id}")
     public ResponseEntity<Data<String>> deleteById(
             @PathVariable UUID id) {
         Data<String> responseBody = recipeService.deleteById(id);
@@ -70,5 +71,10 @@ public class RecipeController {
     public ResponseEntity<Data<List<RecipeDto>>> getAllByProfile(Authentication authentication) {
         ProfileFilter profileFilter = recipeService.getProfilePreferences(authentication.getName());
         return ResponseEntity.ok(recipeService.findAllByProfilePreferences(profileFilter));
+    }
+
+    @PostMapping("/byFilter")
+    public ResponseEntity<Data<List<RecipeDto>>> getAllByFilter(@RequestBody RecipeDefaultFilter recipeDefaultFilter) {
+        return ResponseEntity.ok(recipeService.findAllByDefaultFilter(recipeDefaultFilter));
     }
 }

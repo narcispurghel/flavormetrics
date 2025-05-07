@@ -2,6 +2,7 @@ package com.flavormetrics.api.controller;
 
 import com.flavormetrics.api.model.ProfileDto;
 import com.flavormetrics.api.model.Data;
+import com.flavormetrics.api.model.request.CreateProfileRequest;
 import com.flavormetrics.api.service.ProfileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -23,7 +24,7 @@ public class ProfileController {
 
     @PostMapping
     public ResponseEntity<Data<ProfileDto>> addProfile(
-            @RequestBody Data<ProfileDto>  request,
+            @RequestBody Data<CreateProfileRequest>  request,
             Authentication authentication) {
         return ResponseEntity.ok(profileService.createProfile(request.data(), authentication));
     }

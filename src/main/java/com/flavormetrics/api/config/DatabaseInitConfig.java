@@ -57,15 +57,12 @@ public class DatabaseInitConfig {
                         IngredientDto.builder()
                                 .name("GLUTEN")
                                 .build());
-                List<TagDto> tags = new ArrayList<>();
-                tags.add(new TagDto(TagType.ITALIAN.name()));
-                tags.add(new TagDto(TagType.VEGETARIAN.name()));
-                List<AllergyDto> allergies = new ArrayList<>();
-                AllergyDto allergy = new AllergyDto.Builder()
-                        .type(AllergyType.GLUTEN.name())
-                        .description(AllergyType.GLUTEN.getDescription())
-                        .build();
-                allergies.add(allergy);
+                List<TagType> tags = new ArrayList<>();
+                tags.add(TagType.ITALIAN);
+                tags.add(TagType.EASY);
+                List<AllergyType> allergies = new ArrayList<>();
+                allergies.add(AllergyType.GLUTEN);
+                allergies.add(AllergyType.SESAME);
                 AddRecipeRequest spaghettiBolognese = new AddRecipeRequest(
                         "Spaghetti Bolognese",
                         spaghettiBologneseIngredients,

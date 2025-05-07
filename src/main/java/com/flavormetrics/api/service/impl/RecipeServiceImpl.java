@@ -1,9 +1,6 @@
 package com.flavormetrics.api.service.impl;
 
-import com.flavormetrics.api.entity.Ingredient;
-import com.flavormetrics.api.entity.Profile;
-import com.flavormetrics.api.entity.Recipe;
-import com.flavormetrics.api.entity.Tag;
+import com.flavormetrics.api.entity.*;
 import com.flavormetrics.api.entity.user.impl.Nutritionist;
 import com.flavormetrics.api.exception.impl.ProfileNotFoundException;
 import com.flavormetrics.api.exception.impl.InvalidArgumentException;
@@ -12,6 +9,7 @@ import com.flavormetrics.api.exception.impl.RecipeNotFoundException;
 import com.flavormetrics.api.factory.RecipeFactory;
 import com.flavormetrics.api.model.Data;
 import com.flavormetrics.api.model.ProfileFilter;
+import com.flavormetrics.api.model.RecipeDefaultFilter;
 import com.flavormetrics.api.model.RecipeDto;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
@@ -128,6 +126,10 @@ public class RecipeServiceImpl implements RecipeService {
                     return tag;
                 })
                 .toList();
+        final List<Allergy> allergies = data.allergies()
+                .stream()
+                .map(ModelConverter::toAllergy)
+                .toList();
         recipe.setInstructions(data.instructions());
         recipe.setUpdatedAt(LocalDateTime.now());
         recipe.setImageUrl(data.imageUrl());
@@ -138,6 +140,7 @@ public class RecipeServiceImpl implements RecipeService {
         recipe.setTags(tags);
         recipe.setIngredients(ingredients);
         recipe.setName(data.name());
+        recipe.setAllergies(allergies);
         Recipe saved = recipeRepository.save(recipe);
         return Data.body(ModelConverter.toRecipeDto(saved));
     }
@@ -180,6 +183,19 @@ public class RecipeServiceImpl implements RecipeService {
                 profileFilter.allergiesToString(), profileFilter.dietaryPreference().name(), pageable);
         List<Recipe> recipes = recipesAsPage.getContent();
         int pageNumber = pageable.getPageNumber();
+        List<RecipeDto> recipesDto = recipes.stream()
+                .map(ModelConverter::toRecipeDto)
+                .toList();
+        return Data.body(recipesDto);
+    }
+
+    @Override
+    public Data<List<RecipeDto>> findAllByDefaultFilter(RecipeDefaultFilter recipeDefaultFilter) {
+        List<Recipe> recipes = recipeRepository.findAllByDefaultFilter(
+                recipeDefaultFilter.prepTimeMinutes(),
+                recipeDefaultFilter.cookTimeMinutes(),
+                recipeDefaultFilter.estimatedCalories(),
+                recipeDefaultFilter.difficulty());
         List<RecipeDto> recipesDto = recipes.stream()
                 .map(ModelConverter::toRecipeDto)
                 .toList();

@@ -1,7 +1,6 @@
 package com.flavormetrics.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flavormetrics.api.model.enums.AllergyType;
 
 import java.util.UUID;
 

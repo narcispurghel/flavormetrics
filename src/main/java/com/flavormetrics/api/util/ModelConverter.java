@@ -4,6 +4,9 @@ import com.flavormetrics.api.entity.*;
 import com.flavormetrics.api.entity.user.User;
 import com.flavormetrics.api.entity.user.impl.RegularUser;
 import com.flavormetrics.api.model.*;
+import com.flavormetrics.api.model.enums.AllergyType;
+import com.flavormetrics.api.model.enums.TagType;
+import com.flavormetrics.api.model.request.CreateProfileRequest;
 import com.flavormetrics.api.model.response.AddRecipeResponse;
 import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
 import com.flavormetrics.api.model.response.RegisterResponse;
@@ -56,6 +59,10 @@ public class ModelConverter {
                 .stream()
                 .map(ModelConverter::toRatingDto)
                 .toList();
+        List<AllergyDto> allergies = recipe.getAllergies()
+                .stream()
+                .map(ModelConverter::toAllergyDto)
+                .toList();
         return RecipeDto.builder()
                 .id(recipe.getId())
                 .tags(tags)
@@ -72,6 +79,7 @@ public class ModelConverter {
                 .name(recipe.getName())
                 .ingredients(ingredients)
                 .nutritionist(recipe.getNutritionist().getUsername())
+                .allergies(allergies)
                 .build();
 
     }
@@ -146,6 +154,22 @@ public class ModelConverter {
         return profile;
     }
 
+    public static Profile toProfile(CreateProfileRequest data) {
+        if (data == null) {
+            return null;
+        }
+        List<Allergy> allergies = data.allergies()
+                .stream()
+                .map(ModelConverter::toAllergy)
+                .toList();
+        Profile profile = new Profile();
+        profile.setId(profile.getId());
+        profile.setUser(profile.getUser());
+        profile.setDietaryPreference(data.dietaryPreference());
+        profile.setAllergies(allergies);
+        return profile;
+    }
+
     public static Allergy toAllergy(AllergyDto allergyDto) {
         if (allergyDto == null) {
             return null;
@@ -156,6 +180,17 @@ public class ModelConverter {
         allergy.setId(allergy.getId());
         return allergy;
     }
+    public static Allergy toAllergy(AllergyType allergyType) {
+        if (allergyType == null) {
+            return null;
+        }
+        Allergy allergy = new Allergy();
+        allergy.setName(allergyType.name());
+        allergy.setDescription(allergyType.getDescription());
+        allergy.setId(allergy.getId());
+        return allergy;
+    }
+
 
     public static ProfileDto toProfileDto(Profile profile) {
         if (profile == null) {
@@ -232,6 +267,15 @@ public class ModelConverter {
         }
         Tag tag = new Tag();
         tag.setName(tagDto.name());
+        return tag;
+    }
+
+    public static Tag toTag(TagType tagType) {
+        if (tagType == null) {
+            return null;
+        }
+        Tag tag = new Tag();
+        tag.setName(tagType.name());
         return tag;
     }
 }

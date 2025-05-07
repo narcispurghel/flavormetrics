@@ -126,8 +126,8 @@ public record RecipeDto(
             return this;
         }
 
-        public Builder setAllergies(List<AllergyDto> allergies) {
-            this.allergies = allergies;
+        public Builder allergies(List<AllergyDto> allergies) {
+            this.allergies = new ArrayList<>(allergies);
             return this;
         }
 
