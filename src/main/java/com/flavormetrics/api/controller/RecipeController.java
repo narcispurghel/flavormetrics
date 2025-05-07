@@ -2,9 +2,9 @@ package com.flavormetrics.api.controller;
 
 import com.flavormetrics.api.model.Data;
 import com.flavormetrics.api.model.ProfileFilter;
+import com.flavormetrics.api.model.RecipeDefaultFilter;
 import com.flavormetrics.api.model.RecipeDto;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
-import com.flavormetrics.api.model.RecipeDefaultFilter;
 import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
 import com.flavormetrics.api.service.RecipeService;
 import org.springframework.http.HttpStatus;

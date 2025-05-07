@@ -1,8 +1,7 @@
 package com.flavormetrics.api.exception.impl;
 
-import org.springframework.http.HttpStatusCode;
-
 import com.flavormetrics.api.exception.ApiException;
+import org.springframework.http.HttpStatusCode;
 
 public class NotAllowedRequestException extends ApiException {
 

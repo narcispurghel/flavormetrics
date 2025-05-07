@@ -1,5 +1,12 @@
 package com.flavormetrics.api.model.request;
 
-public record LoginRequest(String email, String password)  {
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "Login request object example")
+public record LoginRequest(
+        @Schema(description = "Unique identifier used in registration", example = "narcis@email.com")
+        String email,
+
+        @Schema(description = "User credentials used in registration", example = "strongPassword")
+        String password)  {
 }

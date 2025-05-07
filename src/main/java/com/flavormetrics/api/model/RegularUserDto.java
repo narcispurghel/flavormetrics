@@ -1,7 +1,6 @@
 package com.flavormetrics.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flavormetrics.api.entity.Email;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

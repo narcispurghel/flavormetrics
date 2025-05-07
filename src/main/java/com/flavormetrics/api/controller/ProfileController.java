@@ -1,7 +1,7 @@
 package com.flavormetrics.api.controller;
 
-import com.flavormetrics.api.model.ProfileDto;
 import com.flavormetrics.api.model.Data;
+import com.flavormetrics.api.model.ProfileDto;
 import com.flavormetrics.api.model.request.CreateProfileRequest;
 import com.flavormetrics.api.service.ProfileService;
 import org.springframework.http.ResponseEntity;

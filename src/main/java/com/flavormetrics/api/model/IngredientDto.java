@@ -2,6 +2,7 @@ package com.flavormetrics.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flavormetrics.api.entity.Recipe;
+
 import java.util.List;
 import java.util.UUID;
 

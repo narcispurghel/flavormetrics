@@ -2,9 +2,9 @@ package com.flavormetrics.api.service.impl;
 
 import com.flavormetrics.api.entity.*;
 import com.flavormetrics.api.entity.user.impl.Nutritionist;
-import com.flavormetrics.api.exception.impl.ProfileNotFoundException;
 import com.flavormetrics.api.exception.impl.InvalidArgumentException;
 import com.flavormetrics.api.exception.impl.NotAllowedRequestException;
+import com.flavormetrics.api.exception.impl.ProfileNotFoundException;
 import com.flavormetrics.api.exception.impl.RecipeNotFoundException;
 import com.flavormetrics.api.factory.RecipeFactory;
 import com.flavormetrics.api.model.Data;

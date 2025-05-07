@@ -1,8 +1,6 @@
 package com.flavormetrics.api.repository;
 
 import com.flavormetrics.api.entity.Recipe;
-import com.flavormetrics.api.model.Data;
-import com.flavormetrics.api.model.RecipeDto;
 import com.flavormetrics.api.model.enums.DifficultyType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

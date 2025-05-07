@@ -1,9 +1,9 @@
 package com.flavormetrics.api.service;
 
-import java.util.UUID;
-
 import com.flavormetrics.api.entity.user.User;
 import com.nimbusds.jose.jwk.RSAKey;
+
+import java.util.UUID;
 
 public interface JWTService {
     String generateToken(User details);
