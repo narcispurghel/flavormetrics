@@ -43,6 +43,7 @@ public class SecurityConfig {
             "/swagger-ui/index.html",
             "/webjars/**",
             "/swagger-ui/favicon-16x16.png",
+            "/swagger-ui/favicon-32x32.png",
             "/swagger-ui/index.css",
             "/swagger-ui/swagger-ui-bundle.js",
             "/swagger-ui/swagger-ui-standalone-preset.js",

@@ -1,6 +1,5 @@
 package com.flavormetrics.api.controller;
 
-import com.flavormetrics.api.exception.ApiException;
 import com.flavormetrics.api.model.Data;
 import com.flavormetrics.api.model.request.LoginRequest;
 import com.flavormetrics.api.model.request.RegisterRequest;
@@ -46,7 +45,8 @@ public class AuthController {
                     responseCode = "409",
                     description = "Username is not available",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
-            )})
+            )
+    })
     @PostMapping("/register")
     public ResponseEntity<Data<RegisterResponse>> register(
             @RequestBody Data<RegisterRequest> requestBody,
@@ -71,7 +71,8 @@ public class AuthController {
                     responseCode = "404",
                     description = "Bad credentials",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))
-            )})
+            )
+    })
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody Data<LoginRequest> requestBody,
                                                Authentication authentication) {
