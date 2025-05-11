@@ -22,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -118,5 +119,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean existsByEmail(String email) {
         return userRepository.existsByUsername_Value(email);
+    }
+
+    @Override
+    public String logout() {
+        SecurityContextHolder.getContext().setAuthentication(null);
+        return "Logout success!";
     }
 }

@@ -27,7 +27,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
             where (a.name is null  or a.name not in :allergies)
             and (:dietaryPreferences is null or t.name in :dietaryPreferences)
             """)
-    Page<Recipe> getAllByProfileFilters(List<String> allergies, String dietaryPreferences, Pageable pageable);
+    List<Recipe> getAllByProfileFilters(List<String> allergies, String dietaryPreferences);
 
     @Query(value = """
             select r

@@ -6,17 +6,15 @@ import com.flavormetrics.api.entity.Recipe;
 import com.flavormetrics.api.entity.Tag;
 import com.flavormetrics.api.entity.user.impl.Nutritionist;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
-import com.flavormetrics.api.repository.AllergyRepository;
 import com.flavormetrics.api.util.ModelConverter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public final class RecipeFactory {
-    private final AllergyRepository allergyRepository;
 
-    public RecipeFactory(AllergyRepository allergyRepository) {
-        this.allergyRepository = allergyRepository;
+    private RecipeFactory() {
+        // Prevent instantiation
     }
 
     public static Recipe getRecipe(AddRecipeRequest data, Nutritionist nutritionist) {
@@ -52,6 +50,7 @@ public final class RecipeFactory {
         recipe.setIngredients(ingredients);
         recipe.setName(data.name());
         recipe.setAllergies(allergies);
+        recipe.setDietaryPreferences(data.dietaryPreferences());
         return recipe;
     }
 }

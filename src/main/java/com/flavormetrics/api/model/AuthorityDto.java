@@ -8,7 +8,7 @@ import java.util.UUID;
 public record AuthorityDto(
         UUID id,
         RoleType role,
-        UserDto user
+        UUID userId
 ) {
 
     public static Builder builder() {
@@ -18,7 +18,7 @@ public record AuthorityDto(
     public static class Builder {
         private UUID id;
         private RoleType role;
-        private UserDto user;
+        private UUID userId;
 
         private Builder() {
             // Prevent instantiation
@@ -34,13 +34,13 @@ public record AuthorityDto(
             return this;
         }
 
-        public Builder user(UserDto user) {
-            this.user = user;
+        public Builder user(UUID userId) {
+            this.userId = userId;
             return this;
         }
 
         public AuthorityDto build() {
-            return new AuthorityDto(id, role, user);
+            return new AuthorityDto(id, role, userId);
         }
     }
 }

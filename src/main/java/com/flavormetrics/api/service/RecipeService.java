@@ -6,7 +6,6 @@ import com.flavormetrics.api.model.RecipeDefaultFilter;
 import com.flavormetrics.api.model.RecipeDto;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;

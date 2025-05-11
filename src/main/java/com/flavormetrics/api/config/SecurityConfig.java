@@ -33,7 +33,9 @@ public class SecurityConfig {
             "/favicon.ico",
             "/api/auth/register",
             "/api/auth/login",
-            "/api/v1/recipe-image",
+            "/api/recipe/all",
+            "/api/recipe/byId/**",
+            "/api/recipe/byFilter"
     };
     private static final String[] SWAGGER_ENDPOINTS = {
             "/v3/api-docs.yaml",
@@ -55,8 +57,6 @@ public class SecurityConfig {
             "/api/recipe/byProfile/**",
             "/api/profile/**"
     };
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
 
     private final UserDetailsService userDetailsService;
     private final JwtFilter jwtFilter;
@@ -84,6 +84,8 @@ public class SecurityConfig {
                             .hasRole("NUTRITIONIST");
                     request.requestMatchers(USER_ENDPOINTS)
                             .hasRole("USER");
+                    request.requestMatchers("/api/v1/users/**")
+                            .hasRole("ADMIN");
                     request.anyRequest().authenticated();
                 })
                 .formLogin(AbstractHttpConfigurer::disable)

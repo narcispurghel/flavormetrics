@@ -1,6 +1,6 @@
 package com.flavormetrics.api.model.user.impl;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.flavormetrics.api.model.AuthorityDto;
 import com.flavormetrics.api.model.RecipeDto;
 import com.flavormetrics.api.model.user.UserDto;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record NutritionistDto(
-        @JsonIgnore
+        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
         UUID id,
         String firstName,
         String lastName,
@@ -19,6 +19,7 @@ public record NutritionistDto(
         boolean accountNonLocked,
         boolean credentialsNonExpired,
         boolean enabled,
+        @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
         String password,
         String username,
         LocalDateTime updatedAt,

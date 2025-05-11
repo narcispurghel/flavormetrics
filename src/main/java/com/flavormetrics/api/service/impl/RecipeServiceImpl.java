@@ -1,7 +1,9 @@
 package com.flavormetrics.api.service.impl;
 
 import com.flavormetrics.api.entity.*;
+import com.flavormetrics.api.entity.user.User;
 import com.flavormetrics.api.entity.user.impl.Nutritionist;
+import com.flavormetrics.api.exception.MaximumNumberOfRatingException;
 import com.flavormetrics.api.exception.impl.InvalidArgumentException;
 import com.flavormetrics.api.exception.impl.NotAllowedRequestException;
 import com.flavormetrics.api.exception.impl.ProfileNotFoundException;
@@ -17,8 +19,6 @@ import com.flavormetrics.api.repository.*;
 import com.flavormetrics.api.service.RecipeService;
 import com.flavormetrics.api.util.ModelConverter;
 import jakarta.transaction.Transactional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
@@ -31,6 +31,8 @@ import java.util.UUID;
 
 @Service
 public class RecipeServiceImpl implements RecipeService {
+    private static final String RECIPE_NOT_FOUND_MESSAGE = "Cannot find a recipe associated with id ";
+
     private final RecipeRepository recipeRepository;
     private final IngredientRepository ingredientRepository;
     private final NutritionistRepository nutritionistRepository;
@@ -107,7 +109,7 @@ public class RecipeServiceImpl implements RecipeService {
         }
         final Recipe recipe = recipeRepository.findById(id)
                 .orElseThrow(() -> new RecipeNotFoundException(
-                        "Invalid id", "Cannot find a recipe associated with id " + id, HttpStatus.NOT_FOUND, "recipe.id"));
+                        "Invalid id", RECIPE_NOT_FOUND_MESSAGE + id, HttpStatus.NOT_FOUND, "recipe.id"));
         if (!recipe.getNutritionist().getUsername().equals(authentication.getName())) {
             throw new NotAllowedRequestException(
                     "Bad request",
@@ -157,9 +159,8 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    @Transactional
     public Data<List<RecipeDto>> getAll() {
-        List<RecipeDto> recipes = recipeRepository.findAll()
+        final List<RecipeDto> recipes = recipeRepository.findAll()
                 .stream()
                 .map(ModelConverter::toRecipeDto)
                 .toList();
@@ -169,21 +170,17 @@ public class RecipeServiceImpl implements RecipeService {
     @Override
     @Transactional
     public ProfileFilter getProfilePreferences(String username) {
-        Profile profile = profileRepository.findByUser_Username_Value(username)
+        final Profile profile = profileRepository.findByUser_Username_Value(username)
                 .orElseThrow(() -> new ProfileNotFoundException(
                         "Not found", "Invalid username or profile is not created", HttpStatus.NOT_FOUND, "profile"));
         return new ProfileFilter(profile.getDietaryPreference(), profile.getAllergies());
     }
 
     @Override
-    @Transactional
     public Data<List<RecipeDto>> findAllByProfilePreferences(ProfileFilter profileFilter) {
-        Pageable pageable = Pageable.ofSize(10);
-        Page<Recipe> recipesAsPage = recipeRepository.getAllByProfileFilters(
-                profileFilter.allergiesToString(), profileFilter.dietaryPreference().name(), pageable);
-        List<Recipe> recipes = recipesAsPage.getContent();
-        int pageNumber = pageable.getPageNumber();
-        List<RecipeDto> recipesDto = recipes.stream()
+        final List<Recipe> recipes = recipeRepository.getAllByProfileFilters(
+                profileFilter.allergiesToString(), profileFilter.dietaryPreference().name());
+        final List<RecipeDto> recipesDto = recipes.stream()
                 .map(ModelConverter::toRecipeDto)
                 .toList();
         return Data.body(recipesDto);
@@ -191,12 +188,12 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public Data<List<RecipeDto>> findAllByDefaultFilter(RecipeDefaultFilter recipeDefaultFilter) {
-        List<Recipe> recipes = recipeRepository.findAllByDefaultFilter(
+        final List<Recipe> recipes = recipeRepository.findAllByDefaultFilter(
                 recipeDefaultFilter.prepTimeMinutes(),
                 recipeDefaultFilter.cookTimeMinutes(),
                 recipeDefaultFilter.estimatedCalories(),
                 recipeDefaultFilter.difficulty());
-        List<RecipeDto> recipesDto = recipes.stream()
+        final List<RecipeDto> recipesDto = recipes.stream()
                 .map(ModelConverter::toRecipeDto)
                 .toList();
         return Data.body(recipesDto);
@@ -209,10 +206,10 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public Data<RecipeDto> updateImageById(UUID id, String url) {
-        Recipe recipe = recipeRepository.findById(id)
+        final Recipe recipe = recipeRepository.findById(id)
                 .orElseThrow(() -> new RecipeNotFoundException(
                         "Invalid recipe id",
-                        "Cannot find a recipe associated with id " + id,
+                        RECIPE_NOT_FOUND_MESSAGE + id,
                         HttpStatus.BAD_REQUEST,
                         "id"));
         recipe.setImageUrl(url);

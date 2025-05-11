@@ -51,7 +51,14 @@ public class JwtFilter extends OncePerRequestFilter {
                 publicPath = path;
             } else {
                 publicPath = Arrays.stream(PUBLIC_ENDPOINTS)
-                        .filter(e -> e.contains(path))
+                        .filter(e -> {
+                            if (e.endsWith("/**")) {
+                                String prefix = e.substring(0, e.length() - 3);
+                                return path.startsWith(prefix);
+                            } else {
+                                return e.equals(path);
+                            }
+                        })
                         .collect(Collectors.joining());
             }
             if (!publicPath.isEmpty()) {

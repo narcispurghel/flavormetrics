@@ -2,6 +2,7 @@ package com.flavormetrics.api.util;
 
 import com.flavormetrics.api.entity.*;
 import com.flavormetrics.api.entity.user.User;
+import com.flavormetrics.api.entity.user.impl.Nutritionist;
 import com.flavormetrics.api.entity.user.impl.RegularUser;
 import com.flavormetrics.api.model.*;
 import com.flavormetrics.api.model.enums.AllergyType;
@@ -10,6 +11,7 @@ import com.flavormetrics.api.model.request.CreateProfileRequest;
 import com.flavormetrics.api.model.response.AddRecipeResponse;
 import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
 import com.flavormetrics.api.model.response.RegisterResponse;
+import com.flavormetrics.api.model.user.impl.NutritionistDto;
 import com.flavormetrics.api.model.user.impl.RegularUserDto;
 import com.flavormetrics.api.model.user.UserDto;
 import com.flavormetrics.api.model.user.impl.UserDtoImpl;
@@ -87,7 +89,7 @@ public class ModelConverter {
 
     }
 
-    private static RatingDto toRatingDto(Rating rating) {
+    public static RatingDto toRatingDto(Rating rating) {
         if (rating == null) {
             return null;
         }
@@ -243,7 +245,7 @@ public class ModelConverter {
         }
         return AuthorityDto.builder()
                 .id(authority.getId())
-                .user(ModelConverter.toUserDto(authority.getUser()))
+                .user(authority.getUser().getId())
                 .role(authority.getRole())
                 .build();
     }
@@ -299,5 +301,34 @@ public class ModelConverter {
         Tag tag = new Tag();
         tag.setName(tagType.name());
         return tag;
+    }
+
+    public static NutritionistDto toNutritionistDto(Nutritionist nutritionist) {
+        if (nutritionist == null) {
+            return null;
+        }
+        List<AuthorityDto> authorities = nutritionist.getAuthorities()
+                .stream()
+                .map(ModelConverter::toAuthority)
+                .toList();
+        List<RecipeDto> recipes = nutritionist.getRecipes()
+                .stream()
+                .map(ModelConverter::toRecipeDto)
+                .toList();
+        return NutritionistDto.builder()
+                .id(nutritionist.getId())
+                .username(nutritionist.getUsername())
+                .firstName(nutritionist.getFirstName())
+                .lastName(nutritionist.getLastName())
+                .authorities(authorities)
+                .accountNonExpired(nutritionist.isAccountNonExpired())
+                .credentialsNonExpired(nutritionist.isCredentialsNonExpired())
+                .enabled(nutritionist.isEnabled())
+                .accountNonLocked(nutritionist.isAccountNonLocked())
+                .password(nutritionist.getPassword())
+                .updatedAt(nutritionist.getUpdatedAt())
+                .createdAt(nutritionist.getCreatedAt())
+                .recipes(recipes)
+                .build();
     }
 }

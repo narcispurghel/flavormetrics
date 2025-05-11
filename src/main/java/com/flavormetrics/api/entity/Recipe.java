@@ -2,6 +2,7 @@ package com.flavormetrics.api.entity;
 
 import com.flavormetrics.api.entity.user.impl.Nutritionist;
 import com.flavormetrics.api.exception.impl.InvalidArgumentException;
+import com.flavormetrics.api.model.enums.DietaryPreferenceType;
 import com.flavormetrics.api.model.enums.DifficultyType;
 import jakarta.persistence.*;
 import org.springframework.http.HttpStatus;
@@ -11,7 +12,6 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -59,7 +59,7 @@ public class Recipe implements Serializable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "receipe_tag",
             joinColumns = {
@@ -72,7 +72,7 @@ public class Recipe implements Serializable {
     @Column(name = "tags")
     private List<Tag> tags;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "receipe_ingredient",
             joinColumns = {
@@ -84,11 +84,13 @@ public class Recipe implements Serializable {
     )
     private List<Ingredient> ingredients = new ArrayList<>();
 
-    @OneToMany(mappedBy = "recipe")
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.PERSIST)
     private List<Rating> ratings = new ArrayList<>();
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Allergy> allergies = new ArrayList<>();
+
+    private List<DietaryPreferenceType> dietaryPreferences = new ArrayList<>();
 
     public Recipe() {
         // No args constructor for JPA
@@ -201,10 +203,10 @@ public class Recipe implements Serializable {
         if (ratings.isEmpty()) {
             return null;
         }
-        Rating acumulator = new Rating();
-        acumulator.setValue(0);
+        Rating accumulator = new Rating();
+        accumulator.setValue(0);
         int sum = ratings.stream()
-                .reduce(acumulator, (a, b) -> {
+                .reduce(accumulator, (a, b) -> {
                     a.setValue(a.getValue() + b.getValue());
                     return a;
                 }).getValue();
@@ -244,18 +246,15 @@ public class Recipe implements Serializable {
     }
 
     public void setRatings(List<Rating> ratings) {
-        this.ratings = ratings;
+        this.ratings = new ArrayList<>(ratings);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof Recipe recipe)) return false;
-        return Objects.equals(name, recipe.name) && Objects.equals(ingredients, recipe.ingredients);
+    public List<DietaryPreferenceType> getDietaryPreferences() {
+        return dietaryPreferences;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, ingredients);
+    public void setDietaryPreferences(List<DietaryPreferenceType> dietaryPreferences) {
+        this.dietaryPreferences = new ArrayList<>(dietaryPreferences);
     }
 
     public List<Allergy> getAllergies() {

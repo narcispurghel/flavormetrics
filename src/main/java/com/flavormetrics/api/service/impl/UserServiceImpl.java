@@ -4,6 +4,9 @@ import com.flavormetrics.api.model.Data;
 import com.flavormetrics.api.model.user.UserDto;
 import com.flavormetrics.api.model.user.impl.NutritionistDto;
 import com.flavormetrics.api.model.user.impl.RegularUserDto;
+import com.flavormetrics.api.repository.AdminRepository;
+import com.flavormetrics.api.repository.NutritionistRepository;
+import com.flavormetrics.api.repository.RegularUserRepository;
 import com.flavormetrics.api.repository.UserRepository;
 import com.flavormetrics.api.service.UserService;
 import com.flavormetrics.api.util.ModelConverter;
@@ -14,9 +17,18 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final AdminRepository adminRepository;
+    private final NutritionistRepository nutritionistRepository;
+    private final RegularUserRepository regularUserRepository;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository,
+                           AdminRepository adminRepository,
+                           NutritionistRepository nutritionistRepository,
+                           RegularUserRepository regularUserRepository) {
         this.userRepository = userRepository;
+        this.adminRepository = adminRepository;
+        this.nutritionistRepository = nutritionistRepository;
+        this.regularUserRepository = regularUserRepository;
     }
 
     @Override
@@ -25,18 +37,24 @@ public class UserServiceImpl implements UserService {
                 .stream()
                 .map(ModelConverter::toUserDto)
                 .toList();
-
         return Data.body(users);
     }
 
     @Override
     public Data<List<RegularUserDto>> getAllRegularUsers() {
-
-        return null;
+        List<RegularUserDto> regularUsers = regularUserRepository.findAll()
+                .stream()
+                .map(ModelConverter::toRegularUserDto)
+                .toList();
+        return Data.body(regularUsers);
     }
 
     @Override
     public Data<List<NutritionistDto>> getAllNutritionistUsers() {
-        return null;
+        List<NutritionistDto> nutritionists = nutritionistRepository.findAll()
+                .stream()
+                .map(ModelConverter::toNutritionistDto)
+                .toList();
+        return Data.body(nutritionists);
     }
 }

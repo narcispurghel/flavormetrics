@@ -2,6 +2,7 @@ package com.flavormetrics.api.model.request;
 
 import com.flavormetrics.api.model.IngredientDto;
 import com.flavormetrics.api.model.enums.AllergyType;
+import com.flavormetrics.api.model.enums.DietaryPreferenceType;
 import com.flavormetrics.api.model.enums.DifficultyType;
 import com.flavormetrics.api.model.enums.TagType;
 
@@ -17,5 +18,6 @@ public record AddRecipeRequest(
         DifficultyType difficulty,
         Integer estimatedCalories,
         List<TagType> tags,
-        List<AllergyType> allergies) {
+        List<AllergyType> allergies,
+        List<DietaryPreferenceType> dietaryPreferences) {
 }

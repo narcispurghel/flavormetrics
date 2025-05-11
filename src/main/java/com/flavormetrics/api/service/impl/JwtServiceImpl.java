@@ -50,8 +50,8 @@ public class JwtServiceImpl implements JwtService {
         try {
             signer = new RSASSASigner(privateKey);
         } catch (JOSEException e) {
-            throw new JwtException("Invalid private key", e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signer");
+            throw new JwtException(
+                    "Invalid private key", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signer");
         }
         final String userRole = user.getAuthorities().getFirst().getRole().name();
         final JWTClaimsSet claims = new JWTClaimsSet.Builder()

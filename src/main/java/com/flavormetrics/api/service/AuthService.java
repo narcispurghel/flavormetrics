@@ -9,6 +9,10 @@ import org.springframework.security.core.Authentication;
 
 public interface AuthService {
     Data<RegisterResponse> registerUser(RegisterRequest data, Authentication authentication);
+
     LoginResponse authenticate(LoginRequest data, Authentication authentication);
+
     boolean existsByEmail(String email);
+
+    String logout();
 }

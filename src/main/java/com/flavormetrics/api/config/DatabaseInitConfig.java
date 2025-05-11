@@ -29,8 +29,6 @@ public class DatabaseInitConfig {
     @Bean
     CommandLineRunner initDb(UserRepository userRepository,
                              RecipeRepository recipeRepository,
-                             ProfileRepository profileRepository,
-                             AllergyRepository allergyRepository,
                              UserFactory userFactory) {
         return new CommandLineRunner() {
             private static final String NUTRITIONIST_USERNAME = "nutritionist@flavormetrics.com";
@@ -42,39 +40,19 @@ public class DatabaseInitConfig {
             }
 
             private void initRecipes() {
-                User user = userRepository.getByUsername_Value(NUTRITIONIST_USERNAME);
-                List<IngredientDto> spaghettiBologneseIngredients = new ArrayList<>();
-                spaghettiBologneseIngredients.add(
-                        IngredientDto.builder()
-                                .name("Spaghetti")
-                                .build());
-                spaghettiBologneseIngredients.add(
-                        IngredientDto.builder()
-                                .name("Tomato Sauce")
-                                .build());
-                spaghettiBologneseIngredients.add(
-                        IngredientDto.builder()
-                                .name("GLUTEN")
-                                .build());
-                List<TagType> tags = new ArrayList<>();
-                tags.add(TagType.ITALIAN);
-                tags.add(TagType.EASY);
-                List<AllergyType> allergies = new ArrayList<>();
-                allergies.add(AllergyType.GLUTEN);
-                allergies.add(AllergyType.SESAME);
-                AddRecipeRequest spaghettiBolognese = new AddRecipeRequest(
-                        "Spaghetti Bolognese",
-                        spaghettiBologneseIngredients,
-                        null,
-                        "Boil the spaghetti, cook the beef, and mix with the tomato sauce",
-                        15,
-                        30,
-                        DifficultyType.MEDIUM,
-                        600,
-                        tags,
-                        allergies);
-                Recipe spaghettiBologneseRecipe = RecipeFactory.getRecipe(spaghettiBolognese, (Nutritionist) user);
-                recipeRepository.save(spaghettiBologneseRecipe);
+                final User user = userRepository.getByUsername_Value(NUTRITIONIST_USERNAME);
+                final List<Recipe> recipes = new ArrayList<>();
+                final List<AddRecipeRequest> recipeRequests = List.of(
+                    getSpaghettiBolognese(),
+                    getCapreseSalad(),
+                    getChickenCurry(),
+                    getGreekSalad(),
+                    getVeganBurrito()
+                );
+                for (AddRecipeRequest req : recipeRequests) {
+                    recipes.add(RecipeFactory.getRecipe(req, (Nutritionist) user));
+                }
+                recipeRepository.saveAll(recipes);
             }
 
             private void initUsers() {
@@ -118,6 +96,169 @@ public class DatabaseInitConfig {
                     userRepository.save(user);
                 }
             }
+
+            private AddRecipeRequest getSpaghettiBolognese() {
+                final List<IngredientDto> spaghettiBologneseIngredients = List.of(
+                        IngredientDto.builder()
+                                .name("Spaghetti")
+                                .build(),
+                        IngredientDto.builder()
+                                .name("GLUTEN")
+                                .build()
+                );
+                final List<TagType> tags = List.of(TagType.ITALIAN, TagType.EASY);
+                final List<AllergyType> allergies = new ArrayList<>();
+                allergies.add(AllergyType.WHEAT);
+                final List<DietaryPreferenceType> dietaryPreferences = new ArrayList<>();
+                dietaryPreferences.add(DietaryPreferenceType.DIABETIC_FRIENDLY);
+                dietaryPreferences.add(DietaryPreferenceType.LOW_FAT);
+                return new AddRecipeRequest(
+                        "Spaghetti Bolognese",
+                        spaghettiBologneseIngredients,
+                        null,
+                        "Boil the spaghetti, cook the beef, and mix with the tomato sauce",
+                        15,
+                        30,
+                        DifficultyType.MEDIUM,
+                        600,
+                        tags,
+                        allergies,
+                        dietaryPreferences);
+            }
+
+            private AddRecipeRequest getGreekSalad() {
+                final List<IngredientDto> ingredients = List.of(
+                        IngredientDto.builder()
+                                .name("Tortilla")
+                                .build(),
+                        IngredientDto.builder()
+                                .name("Black Beans")
+                                .build(),
+                        IngredientDto.builder()
+                                .name("Rice")
+                                .build(),
+                        IngredientDto.builder()
+                                .name("Avocado")
+                                .build()
+                );
+                final List<TagType> tags = List.of(TagType.GREEK, TagType.EASY);
+                final List<AllergyType> allergies = List.of(AllergyType.DAIRY);
+                final List<DietaryPreferenceType> dietaryPreferences = List.of(DietaryPreferenceType.VEGETARIAN, DietaryPreferenceType.LOW_CARB);
+                return new AddRecipeRequest(
+                        "Greek Salad",
+                        ingredients,
+                        null,
+                        "Chop vegetables, add feta and olives, and drizzle with olive oil.",
+                        10,
+                        0,
+                        DifficultyType.EASY,
+                        200,
+                        tags,
+                        allergies,
+                        dietaryPreferences
+                );
+            }
+
+            private AddRecipeRequest getChickenCurry() {
+                final List<IngredientDto> ingredients = List.of(
+                        IngredientDto.builder()
+                                .name("Chicken Breast")
+                                .build(),
+                        IngredientDto.builder()
+                                .name("Curry Powder")
+                                .build(),
+                        IngredientDto.builder()
+                                .name("Coconut Milk")
+                                .build()
+                );
+                final List<TagType> tags = List.of(
+                        TagType.ASIAN,
+                        TagType.SPICY);
+                final List<AllergyType> allergies = List.of(
+                        AllergyType.EGGS);
+                final List<DietaryPreferenceType> dietaryPreferences = List.of(DietaryPreferenceType.HIGH_PROTEIN);
+                return new AddRecipeRequest(
+                        "Chicken Curry",
+                        ingredients,
+                        null,
+                        "Cook chicken, add curry powder and coconut milk, simmer until done.",
+                        20,
+                        25,
+                        DifficultyType.MEDIUM,
+                        450,
+                        tags,
+                        allergies,
+                        dietaryPreferences
+                );
+            }
+
+            private AddRecipeRequest getVeganBurrito() {
+                List<IngredientDto> ingredients = List.of(
+                        IngredientDto.builder()
+                                .name("Tortilla")
+                                .build(),
+                        IngredientDto.builder()
+                                .name("Black Beans")
+                                .build(),
+                        IngredientDto.builder()
+                                .name("Rice")
+                                .build(),
+                        IngredientDto.builder()
+                                .name("Avocado")
+                                .build()
+                );
+                List<TagType> tags = List.of(TagType.MEXICAN, TagType.HEALTHY);
+                List<AllergyType> allergies = new ArrayList<>();
+                List<DietaryPreferenceType> dietaryPreferences = List.of(
+                        DietaryPreferenceType.VEGAN,
+                        DietaryPreferenceType.HIGH_FIBER);
+
+                return new AddRecipeRequest(
+                        "Vegan Burrito",
+                        ingredients,
+                        null,
+                        "Fill tortilla with beans, rice, and avocado. Roll tightly and serve.",
+                        10,
+                        10,
+                        DifficultyType.EASY,
+                        350,
+                        tags,
+                        allergies,
+                        dietaryPreferences
+                );
+            }
+
+            private AddRecipeRequest getCapreseSalad() {
+                List<IngredientDto> ingredients = List.of(
+                        IngredientDto.builder().
+                                name("Tomatoes")
+                                .build(),
+                        IngredientDto.builder()
+                                .name("Mozzarella")
+                                .build(),
+                        IngredientDto.builder()
+                                .name("Fresh Basil")
+                                .build()
+                );
+                List<TagType> tags = List.of(TagType.ITALIAN, TagType.EASY);
+                List<AllergyType> allergies = List.of(AllergyType.DAIRY);
+                List<DietaryPreferenceType> dietaryPreferences = List.of(
+                        DietaryPreferenceType.VEGETARIAN, DietaryPreferenceType.LOW_CARB);
+                return new AddRecipeRequest(
+                        "Caprese Salad",
+                        ingredients,
+                        null,
+                        "Slice tomatoes and mozzarella, layer with fresh basil, and drizzle with olive oil.",
+                        5,
+                        0,
+                        DifficultyType.EASY,
+                        220,
+                        tags,
+                        allergies,
+                        dietaryPreferences
+                );
+            }
+
         };
     }
 }

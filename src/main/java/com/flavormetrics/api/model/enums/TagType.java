@@ -29,5 +29,5 @@ public enum TagType {
     SWEET,
     LOW_FAT,
     HIGH_FIBER,
-    LOW_SUGAR
+    GREEK, ASIAN, HEALTHY, LOW_SUGAR
 }
