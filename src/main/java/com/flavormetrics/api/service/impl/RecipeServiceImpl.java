@@ -201,4 +201,21 @@ public class RecipeServiceImpl implements RecipeService {
                 .toList();
         return Data.body(recipesDto);
     }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return recipeRepository.existsById(id);
+    }
+
+    @Override
+    public Data<RecipeDto> updateImageById(UUID id, String url) {
+        Recipe recipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new RecipeNotFoundException(
+                        "Invalid recipe id",
+                        "Cannot find a recipe associated with id " + id,
+                        HttpStatus.BAD_REQUEST,
+                        "id"));
+        recipe.setImageUrl(url);
+        return Data.body(ModelConverter.toRecipeDto(recipe));
+    }
 }

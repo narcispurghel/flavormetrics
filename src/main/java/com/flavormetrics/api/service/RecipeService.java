@@ -6,6 +6,7 @@ import com.flavormetrics.api.model.RecipeDefaultFilter;
 import com.flavormetrics.api.model.RecipeDto;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
@@ -29,4 +30,8 @@ public interface RecipeService {
     Data<List<RecipeDto>> findAllByProfilePreferences(ProfileFilter profileFilter);
 
     Data<List<RecipeDto>> findAllByDefaultFilter(RecipeDefaultFilter recipeDefaultFilter);
+
+    boolean existsById(UUID id);
+
+    Data<RecipeDto> updateImageById(UUID id, String url);
 }
