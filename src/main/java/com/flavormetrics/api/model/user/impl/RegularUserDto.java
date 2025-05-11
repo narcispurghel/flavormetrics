@@ -1,6 +1,9 @@
-package com.flavormetrics.api.model;
+package com.flavormetrics.api.model.user.impl;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flavormetrics.api.model.AuthorityDto;
+import com.flavormetrics.api.model.ProfileDto;
+import com.flavormetrics.api.model.user.UserDto;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

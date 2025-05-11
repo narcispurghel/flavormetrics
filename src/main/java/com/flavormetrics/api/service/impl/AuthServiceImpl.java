@@ -12,7 +12,7 @@ import com.flavormetrics.api.model.response.LoginResponse;
 import com.flavormetrics.api.model.response.RegisterResponse;
 import com.flavormetrics.api.repository.UserRepository;
 import com.flavormetrics.api.service.AuthService;
-import com.flavormetrics.api.service.JWTService;
+import com.flavormetrics.api.service.JwtService;
 import com.flavormetrics.api.util.ModelConverter;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -32,16 +32,18 @@ public class AuthServiceImpl implements AuthService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final AuthenticationManager authenticationManager;
-    private final JWTService jwtService;
+    private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final UserFactory userFactory;
 
     public AuthServiceImpl(
             AuthenticationManager authenticationManager,
-            JWTService jwtService,
-            UserRepository userRepository) {
+            JwtService jwtService,
+            UserRepository userRepository, UserFactory userFactory) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
+        this.userFactory = userFactory;
     }
 
     @Override
@@ -78,7 +80,7 @@ public class AuthServiceImpl implements AuthService {
                     "");
         }
 
-        var user = UserFactory.createUser(data);
+        var user = userFactory.createUser(data);
         user = userRepository.save(user);
         LOGGER.info("User created: {}", user);
         return Data.body(ModelConverter.registerResponse(user));

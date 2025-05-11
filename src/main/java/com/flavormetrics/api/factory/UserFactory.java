@@ -7,20 +7,20 @@ import com.flavormetrics.api.entity.user.impl.Admin;
 import com.flavormetrics.api.entity.user.impl.Nutritionist;
 import com.flavormetrics.api.entity.user.impl.RegularUser;
 import com.flavormetrics.api.model.request.RegisterRequest;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
+@Component
 public class UserFactory {
-    // TODO find a solution to use the global password encoder declared in SecurityConfig
-    private static final PasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
 
-    private UserFactory() {
-        // Prevent instantiation
+    public UserFactory(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public static User createUser(RegisterRequest request) {
+    public User createUser(RegisterRequest request) {
         if (request == null || request.role() == null) {
             return null;
         }
@@ -31,9 +31,9 @@ public class UserFactory {
         };
     }
 
-    private static User createNutritionistUser(RegisterRequest request) {
+    private User createNutritionistUser(RegisterRequest request) {
         final Email email = new Email(request.username());
-        final User user = new Nutritionist(PASSWORD_ENCODER.encode(request.password()), email);
+        final User user = new Nutritionist(passwordEncoder.encode(request.password()), email);
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
         user.setUpdatedAt(LocalDateTime.now());
@@ -43,9 +43,9 @@ public class UserFactory {
         return user;
     }
 
-    private static User createRegularUser(RegisterRequest request) {
+    private User createRegularUser(RegisterRequest request) {
         final Email email = new Email(request.username());
-        final User user = new RegularUser(PASSWORD_ENCODER.encode(request.password()), email);
+        final User user = new RegularUser(passwordEncoder.encode(request.password()), email);
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
         user.setUpdatedAt(LocalDateTime.now());
@@ -55,9 +55,9 @@ public class UserFactory {
         return user;
     }
 
-    private static User createAdminUser(RegisterRequest request) {
+    private User createAdminUser(RegisterRequest request) {
         final Email email = new Email(request.username());
-        final User user = new Admin(PASSWORD_ENCODER.encode(request.password()), email);
+        final User user = new Admin(passwordEncoder.encode(request.password()), email);
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
         user.setUpdatedAt(LocalDateTime.now());

@@ -1,6 +1,7 @@
 package com.flavormetrics.api.model;
 
 import com.flavormetrics.api.model.enums.RoleType;
+import com.flavormetrics.api.model.user.UserDto;
 
 import java.util.UUID;
 

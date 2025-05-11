@@ -1,4 +1,6 @@
-package com.flavormetrics.api.model;
+package com.flavormetrics.api.model.user;
+
+import com.flavormetrics.api.model.AuthorityDto;
 
 import java.time.LocalDateTime;
 import java.util.List;

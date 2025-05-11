@@ -10,6 +10,9 @@ import com.flavormetrics.api.model.request.CreateProfileRequest;
 import com.flavormetrics.api.model.response.AddRecipeResponse;
 import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
 import com.flavormetrics.api.model.response.RegisterResponse;
+import com.flavormetrics.api.model.user.impl.RegularUserDto;
+import com.flavormetrics.api.model.user.UserDto;
+import com.flavormetrics.api.model.user.impl.UserDtoImpl;
 
 import java.util.List;
 
@@ -245,9 +248,28 @@ public class ModelConverter {
                 .build();
     }
 
-    private static UserDto toUserDto(User user) {
-        //TODO add logic
-        return null;
+    public static UserDto toUserDto(User user) {
+        if (user == null) {
+            return null;
+        }
+        List<AuthorityDto> authorities = user.getAuthorities()
+                .stream()
+                .map(ModelConverter::toAuthority)
+                .toList();
+        return UserDtoImpl.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .authorities(authorities)
+                .accountNonExpired(user.isAccountNonExpired())
+                .credentialsNonExpired(user.isCredentialsNonExpired())
+                .enabled(user.isEnabled())
+                .accountNonLocked(user.isAccountNonLocked())
+                .password(user.getPassword())
+                .updatedAt(user.getUpdatedAt())
+                .createdAt(user.getCreatedAt())
+                .build();
     }
 
     private static AllergyDto toAllergyDto(Allergy allergy) {

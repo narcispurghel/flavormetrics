@@ -30,7 +30,8 @@ public class DatabaseInitConfig {
     CommandLineRunner initDb(UserRepository userRepository,
                              RecipeRepository recipeRepository,
                              ProfileRepository profileRepository,
-                             AllergyRepository allergyRepository) {
+                             AllergyRepository allergyRepository,
+                             UserFactory userFactory) {
         return new CommandLineRunner() {
             private static final String NUTRITIONIST_USERNAME = "nutritionist@flavormetrics.com";
 
@@ -79,12 +80,12 @@ public class DatabaseInitConfig {
             private void initUsers() {
                 if (!userRepository.existsByUsername_Value(NUTRITIONIST_USERNAME)) {
                     RegisterRequest req = new RegisterRequest(
-                            "nutritionist@flavormetrics.com",
+                            NUTRITIONIST_USERNAME,
                             "Test",
                             "Nutritionist",
                             "testnutritionist",
                             RoleType.ROLE_NUTRITIONIST);
-                    User user = UserFactory.createUser(req);
+                    User user = userFactory.createUser(req);
                     userRepository.save(user);
                 }
                 if (!userRepository.existsByUsername_Value("regular@flavormetrics.com")) {
@@ -94,7 +95,7 @@ public class DatabaseInitConfig {
                             "Regular",
                             "testregular",
                             RoleType.ROLE_USER);
-                    User user = UserFactory.createUser(req);
+                    User user = userFactory.createUser(req);
                     Profile profile = new Profile();
                     List<Allergy> allergies = new ArrayList<>();
                     Allergy allergy = new Allergy(AllergyType.GLUTEN);
@@ -113,7 +114,7 @@ public class DatabaseInitConfig {
                             "Admin",
                             "testadmin",
                             RoleType.ROLE_ADMIN);
-                    User user = UserFactory.createUser(req);
+                    User user = userFactory.createUser(req);
                     userRepository.save(user);
                 }
             }

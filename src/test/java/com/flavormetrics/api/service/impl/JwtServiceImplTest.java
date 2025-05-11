@@ -30,11 +30,11 @@ class JwtServiceImplTest {
         private User user;
         @Mock
         private JWTRepository jwtRepository;
-        private JWTServiceImpl jwtServiceImpl;
+        private JwtServiceImpl jwtServiceImpl;
 
         @BeforeEach
         void init() {
-                jwtServiceImpl = new JWTServiceImpl(jwtRepository);
+                jwtServiceImpl = new JwtServiceImpl(jwtRepository);
         }
 
         @Test

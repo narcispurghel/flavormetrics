@@ -2,9 +2,9 @@ package com.flavormetrics.api.exception.impl;
 
 import org.springframework.security.core.AuthenticationException;
 
-public class JWTAuthenticationException extends AuthenticationException {
+public class JwtAuthenticationException extends AuthenticationException {
 
-    public JWTAuthenticationException(String msg) {
+    public JwtAuthenticationException(String msg) {
         super(msg);
     }
 }

@@ -5,7 +5,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 
 import java.util.UUID;
 
-public interface JWTService {
+public interface JwtService {
     String generateToken(User details);
 
     UUID getId();

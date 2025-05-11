@@ -1,8 +1,8 @@
 package com.flavormetrics.api.config;
 
 import com.flavormetrics.api.security.CustomAccessDeniedHandler;
-import com.flavormetrics.api.security.JWTAuthEntryPoint;
-import com.flavormetrics.api.security.JWTFilter;
+import com.flavormetrics.api.security.JwtAuthEntryPoint;
+import com.flavormetrics.api.security.JwtFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -59,14 +59,14 @@ public class SecurityConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
 
     private final UserDetailsService userDetailsService;
-    private final JWTFilter jwtFilter;
-    private final JWTAuthEntryPoint jwtAuthEntryPoint;
+    private final JwtFilter jwtFilter;
+    private final JwtAuthEntryPoint jwtAuthEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     public SecurityConfig(
             UserDetailsService userDetailsService,
-            JWTFilter jwtFilter,
-            JWTAuthEntryPoint jwtAuthEntryPoint,
+            JwtFilter jwtFilter,
+            JwtAuthEntryPoint jwtAuthEntryPoint,
             CustomAccessDeniedHandler customAccessDeniedHandler) {
         this.userDetailsService = userDetailsService;
         this.jwtFilter = jwtFilter;

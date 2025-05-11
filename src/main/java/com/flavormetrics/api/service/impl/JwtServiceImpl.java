@@ -2,9 +2,9 @@ package com.flavormetrics.api.service.impl;
 
 import com.flavormetrics.api.entity.Jwt;
 import com.flavormetrics.api.entity.user.User;
-import com.flavormetrics.api.exception.impl.JWTException;
+import com.flavormetrics.api.exception.impl.JwtException;
 import com.flavormetrics.api.repository.JWTRepository;
-import com.flavormetrics.api.service.JWTService;
+import com.flavormetrics.api.service.JwtService;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
@@ -26,8 +26,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
-public class JWTServiceImpl implements JWTService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JWTServiceImpl.class);
+public class JwtServiceImpl implements JwtService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JwtServiceImpl.class);
     private static final RSAKey privateKey = generateRSAKey();
     private static final String ISSUER = "flavormetrics";
     private final JWTRepository jwtRepository;
@@ -35,7 +35,7 @@ public class JWTServiceImpl implements JWTService {
     @Value("${security.jwt.expiration-time}")
     private long expirationTime;
 
-    public JWTServiceImpl(JWTRepository jwtRepository) {
+    public JwtServiceImpl(JWTRepository jwtRepository) {
         this.jwtRepository = jwtRepository;
     }
 
@@ -43,14 +43,14 @@ public class JWTServiceImpl implements JWTService {
     @Transactional
     public String generateToken(User user) {
         if (user == null) {
-            throw new JWTException(
+            throw new JwtException(
                     "Cannot generate token", "User is null", HttpStatus.BAD_REQUEST, "token.user");
         }
         final JWSSigner signer;
         try {
             signer = new RSASSASigner(privateKey);
         } catch (JOSEException e) {
-            throw new JWTException("Invalid private key", e.getMessage(),
+            throw new JwtException("Invalid private key", e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signer");
         }
         final String userRole = user.getAuthorities().getFirst().getRole().name();
@@ -61,7 +61,6 @@ public class JWTServiceImpl implements JWTService {
                 .issuer(ISSUER)
                 .issueTime(getIssueDate())
                 .subject(user.getUsername())
-                .audience("") // TODO replace with a client
                 .build();
         final JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256)
                 .keyID(privateKey.getKeyID())
@@ -70,7 +69,7 @@ public class JWTServiceImpl implements JWTService {
         try {
             signedJWT.sign(signer);
         } catch (JOSEException e) {
-            throw new JWTException("Invalid signedJWT", e.getMessage(),
+            throw new JwtException("Invalid signedJWT", e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signedJWT");
         }
         return signedJWT.serialize();
@@ -99,14 +98,14 @@ public class JWTServiceImpl implements JWTService {
         try {
             signedJWT = SignedJWT.parse(token);
         } catch (ParseException e) {
-            throw new JWTException("Cannot parse JWT", e.getMessage(),
+            throw new JwtException("Cannot parse JWT", e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid.signedJWT");
         }
         final JWSVerifier verifier;
         try {
             verifier = new RSASSAVerifier(getPublicKey());
         } catch (JOSEException e) {
-            throw new JWTException("Cannot create JWT verifier", e.getMessage(),
+            throw new JwtException("Cannot create JWT verifier", e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid.verifier");
         }
         try {
@@ -118,7 +117,7 @@ public class JWTServiceImpl implements JWTService {
                     && Objects.equals(ISSUER, signedJWT.getJWTClaimsSet().getIssuer())
                     && new Date().before(signedJWT.getJWTClaimsSet().getExpirationTime());
         } catch (JOSEException | ParseException e) {
-            throw new JWTException("Cannot verify JWT", e.getMessage(),
+            throw new JwtException("Cannot verify JWT", e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid");
         }
     }
@@ -132,13 +131,13 @@ public class JWTServiceImpl implements JWTService {
         try {
             signedJWT = SignedJWT.parse(token);
         } catch (ParseException e) {
-            throw new JWTException("Cannot parse JWT", e.getMessage(),
+            throw new JwtException("Cannot parse JWT", e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid.signedJWT");
         }
         try {
             return signedJWT.getJWTClaimsSet().getSubject();
         } catch (ParseException e) {
-            throw new JWTException("Cannot verify JWT", e.getMessage(),
+            throw new JwtException("Cannot verify JWT", e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid");
         }
     }
@@ -159,7 +158,7 @@ public class JWTServiceImpl implements JWTService {
                     .keyID(keyId)
                     .generate();
         } catch (JOSEException e) {
-            throw new JWTException("Key generation failed", e.getMessage(),
+            throw new JwtException("Key generation failed", e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signedJWT");
         }
     }
