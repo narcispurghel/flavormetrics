@@ -12,7 +12,5 @@ public interface AuthService {
 
     LoginResponse authenticate(LoginRequest data, Authentication authentication);
 
-    boolean existsByEmail(String email);
-
     String logout();
 }

@@ -22,7 +22,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -64,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
                     HttpStatus.BAD_REQUEST,
                     "data.role");
         }
-        boolean isEmailUsed = existsByEmail(data.username());
+        boolean isEmailUsed = userRepository.existsByUsername_Value(data.username());
         if (isEmailUsed) {
             throw new DuplicateEmailException(
                     "Invalid email",
@@ -114,11 +113,6 @@ public class AuthServiceImpl implements AuthService {
                 .map(GrantedAuthority::getAuthority)
                 .toList();
         return new LoginResponse(user.getUsername(), roles, jwtToken);
-    }
-
-    @Override
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByUsername_Value(email);
     }
 
     @Override
