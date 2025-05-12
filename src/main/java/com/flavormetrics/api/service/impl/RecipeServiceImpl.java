@@ -1,9 +1,7 @@
 package com.flavormetrics.api.service.impl;
 
 import com.flavormetrics.api.entity.*;
-import com.flavormetrics.api.entity.user.User;
 import com.flavormetrics.api.entity.user.impl.Nutritionist;
-import com.flavormetrics.api.exception.MaximumNumberOfRatingException;
 import com.flavormetrics.api.exception.impl.InvalidArgumentException;
 import com.flavormetrics.api.exception.impl.NotAllowedRequestException;
 import com.flavormetrics.api.exception.impl.ProfileNotFoundException;
@@ -149,10 +147,24 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     @Transactional
-    public Data<String> deleteById(UUID id) {
+    public Data<String> deleteById(UUID id, Authentication authentication) {
         if (id == null) {
             throw new InvalidArgumentException(
                     "Invalid id", "Missing id", HttpStatus.BAD_REQUEST, "data.recipe");
+        }
+        final Recipe recipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new RecipeNotFoundException(
+                        "Cannot perform the delete operation",
+                        RECIPE_NOT_FOUND_MESSAGE + id,
+                        HttpStatus.NOT_FOUND,
+                        "id"));
+        final String owner = recipe.getNutritionist().getUsername();
+        if (!authentication.getName().equals(owner)) {
+            throw new NotAllowedRequestException(
+                    "Cannot perform the delete operation",
+                    "You are not the owner of the recipe",
+                    HttpStatus.FORBIDDEN,
+                    "authorization");
         }
         recipeRepository.deleteById(id);
         return Data.body("Successfully deleted recipe " + id);

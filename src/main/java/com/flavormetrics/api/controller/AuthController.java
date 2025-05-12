@@ -18,7 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
     private final AuthService authService;
 
@@ -41,6 +41,11 @@ public class AuthController {
             @ApiResponse(
                     responseCode = "409",
                     description = "Username is not available",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal Server Error",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
             )
     })
@@ -68,6 +73,11 @@ public class AuthController {
                     responseCode = "404",
                     description = "Bad credentials",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal Server Error",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
             )
     })
     @PostMapping("/login")
@@ -76,6 +86,24 @@ public class AuthController {
         return ResponseEntity.ok(authService.authenticate(requestBody.data(), authentication));
     }
 
+    @Operation(summary = "Logout a user", description = "Logout current user")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Logout success",
+                    content = @Content(schema = @Schema(implementation = String.class), mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication is null",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal Server Error",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+            )
+    })
     @GetMapping("/logout")
     public ResponseEntity<String> logout() {
         return ResponseEntity.ok(authService.logout());

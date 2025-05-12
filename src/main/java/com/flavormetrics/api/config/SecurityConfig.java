@@ -31,11 +31,12 @@ public class SecurityConfig {
             "/static/**",
             "/",
             "/favicon.ico",
-            "/api/auth/register",
-            "/api/auth/login",
-            "/api/recipe/all",
-            "/api/recipe/byId/**",
-            "/api/recipe/byFilter"
+            "/api/v1/auth/register",
+            "/api/v1/auth/login",
+            "/api/v1/recipe/all",
+            "/api/v1/recipe/byId/**",
+            "/api/v1/recipe/byFilter",
+            "/api/v1/recipe/byNutritionist/**"
     };
     private static final String[] SWAGGER_ENDPOINTS = {
             "/v3/api-docs.yaml",
@@ -80,7 +81,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> {
                     request.requestMatchers(getPublicEndpoints())
                             .permitAll();
-                    request.requestMatchers("/api/recipe/protected/**")
+                    request.requestMatchers("/api/v1/recipe/protected/**")
                             .hasRole("NUTRITIONIST");
                     request.requestMatchers(USER_ENDPOINTS)
                             .hasRole("USER");

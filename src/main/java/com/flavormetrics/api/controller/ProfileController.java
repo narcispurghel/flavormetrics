@@ -40,11 +40,6 @@ public class ProfileController {
                     content = @Content(schema = @Schema(implementation = ObjectUtils.Null.class), mediaType = "application/json")
             ),
             @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid request data",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
-            ),
-            @ApiResponse(
                     responseCode = "401",
                     description = "Unauthenticated",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))

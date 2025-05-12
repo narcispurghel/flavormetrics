@@ -20,7 +20,7 @@ public interface RecipeService {
 
     Data<RecipeDto> updateById(UUID id, AddRecipeRequest data, Authentication authentication);
 
-    Data<String> deleteById(UUID id);
+    Data<String> deleteById(UUID id, Authentication authentication);
 
     Data<List<RecipeDto>> getAll();
 

@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/recipe")
+@RequestMapping("/api/v1/recipe")
 public class RecipeController {
     private final RecipeService recipeService;
 
@@ -82,6 +82,11 @@ public class RecipeController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))
             ),
             @ApiResponse(
+                    responseCode = "404",
+                    description = "Recipe not found",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+            ),
+            @ApiResponse(
                     responseCode = "403",
                     description = "Unauthorized",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))
@@ -105,13 +110,13 @@ public class RecipeController {
     @Operation(summary = "Delete a recipe by id", description = "Requires to be authenticated as nutritionist user and to be owner of the recipe")
     @ApiResponses(value = {
             @ApiResponse(
-                    responseCode = "204",
+                    responseCode = "200",
                     description = "Operation success",
                     content = @Content(schema = @Schema(implementation = String.class), mediaType = "application/json")
             ),
             @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid request data",
+                    responseCode = "404",
+                    description = "Recipe not found",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
             ),
             @ApiResponse(
@@ -132,9 +137,10 @@ public class RecipeController {
     })
     @DeleteMapping("/protected/delete/{id}")
     public ResponseEntity<Data<String>> deleteById(
-            @PathVariable UUID id) {
-        Data<String> responseBody = recipeService.deleteById(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+            @PathVariable UUID id,
+            Authentication authentication) {
+        Data<String> responseBody = recipeService.deleteById(id, authentication);
+        return ResponseEntity.status(HttpStatus.OK)
                 .body(responseBody);
     }
 
@@ -171,7 +177,7 @@ public class RecipeController {
         return ResponseEntity.ok(recipeService.getAll());
     }
 
-    @Operation(summary = "Get all recipes", description = "Can be accessed without authentication")
+    @Operation(summary = "Get a recipe by given id", description = "Can be accessed without authentication")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -179,8 +185,8 @@ public class RecipeController {
                     content = @Content(schema = @Schema(implementation = RecipeDto.class), mediaType = "application/json")
             ),
             @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid request data",
+                    responseCode = "404",
+                    description = "Recipe not found",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
             ),
             @ApiResponse(
@@ -205,7 +211,7 @@ public class RecipeController {
         return ResponseEntity.ok(recipeService.getById(id));
     }
 
-    @Operation(summary = "Get all recipes", description = "Can be accessed without authentication")
+    @Operation(summary = "Get all recipes by nutritionist's username", description = "Can be accessed without authentication")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -213,9 +219,9 @@ public class RecipeController {
                     content = @Content(schema = @Schema(implementation = RecipesByNutritionistResponse.class), mediaType = "application/json")
             ),
             @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid request data",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    responseCode = "404",
+                    description = "Nutritionist username not found",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -239,7 +245,7 @@ public class RecipeController {
         return ResponseEntity.ok(recipeService.getByNutritionist(username));
     }
 
-    @Operation(summary = "Get all recipes by current user's profile", description = "Requires to be authenticated as regular user")
+    @Operation(summary = "Get all recipes by current user's profile details", description = "Requires to be authenticated as regular user")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -273,7 +279,7 @@ public class RecipeController {
         return ResponseEntity.ok(recipeService.findAllByProfilePreferences(profileFilter));
     }
 
-    @Operation(summary = "Get all recipes", description = "Can be accessed without authentication")
+    @Operation(summary = "Get all recipes by specified filter", description = "Can be accessed without authentication")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
