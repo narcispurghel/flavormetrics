@@ -3,13 +3,12 @@ package com.flavormetrics.api.config;
 import com.flavormetrics.api.security.CustomAccessDeniedHandler;
 import com.flavormetrics.api.security.JwtAuthEntryPoint;
 import com.flavormetrics.api.security.JwtFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
-@EnableWebSecurity(debug = false)
+@EnableWebSecurity(debug = true)
 public class SecurityConfig {
     private static final String[] PUBLIC_API_ENDPOINTS = {
             "/test",
@@ -36,7 +35,8 @@ public class SecurityConfig {
             "/api/v1/recipe/all",
             "/api/v1/recipe/byId/**",
             "/api/v1/recipe/byFilter",
-            "/api/v1/recipe/byNutritionist/**"
+            "/api/v1/recipe/byNutritionist/**",
+            "/login"
     };
     private static final String[] SWAGGER_ENDPOINTS = {
             "/v3/api-docs.yaml",
@@ -89,11 +89,6 @@ public class SecurityConfig {
                             .hasRole("ADMIN");
                     request.anyRequest().authenticated();
                 })
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .logout(AbstractHttpConfigurer::disable)
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable)
                 .authenticationManager(authenticationManager())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(e -> {
