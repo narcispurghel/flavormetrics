@@ -106,8 +106,7 @@ public class AuthServiceImpl implements AuthService {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 data.email(),
                 data.password());
-        Authentication authenticationWithUser = authenticationManager.authenticate(authToken);
-        SecurityContextHolder.getContext().setAuthentication(authenticationWithUser);
+        authenticationManager.authenticate(authToken);
         User user = userRepository.getByUsername_Value(data.email());
         String jwtToken = jwtService.generateToken(user);
         List<String> roles = user.getAuthorities().stream()
