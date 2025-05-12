@@ -14,6 +14,9 @@ import com.flavormetrics.api.repository.UserRepository;
 import com.flavormetrics.api.service.AuthService;
 import com.flavormetrics.api.service.JwtService;
 import com.flavormetrics.api.util.ModelConverter;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,8 +119,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String logout() {
-        SecurityContextHolder.getContext().setAuthentication(null);
+    public String logout(HttpServletResponse response) {
+
+        Cookie cookie = new Cookie("Authorization", null);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        cookie.setHttpOnly(true);
+        response.addCookie(cookie);
+
         return "Logout success!";
     }
 }

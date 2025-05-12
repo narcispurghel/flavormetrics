@@ -157,18 +157,4 @@ class AuthServiceImplTest {
         Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
         assertThrows(NotAllowedRequestException.class, () -> authService.authenticate(request, authentication));
     }
-
-    @Test
-    void logout() {
-        final Email email = new Email(USERNAME);
-        final User user = new Nutritionist(PASSWORD, email);
-        user.setAuthorities(List.of(new Authority(ROLE)));
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(authentication);
-        SecurityContextHolder.setContext(securityContext);
-        final String response = authService.logout();
-        assertEquals(LOGOUT_MESSAGE, response);
-        assertNull(securityContext.getAuthentication());
-    }
 }

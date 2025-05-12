@@ -5,6 +5,7 @@ import com.flavormetrics.api.model.request.LoginRequest;
 import com.flavormetrics.api.model.request.RegisterRequest;
 import com.flavormetrics.api.model.response.LoginResponse;
 import com.flavormetrics.api.model.response.RegisterResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 
 public interface AuthService {
@@ -12,5 +13,5 @@ public interface AuthService {
 
     LoginResponse authenticate(LoginRequest data, Authentication authentication);
 
-    String logout();
+    String logout(HttpServletResponse response);
 }

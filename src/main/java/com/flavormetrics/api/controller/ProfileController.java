@@ -1,11 +1,9 @@
 package com.flavormetrics.api.controller;
 
-import com.flavormetrics.api.exception.ApiException;
 import com.flavormetrics.api.model.Data;
 import com.flavormetrics.api.model.ProfileDto;
 import com.flavormetrics.api.model.request.CreateProfileRequest;
 import com.flavormetrics.api.model.response.ApiErrorResponse;
-import com.flavormetrics.api.model.response.LoginResponse;
 import com.flavormetrics.api.service.ProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,7 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/profile")
+@RequestMapping("/api/v1/profile")
 public class ProfileController {
     private final ProfileService profileService;
 
