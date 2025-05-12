@@ -18,7 +18,6 @@ import com.flavormetrics.api.service.RecipeService;
 import com.flavormetrics.api.util.ModelConverter;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -67,10 +66,6 @@ public class RecipeServiceImpl implements RecipeService {
                 ingredientRepository.save(ModelConverter.toIngredient(i));
             }
         });
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new InsufficientAuthenticationException(
-                    "This resource requests full authentication");
-        }
         final Nutritionist nutritionist = nutritionistRepository.getByUsername_Value(
                         authentication.getName())
                 .orElseThrow(() -> new UsernameNotFoundException(authentication.getName()));
