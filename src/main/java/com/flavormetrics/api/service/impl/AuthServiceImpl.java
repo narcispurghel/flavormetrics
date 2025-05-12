@@ -15,7 +15,6 @@ import com.flavormetrics.api.service.AuthService;
 import com.flavormetrics.api.service.JwtService;
 import com.flavormetrics.api.util.ModelConverter;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -90,7 +89,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional
     public LoginResponse authenticate(LoginRequest data, Authentication authentication) {
         final boolean isAuthenticated;
         if (authentication == null) {

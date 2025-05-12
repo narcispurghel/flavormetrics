@@ -12,8 +12,6 @@ import com.flavormetrics.api.model.IngredientDto;
 import com.flavormetrics.api.model.enums.*;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.model.request.RegisterRequest;
-import com.flavormetrics.api.repository.AllergyRepository;
-import com.flavormetrics.api.repository.ProfileRepository;
 import com.flavormetrics.api.repository.RecipeRepository;
 import com.flavormetrics.api.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
