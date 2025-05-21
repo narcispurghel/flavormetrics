@@ -38,35 +38,19 @@ public class JwtFilter extends OncePerRequestFilter {
         this.userRepository = userRepository;
         this.jwtAuthEntryPoint = jwtAuthEntryPoint;
     }
-
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
-            final String path = request.getRequestURI();
-            final String publicPath;
             LOGGER.info("Processing request: {}", request.getRequestURI());
-            if (path.equals("/")) {
-                publicPath = path;
-            } else {
-                publicPath = Arrays.stream(PUBLIC_ENDPOINTS)
-                        .filter(e -> {
-                            if (e.endsWith("/**")) {
-                                String prefix = e.substring(0, e.length() - 3);
-                                return path.startsWith(prefix);
-                            } else {
-                                return e.equals(path);
-                            }
-                        })
-                        .collect(Collectors.joining());
-            }
-            if (!publicPath.isEmpty()) {
+            final String path = request.getRequestURI();
+            if (isPublicPath(path)) {
                 filterChain.doFilter(request, response);
                 return;
             }
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            LOGGER.info("Getting authentication from SecurityContext: {}", authentication);
+            LOGGER.info("Getting authentication from SecurityContext");
             if (authentication != null) {
                 LOGGER.info("Authentication is non-null, pass the filter");
                 filterChain.doFilter(request, response);
@@ -91,21 +75,31 @@ public class JwtFilter extends OncePerRequestFilter {
                             new UsernameNotFoundException("Cannot find an account associated with username: " + subject));
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     user,
-                    user.getPassword(),
+                    null,
                     user.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authToken);
-            logger.info("Checking authentication");
-            boolean isAuth = SecurityContextHolder.getContext().getAuthentication().isAuthenticated();
-            if (isAuth) {
-                logger.info("Authentication success!");
-            } else {
-                logger.info("Authentication failed!");
-            }
             filterChain.doFilter(request, response);
         } catch (JwtAuthenticationException e) {
             LOGGER.info("Caught auth exception: {}", e.getMessage());
             jwtAuthEntryPoint.commence(request, response, e);
         }
     }
-
+    private boolean isPublicPath(String path) {
+        final String publicPath;
+        if (path.equals("/")) {
+            publicPath = path;
+        } else {
+            publicPath = Arrays.stream(PUBLIC_ENDPOINTS)
+                    .filter(e -> {
+                        if (e.endsWith("/**")) {
+                            String prefix = e.substring(0, e.length() - 3);
+                            return path.startsWith(prefix);
+                        } else {
+                            return e.equals(path);
+                        }
+                    })
+                    .collect(Collectors.joining());
+        }
+        return publicPath.isEmpty();
+    }
 }

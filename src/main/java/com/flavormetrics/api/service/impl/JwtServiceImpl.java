@@ -53,7 +53,10 @@ public class JwtServiceImpl implements JwtService {
             throw new JwtException(
                     "Invalid private key", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signer");
         }
-        final String userRole = user.getAuthorities().getFirst().getRole().name();
+        final String userRole = user.getAuthorities()
+                .getFirst()
+                .getRole()
+                .name();
         final JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .jwtID(getId().toString())
                 .expirationTime(getExpirationDate(expirationTime))

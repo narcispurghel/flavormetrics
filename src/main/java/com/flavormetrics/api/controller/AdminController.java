@@ -33,7 +33,7 @@ public class AdminController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Operation success",
-                    content = @Content(schema = @Schema(implementation = ProfileDto.class), mediaType = "application/json")
+                    content = @Content(schema = @Schema(implementation = UserDto.class), mediaType = "application/json")
             ),
             @ApiResponse(
                     responseCode = "401",
