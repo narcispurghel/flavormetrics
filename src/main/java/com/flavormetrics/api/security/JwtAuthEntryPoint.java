@@ -29,7 +29,6 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
         switch (e) {
             case JwtAuthenticationException j -> response.getWriter().write(j.getMessage());
             case UsernameNotFoundException u -> {
-
                 response.getWriter().write(u.getMessage());
                 response.setStatus(404);
             }

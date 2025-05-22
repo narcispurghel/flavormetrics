@@ -100,6 +100,6 @@ public class JwtFilter extends OncePerRequestFilter {
                     })
                     .collect(Collectors.joining());
         }
-        return publicPath.isEmpty();
+        return !publicPath.isEmpty();
     }
 }

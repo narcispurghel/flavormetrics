@@ -17,16 +17,13 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final AdminRepository adminRepository;
     private final NutritionistRepository nutritionistRepository;
     private final RegularUserRepository regularUserRepository;
 
     public UserServiceImpl(UserRepository userRepository,
-                           AdminRepository adminRepository,
                            NutritionistRepository nutritionistRepository,
                            RegularUserRepository regularUserRepository) {
         this.userRepository = userRepository;
-        this.adminRepository = adminRepository;
         this.nutritionistRepository = nutritionistRepository;
         this.regularUserRepository = regularUserRepository;
     }

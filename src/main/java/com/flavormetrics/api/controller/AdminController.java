@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,7 +55,9 @@ public class AdminController {
     })
     @GetMapping("/all")
     public ResponseEntity<Data<List<UserDto>>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(userService.getAllUsers());
     }
 
     @Operation(summary = "Get all registered regular users from database", description = "Requires to be authenticated as admin")
@@ -81,7 +85,9 @@ public class AdminController {
     })
     @GetMapping("/regular")
     public ResponseEntity<Data<List<RegularUserDto>>> getAllRegularUsers() {
-        return ResponseEntity.ok(userService.getAllRegularUsers());
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(userService.getAllRegularUsers());
     }
 
     @Operation(summary = "Get all registered nutritionist users from database", description = "Requires to be authenticated as admin")
