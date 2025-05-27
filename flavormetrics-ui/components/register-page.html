@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="../styles/styles.css" />
+    <link rel="stylesheet" href="../styles/register-page.css" />
+</head>
+
+<body>
+    <form class="register-form">
+        <input type="email" placeholder="Email" autocomplete="email" class="email-input" />
+        <input type="text" placeholder="First Name" autocomplete="given-name" class="first-name-input" />
+        <input type="text" placeholder="Last Name" autocomplete="family-name" class="last-name-input" />
+        <div class="password-container">
+            <input type="password" placeholder="Password" autocomplete="new-password" class="password-input" />
+            <div class="check-password"></div>
+        </div>
+        <div class="password-container">
+            <input type="password" placeholder="Confirm Password" autocomplete="new-password"
+            class="confirm-password-input" />
+            <div class="match-password"></div>
+        </div>
+        <input type="text" placeholder="Account Type ( USER OR NUTRITIONIST )" class="account-type-input" />
+        <input type="submit" value="Register" class="register-btn" />
+        <div class="login-area">
+            <div class="login-area-msg">Already signed?</div>
+            <a href="./login-page.html" class="login-page-link">Login</a>
+        </div>
+    </form>
+    <script type="module" src="../dist/src/register.js"></script>
+</body>
+
+</html>

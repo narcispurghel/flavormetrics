@@ -70,6 +70,7 @@ public class ImageKitController {
                 "Invalid recipe id",
                 "Cannot find a recipe associated with id " + id,
                 HttpStatus.BAD_REQUEST,
-                "id");
+                "id"
+        );
     }
 }

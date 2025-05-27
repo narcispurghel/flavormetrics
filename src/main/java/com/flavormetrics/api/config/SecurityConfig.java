@@ -1,8 +1,9 @@
 package com.flavormetrics.api.config;
 
-import com.flavormetrics.api.security.CustomAccessDeniedHandler;
-import com.flavormetrics.api.security.JwtAuthEntryPoint;
-import com.flavormetrics.api.security.JwtFilter;
+import java.net.http.HttpRequest;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,9 +18,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.flavormetrics.api.security.CustomAccessDeniedHandler;
+import com.flavormetrics.api.security.JwtAuthEntryPoint;
+import com.flavormetrics.api.security.JwtFilter;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Configuration
 @EnableWebSecurity(debug = true)
@@ -88,6 +94,7 @@ public class SecurityConfig {
                             .hasRole("ADMIN");
                     request.anyRequest().authenticated();
                 })
+                .cors(cors -> cors.configurationSource(corsConfig()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .authenticationManager(authenticationManager())
@@ -122,5 +129,17 @@ public class SecurityConfig {
             publicEndpoints[i] = publicEndpointsTemp.get(i);
         }
         return publicEndpoints;
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfig() {
+        final List<String> allowedMethods = List.of(
+                "DELETE", "POST", "PUT", "OPTIONS", "UPDATE", "GET", "PATCH");
+        final var corsConfig = new CorsConfiguration();
+        corsConfig.setAllowedMethods(allowedMethods);
+        corsConfig.setAllowCredentials(true);
+        corsConfig.addAllowedHeader("*");
+        corsConfig.addAllowedOrigin("http://127.0.0.1:3000");
+        return request -> corsConfig;
     }
 }

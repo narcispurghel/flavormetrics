@@ -28,7 +28,6 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    @Transactional
     public Data<ProfileDto> getProfile(Authentication authentication) {
         Profile profile = profileRepository.findByUser_Username_Value(authentication.getName())
                 .orElse(null);
@@ -47,8 +46,7 @@ public class ProfileServiceImpl implements ProfileService {
                     "Bad request", "User profile exists", HttpStatus.BAD_REQUEST, "profile");
         }
         RegularUser regularUser = regularUserRepository.getByUsername_Value(authentication.getName())
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("Cannot find a user account associatted with username " + authentication.getName()));
+                .orElseThrow(() -> new UsernameNotFoundException("Cannot find a user account associated with username " + authentication.getName()));
         Profile newProfile = ModelConverter.toProfile(data);
         newProfile.setUser(regularUser);
         newProfile = profileRepository.save(newProfile);

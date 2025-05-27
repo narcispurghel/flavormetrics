@@ -1,0 +1,21 @@
+
+.nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: gray;
+    width: 100vw;
+}
+
+.register-link {
+    text-decoration: none;
+    background-color: aquamarine;
+    padding: 5px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.register-link:visited {
+    color: black;
+}

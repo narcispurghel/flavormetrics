@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
-class JwtServiceImplTest {
+class JwtFilterImplTest {
     private static final List<Authority> AUTHORITIES = List.of(
             new Authority(RoleType.ROLE_USER));
     private static final String USERNAME = "test@email.com";

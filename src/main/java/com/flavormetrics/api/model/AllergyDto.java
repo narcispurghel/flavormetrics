@@ -20,7 +20,6 @@ public record AllergyDto(
             this.id = id;
             return this;
         }
-
         public Builder type(String name) {
             this.name = name;
             return this;
