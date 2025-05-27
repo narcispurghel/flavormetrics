@@ -2,7 +2,7 @@ import { RoleType } from '../enums/role-enum.ts'
 import { RegisterData } from '../interfaces/register-data-interface.ts'
 import { Data } from '../interfaces/data-interface.ts'
 import { AUTH_ENDPOINTS } from '../constants/server-constants.ts'
-import { PASSWORD_REGEX } from '../constants/validation-constants.ts'
+import { PASSWORD_REGEX, EMAIL_REGEX } from '../constants/validation-constants.ts'
 
 const registerForm: Element | null = document.querySelector(".register-form");
 const emailInput: HTMLInputElement | null = document.querySelector(".email-input") as HTMLInputElement;
@@ -13,66 +13,120 @@ const confirmPasswordInput: HTMLInputElement | null = document.querySelector(".c
 const accountTypeInput: HTMLInputElement | null = document.querySelector(".account-type-input") as HTMLInputElement;
 const passwordValidationElement: HTMLElement | null = document.querySelector(".check-password");
 const passwordMatchElement: HTMLElement | null = document.querySelector(".match-password");
+const accountTypeValidationElement: HTMLElement | null = document.querySelector(".valid-account-type");
 
-const checkIfAccountTypeIsValidRoleEnum: Function = (input: HTMLInputElement): void => {
+const checkIfAccountTypeIsValidRoleEnum: Function = (input: HTMLInputElement): boolean => {
   const role = RoleType[input.value as keyof typeof RoleType];
-  if (!role) {
-    input.style.border = "2px solid red"
-  } else if (input.value.length === 0) {
+  if (input.value.length === 0 && accountTypeValidationElement) {
     input.style.border = "none"
-  } else {
+    accountTypeValidationElement.style.display = "none"
+    return false
+  } else if (!role && accountTypeValidationElement) {
+    input.style.border = "2px solid red"
+    accountTypeValidationElement.style.display = "block"
+    accountTypeValidationElement.style.color = "red"
+    accountTypeValidationElement.textContent = "invalid account type"
+    return false
+  } else if (role && accountTypeValidationElement) {
     input.style.border = "2px solid green"
+    accountTypeValidationElement.style.display = "none"
+    return true
+  }
+  return false
+}
+
+const checkIfEmailIsValid: Function = (input: HTMLInputElement): boolean => {
+  if (input.value.length === 0) {
+    emailInput.style.border = "none"
+    return false
+  } else if (!EMAIL_REGEX.exec(input.value)) {
+    emailInput.style.border = "2px solid red"
+    return false
+  } else {
+    emailInput.style.border = "2px solid green"
+    return true
   }
 }
 
-const checkNameInput: Function = (input: HTMLInputElement): void => {
-  if (input.value.length <= 5) {
-    input.style.border = "2px solid red"
-  } else if (input.value.length === 0) {
+const checkNameInput: Function = (input: HTMLInputElement): boolean => {
+  if (input.value.length === 0) {
     input.style.border = "none"
+    return false
+  } else if (input.value.length < 3) {
+    input.style.border = "2px solid red"
+    return false
   } else {
     input.style.border = "2px solid green"
+    return true
   }
 }
 
-const checkIfPasswordsMatches: Function = (): void => {
+const checkIfPasswordsMatches: Function = (): boolean => {
   if (passwordInput && confirmPasswordInput && passwordMatchElement) {
     if (passwordInput.value !== confirmPasswordInput.value) {
       confirmPasswordInput.style.border = "2px solid red"
       passwordMatchElement.style.display = "block"
       passwordMatchElement.style.color = "red"
       passwordMatchElement.textContent = "password doesn't match"
+      return false
     } else {
       passwordMatchElement.style.display = "none";
       confirmPasswordInput.style.border = "2px solid green"
+      return true
     }
   }
+  return false
 }
 
-const checkPasswordValue: Function = (): void => {
+const checkPasswordValue: Function = (): boolean => {
   if (passwordInput && passwordValidationElement) {
     if (passwordInput.value.length == 0) {
       passwordInput.style.border = "none"
+      return false
     } else if (!PASSWORD_REGEX.exec(passwordInput.value)) {
       passwordInput.style.border = "2px solid red"
       passwordValidationElement.style.display = "block";
       passwordValidationElement.style.color = "red"
       passwordValidationElement.textContent = "weak password"
+      return false
     } else {
       passwordValidationElement.style.display = "none";
       passwordInput.style.border = "2px solid green"
+      return true
     }
   }
+  return false
 }
 
 const handleSubmit: Function = (event: Event): void => {
   event.preventDefault();
+  let role: RoleType;
 
-  const accountType = accountTypeInput?.value;
-  const role = RoleType[accountType as keyof typeof RoleType];
-
-  if (!role) {
-    throw new Error("Invalid account type")
+  if (emailInput && !checkIfEmailIsValid(emailInput)) {
+    emailInput.style.border = "2px solid red"
+    return
+  }
+  if (firstNameInput && !checkNameInput(firstNameInput)) {
+    firstNameInput.style.border = "2px solid red"
+    return
+  }
+  if (lastNameInput && !checkNameInput(lastNameInput)) {
+    lastNameInput.style.border = "2px solid red"
+    return
+  }
+  if (passwordInput && !checkPasswordValue(passwordInput)) {
+    passwordInput.style.border = "2px solid red"
+    return
+  }
+  if (passwordInput && confirmPasswordInput && !checkIfPasswordsMatches()) {
+    confirmPasswordInput.style.border = "2px solid red"
+    return
+  }
+  if (accountTypeInput && !checkIfAccountTypeIsValidRoleEnum(accountTypeInput)) {
+    accountTypeInput.style.border = "2px solid red"
+    return
+  } else {
+    role = RoleType[accountTypeInput.value as keyof typeof RoleType]
   }
 
   const data: Data<RegisterData> = {
@@ -102,7 +156,7 @@ const handleSubmit: Function = (event: Event): void => {
       console.log(data)
       window.location.href = "../components/login-page.html"
     })
-    .catch((error: any) => console.error(error));
+    .catch((error: any) => console.log(error));
 }
 
 if (registerForm == null) {
@@ -117,8 +171,8 @@ if (registerForm == null) {
   if (lastNameInput) {
     lastNameInput.addEventListener("input", () => checkNameInput(lastNameInput))
   }
-  if (emailInput) { // TODO: Create a specific function for email input
-    emailInput.addEventListener("input", () => checkNameInput(emailInput))
+  if (emailInput) {
+    emailInput.addEventListener("input", () => checkIfEmailIsValid(emailInput))
   }
   if (accountTypeInput) {
     accountTypeInput.addEventListener("input", () => checkIfAccountTypeIsValidRoleEnum(accountTypeInput))

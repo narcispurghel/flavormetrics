@@ -1,6 +1,5 @@
 package com.flavormetrics.api.config;
 
-import java.net.http.HttpRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,8 +23,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import com.flavormetrics.api.security.CustomAccessDeniedHandler;
 import com.flavormetrics.api.security.JwtAuthEntryPoint;
 import com.flavormetrics.api.security.JwtFilter;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 @Configuration
 @EnableWebSecurity(debug = true)
@@ -114,9 +111,8 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        final var provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
-        provider.setUserDetailsService(userDetailsService);
         return new ProviderManager(provider);
     }
 

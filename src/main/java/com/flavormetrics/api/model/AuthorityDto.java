@@ -1,15 +1,13 @@
 package com.flavormetrics.api.model;
 
-import com.flavormetrics.api.model.enums.RoleType;
-import com.flavormetrics.api.model.user.UserDto;
-
 import java.util.UUID;
+
+import com.flavormetrics.api.model.enums.RoleType;
 
 public record AuthorityDto(
         UUID id,
         RoleType role,
-        UUID userId
-) {
+        UUID userId) {
 
     public static Builder builder() {
         return new Builder();

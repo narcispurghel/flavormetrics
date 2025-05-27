@@ -4,3 +4,4 @@ export var RoleType;
     RoleType["ROLE_ADMIN"] = "ROLE_ADMIN";
     RoleType["ROLE_NUTRITIONIST"] = "ROLE_NUTRITIONIST";
 })(RoleType || (RoleType = {}));
+//# sourceMappingURL=role-enum.js.map

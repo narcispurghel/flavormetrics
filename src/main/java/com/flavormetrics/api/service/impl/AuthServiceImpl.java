@@ -64,7 +64,7 @@ public class AuthServiceImpl implements AuthService {
                     HttpStatus.BAD_REQUEST,
                     "data.role");
         }
-        boolean isEmailUsed = userRepository.existsByUsername_Value(data.username());
+        final boolean isEmailUsed = userRepository.existsByUsername_Value(data.username());
         if (isEmailUsed) {
             throw new DuplicateEmailException(
                     "Invalid email",
@@ -72,7 +72,7 @@ public class AuthServiceImpl implements AuthService {
                     HttpStatus.CONFLICT,
                     "data.email");
         }
-        boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
+        final boolean isAuthenticated = authentication != null && authentication.isAuthenticated();
         if (isAuthenticated) {
             throw new NotAllowedRequestException(
                     "Bad request",

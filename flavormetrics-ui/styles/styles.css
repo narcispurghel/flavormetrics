@@ -7,6 +7,12 @@
     font-size: 16px;
 }
 
+html {
+    width: 100vw;
+    height: 100vw;
+    overflow: hidden;
+}
+
 body{
     display: flex;
     align-items: center;

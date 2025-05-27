@@ -45,7 +45,7 @@ public class ProfileServiceImpl implements ProfileService {
             throw new ProfileAlreadyCreatedException(
                     "Bad request", "User profile exists", HttpStatus.BAD_REQUEST, "profile");
         }
-        RegularUser regularUser = regularUserRepository.getByUsername_Value(authentication.getName())
+        final RegularUser regularUser = regularUserRepository.getByUsername_Value(authentication.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("Cannot find a user account associated with username " + authentication.getName()));
         Profile newProfile = ModelConverter.toProfile(data);
         newProfile.setUser(regularUser);

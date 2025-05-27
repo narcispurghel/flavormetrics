@@ -69,10 +69,14 @@ body {
 .match-password {
   display: none;
   font-size: 12px;
-  border-radius: 5px;
 }
 
-.password-container {
+.valid-account-type {
+  display: none;
+  font-size: 12px;
+}
+
+.validation-container {
   display: flex;
   flex-direction: column;
 }

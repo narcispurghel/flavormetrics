@@ -11,6 +11,7 @@
     // Source directories
     "outDir": "dist",
     "rootDir": "./",
+    "sourceMap": true,
     // Import modules with .ts extension
     "rewriteRelativeImportExtensions": true,
     /* Language and Environment */

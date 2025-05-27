@@ -12,15 +12,16 @@
 </head>
 
 <body>
-    <form>
-        <input type="text" placeholder="Email" />
-        <input type="password" placeholder="Password" />
+    <form class="login-form">
+        <input type="text" autocomplete="email" placeholder="Email" class="email-input" />
+        <input type="password" autocomplete="current-password" placeholder="Password" class="password-input" />
         <input type="submit" value="Login" class="login-btn" />
         <div class="register-area">
             <div class="register-area-msg">Not signed yet?</div>
             <a href="./register-page.html" class="register-page-link">Register</a>
         </div>
     </form>
+    <script src="../dist/src/login.js" type="module"></script>
 </body>
 
 </html>

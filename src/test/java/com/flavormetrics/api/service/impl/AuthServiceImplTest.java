@@ -1,5 +1,23 @@
 package com.flavormetrics.api.service.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+
 import com.flavormetrics.api.entity.Authority;
 import com.flavormetrics.api.entity.Email;
 import com.flavormetrics.api.entity.user.User;
@@ -16,23 +34,6 @@ import com.flavormetrics.api.model.response.RegisterResponse;
 import com.flavormetrics.api.repository.UserRepository;
 import com.flavormetrics.api.service.AuthService;
 import com.flavormetrics.api.service.JwtService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.util.List;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceImplTest {
@@ -43,7 +44,6 @@ class AuthServiceImplTest {
     private static final RoleType ROLE = RoleType.ROLE_NUTRITIONIST;
     private static final String PASSWORD = "testpassword";
     private static final String JWT = "mockJwt";
-    private static final String LOGOUT_MESSAGE = "Logout success!";
 
     @Mock
     private AuthenticationManager authenticationManager;

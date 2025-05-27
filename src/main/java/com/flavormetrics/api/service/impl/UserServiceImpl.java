@@ -1,18 +1,18 @@
 package com.flavormetrics.api.service.impl;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.flavormetrics.api.model.Data;
 import com.flavormetrics.api.model.user.UserDto;
 import com.flavormetrics.api.model.user.impl.NutritionistDto;
 import com.flavormetrics.api.model.user.impl.RegularUserDto;
-import com.flavormetrics.api.repository.AdminRepository;
 import com.flavormetrics.api.repository.NutritionistRepository;
 import com.flavormetrics.api.repository.RegularUserRepository;
 import com.flavormetrics.api.repository.UserRepository;
 import com.flavormetrics.api.service.UserService;
 import com.flavormetrics.api.util.ModelConverter;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
