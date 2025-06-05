@@ -49,7 +49,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public Data<RegisterResponse> registerUser(RegisterRequest data, Authentication authentication) {
+    public Data<RegisterResponse> registerUser(RegisterRequest data,
+            Authentication authentication) {
         if (data == null) {
             throw new NotAllowedRequestException(
                     "Bad request",

@@ -1,0 +1,1405 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "FlavorMetrics API", "version": "1.0" },
+  "servers": [
+    { "url": "http://localhost:8080", "description": "Generated server url" }
+  ],
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/api/v1/recipe/protected/update/{id}": {
+      "put": {
+        "tags": ["recipe-controller"],
+        "summary": "Update a recipe by id",
+        "description": "Requires to be authenticated as nutritionist user and to be owner of the recipe",
+        "operationId": "updateRecipeById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DataAddRecipeRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RecipeDto" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "404": {
+            "description": "Recipe not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recipe/protected/add": {
+      "post": {
+        "tags": ["recipe-controller"],
+        "summary": "Create e new recipe",
+        "description": "Requires to be authenticated as nutritionist user",
+        "operationId": "addRecipe",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DataAddRecipeRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RecipeDto" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "403": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recipe/byFilter": {
+      "post": {
+        "tags": ["recipe-controller"],
+        "summary": "Get all recipes by specified filter",
+        "description": "Can be accessed without authentication",
+        "operationId": "getAllByFilter",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RecipeDefaultFilter" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RecipeDto" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "403": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rating/{recipeId}": {
+      "post": {
+        "tags": ["rating-controller"],
+        "summary": "Create e new rating",
+        "description": "Requires to be authenticated",
+        "operationId": "addRating",
+        "parameters": [
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DataInteger" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Operation success",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile": {
+      "get": {
+        "tags": ["profile-controller"],
+        "summary": "Get user profile",
+        "description": "Get associated user profile from authentication",
+        "operationId": "getProfile",
+        "responses": {
+          "200": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProfileDto" }
+              }
+            }
+          },
+          "204": {
+            "description": "Operation success but user doesn't have an associated profile yet",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Null" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "403": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["profile-controller"],
+        "summary": "Add user profile",
+        "description": "Associate a profile to current user from authentication",
+        "operationId": "addProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataCreateProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProfileDto" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "403": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": ["auth-controller"],
+        "summary": "Register a user",
+        "description": "Register a user based on request data",
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DataRegisterRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "User account created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RegisterResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "409": {
+            "description": "Username is not available",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["auth-controller"],
+        "summary": "Login a user",
+        "description": "Login in a user based on request data",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DataLoginRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Login success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LoginResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "404": {
+            "description": "Bad credentials",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recipe-image/{id}": {
+      "patch": {
+        "tags": ["image-kit-controller"],
+        "summary": "Update a recipe's image url by given id",
+        "description": "Requires to be authenticated as nutritionist and to be the owner of the recipe",
+        "operationId": "upload",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DataUploadImage" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RecipeDto" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/regular": {
+      "get": {
+        "tags": ["admin-controller"],
+        "summary": "Get all registered regular users from database",
+        "description": "Requires to be authenticated as admin",
+        "operationId": "getAllRegularUsers",
+        "responses": {
+          "200": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProfileDto" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "403": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/nutritionist": {
+      "get": {
+        "tags": ["admin-controller"],
+        "summary": "Get all registered nutritionist users from database",
+        "description": "Requires to be authenticated as admin",
+        "operationId": "getAllNutritionistUsers",
+        "responses": {
+          "200": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProfileDto" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "403": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/all": {
+      "get": {
+        "tags": ["admin-controller"],
+        "summary": "Get all registered users from database",
+        "description": "Requires to be authenticated as admin",
+        "operationId": "getAllUsers",
+        "responses": {
+          "200": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserDto" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "403": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recipe/byProfile": {
+      "get": {
+        "tags": ["recipe-controller"],
+        "summary": "Get all recipes by current user's profile details",
+        "description": "Requires to be authenticated as regular user",
+        "operationId": "getAllByProfile",
+        "responses": {
+          "200": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RecipeDto" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "403": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recipe/byNutritionist/{username}": {
+      "get": {
+        "tags": ["recipe-controller"],
+        "summary": "Get all recipes by nutritionist's username",
+        "description": "Can be accessed without authentication",
+        "operationId": "getByNutritionist",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipesByNutritionistResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Nutritionist username not found",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "403": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recipe/byId/{id}": {
+      "get": {
+        "tags": ["recipe-controller"],
+        "summary": "Get a recipe by given id",
+        "description": "Can be accessed without authentication",
+        "operationId": "getById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RecipeDto" }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipe not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "403": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recipe/all": {
+      "get": {
+        "tags": ["recipe-controller"],
+        "summary": "Get all recipes",
+        "description": "Can be accessed without authentication",
+        "operationId": "getALL",
+        "responses": {
+          "200": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RecipeDto" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "403": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rating/{recipeId}/all": {
+      "get": {
+        "tags": ["rating-controller"],
+        "summary": "Get all recipe's ratings by id",
+        "description": "Requires to be authenticated",
+        "operationId": "getAllRatingsByRecipeId",
+        "parameters": [
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RatingDto" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rating/byUser": {
+      "get": {
+        "tags": ["rating-controller"],
+        "summary": "Get all user's ratings",
+        "description": "Requires to be authenticated",
+        "operationId": "getAllRatingsByUser",
+        "responses": {
+          "201": {
+            "description": "Operation success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RatingDto" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "get": {
+        "tags": ["auth-controller"],
+        "summary": "Logout a user",
+        "description": "Logout current user",
+        "operationId": "logout",
+        "responses": {
+          "200": {
+            "description": "Logout success",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "401": {
+            "description": "Authentication is null",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": ["home-controller"],
+        "summary": "Get home page",
+        "description": "Get home page data",
+        "operationId": "home",
+        "responses": {
+          "200": {
+            "description": "Login success",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LoginResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recipe/protected/delete/{id}": {
+      "delete": {
+        "tags": ["recipe-controller"],
+        "summary": "Delete a recipe by id",
+        "description": "Requires to be authenticated as nutritionist user and to be owner of the recipe",
+        "operationId": "deleteById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operation success",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "404": {
+            "description": "Recipe not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "403": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddRecipeRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "ingredients": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/IngredientDto" }
+          },
+          "imageUrl": { "type": "string" },
+          "instructions": { "type": "string" },
+          "prepTimeMinutes": { "type": "integer", "format": "int32" },
+          "cookTimeMinutes": { "type": "integer", "format": "int32" },
+          "difficulty": {
+            "type": "string",
+            "enum": ["EASY", "MEDIUM", "HARD", "LEGENDARY"]
+          },
+          "estimatedCalories": { "type": "integer", "format": "int32" },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "VEGAN",
+                "VEGETARIAN",
+                "GLUTEN_FREE",
+                "LACTOSE_FREE",
+                "LOW_CARB",
+                "HIGH_PROTEIN",
+                "BREAKFAST",
+                "LUNCH",
+                "DINNER",
+                "SNACK",
+                "DESSERT",
+                "APPETIZER",
+                "QUICK",
+                "THIRTY_MINUTES_OR_LESS",
+                "EASY",
+                "MEDIUM",
+                "ADVANCED",
+                "ITALIAN",
+                "MEXICAN",
+                "INDIAN",
+                "CHINESE",
+                "JAPANESE",
+                "MEDITERRANEAN",
+                "ROMANIAN",
+                "SPICY",
+                "SWEET",
+                "LOW_FAT",
+                "HIGH_FIBER",
+                "GREEK",
+                "ASIAN",
+                "HEALTHY",
+                "LOW_SUGAR"
+              ]
+            }
+          },
+          "allergies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "DAIRY",
+                "EGGS",
+                "FISH",
+                "SHELLFISH",
+                "TREE_NUTS",
+                "PEANUTS",
+                "WHEAT",
+                "SOY",
+                "GLUTEN",
+                "SESAME",
+                "MUSTARD",
+                "CELERY",
+                "SULFITES",
+                "LUPIN"
+              ]
+            }
+          },
+          "dietaryPreferences": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "VEGETARIAN",
+                "VEGAN",
+                "FISH_INCLUSIVE",
+                "KETO",
+                "PALEO",
+                "LOW_CARB",
+                "LOW_FAT",
+                "HALAL",
+                "KOSHER",
+                "DIABETIC_FRIENDLY",
+                "NONE",
+                "HIGH_PROTEIN",
+                "HIGH_FIBER"
+              ]
+            }
+          }
+        }
+      },
+      "DataAddRecipeRequest": {
+        "type": "object",
+        "properties": {
+          "data": { "$ref": "#/components/schemas/AddRecipeRequest" }
+        }
+      },
+      "IngredientDto": {
+        "type": "object",
+        "properties": { "name": { "type": "string" } }
+      },
+      "AllergyDto": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      },
+      "RatingDto": {
+        "type": "object",
+        "properties": {
+          "recipeId": { "type": "string", "format": "uuid" },
+          "username": { "type": "string" },
+          "value": { "type": "integer", "format": "int32" }
+        }
+      },
+      "RecipeDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "nutritionist": { "type": "string" },
+          "instructions": { "type": "string" },
+          "imageUrl": { "type": "string" },
+          "prepTimeMinutes": { "type": "integer", "format": "int32" },
+          "cookTimeMinutes": { "type": "integer", "format": "int32" },
+          "difficulty": {
+            "type": "string",
+            "enum": ["EASY", "MEDIUM", "HARD", "LEGENDARY"]
+          },
+          "estimatedCalories": { "type": "integer", "format": "int32" },
+          "averageRating": { "type": "number", "format": "double" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "tags": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TagDto" }
+          },
+          "ingredients": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/IngredientDto" }
+          },
+          "ratings": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RatingDto" }
+          },
+          "allergies": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AllergyDto" }
+          }
+        }
+      },
+      "TagDto": {
+        "type": "object",
+        "properties": { "name": { "type": "string" } }
+      },
+      "ApiErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "description": { "type": "string" },
+          "status": { "type": "integer", "format": "int32" },
+          "path": { "type": "string" }
+        }
+      },
+      "RecipeDefaultFilter": {
+        "type": "object",
+        "properties": {
+          "prepTimeMinutes": { "type": "integer", "format": "int32" },
+          "cookTimeMinutes": { "type": "integer", "format": "int32" },
+          "estimatedCalories": { "type": "integer", "format": "int32" },
+          "difficulty": {
+            "type": "string",
+            "enum": ["EASY", "MEDIUM", "HARD", "LEGENDARY"]
+          }
+        }
+      },
+      "DataInteger": {
+        "type": "object",
+        "properties": { "data": { "type": "integer", "format": "int32" } }
+      },
+      "CreateProfileRequest": {
+        "type": "object",
+        "properties": {
+          "dietaryPreference": {
+            "type": "string",
+            "enum": [
+              "VEGETARIAN",
+              "VEGAN",
+              "FISH_INCLUSIVE",
+              "KETO",
+              "PALEO",
+              "LOW_CARB",
+              "LOW_FAT",
+              "HALAL",
+              "KOSHER",
+              "DIABETIC_FRIENDLY",
+              "NONE",
+              "HIGH_PROTEIN",
+              "HIGH_FIBER"
+            ]
+          },
+          "allergies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "DAIRY",
+                "EGGS",
+                "FISH",
+                "SHELLFISH",
+                "TREE_NUTS",
+                "PEANUTS",
+                "WHEAT",
+                "SOY",
+                "GLUTEN",
+                "SESAME",
+                "MUSTARD",
+                "CELERY",
+                "SULFITES",
+                "LUPIN"
+              ]
+            }
+          }
+        }
+      },
+      "DataCreateProfileRequest": {
+        "type": "object",
+        "properties": {
+          "data": { "$ref": "#/components/schemas/CreateProfileRequest" }
+        }
+      },
+      "ProfileDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "readOnly": true },
+          "dietaryPreference": {
+            "type": "string",
+            "enum": [
+              "VEGETARIAN",
+              "VEGAN",
+              "FISH_INCLUSIVE",
+              "KETO",
+              "PALEO",
+              "LOW_CARB",
+              "LOW_FAT",
+              "HALAL",
+              "KOSHER",
+              "DIABETIC_FRIENDLY",
+              "NONE",
+              "HIGH_PROTEIN",
+              "HIGH_FIBER"
+            ]
+          },
+          "allergies": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AllergyDto" }
+          }
+        }
+      },
+      "DataRegisterRequest": {
+        "type": "object",
+        "properties": {
+          "data": { "$ref": "#/components/schemas/RegisterRequest" }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "description": "Register request",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Unique identifier",
+            "example": "narcis@email.com"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "User first name",
+            "example": "Narcis"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "User last name",
+            "example": "Purghel"
+          },
+          "password": {
+            "type": "string",
+            "description": "User credentials",
+            "example": "strongPassword"
+          },
+          "role": {
+            "type": "string",
+            "description": "User role should not be ADMIN in case you will not be able to register",
+            "enum": ["ROLE_ADMIN", "ROLE_USER", "ROLE_NUTRITIONIST"],
+            "example": "ROLE_USER"
+          }
+        }
+      },
+      "RegisterResponse": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string", "format": "uuid" },
+          "username": { "type": "string" },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "role": {
+            "type": "string",
+            "enum": ["ROLE_ADMIN", "ROLE_USER", "ROLE_NUTRITIONIST"]
+          }
+        }
+      },
+      "DataLoginRequest": {
+        "type": "object",
+        "properties": {
+          "data": { "$ref": "#/components/schemas/LoginRequest" }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "description": "Login request object example",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Unique identifier used in registration",
+            "example": "narcis@email.com"
+          },
+          "password": {
+            "type": "string",
+            "description": "User credentials used in registration",
+            "example": "strongPassword"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "description": "Login response object example",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Unique identifier found in database",
+            "example": "narcis@email.com"
+          },
+          "roles": {
+            "type": "array",
+            "description": "User roles from database",
+            "example": "ROLE_USER",
+            "items": { "type": "string" }
+          },
+          "token": {
+            "type": "string",
+            "description": "Unique identifier generated based on user details from database. Expiration is set to 24H",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo2OTYsInVzZXJuYW1lIjoic29ycmxmeWwiLCJleHAiOjE3NDY2NDMwODR9.FZGNecY9HU4pdHtoUlQYlkFzZtu-qlIAWNWLEwkQanw"
+          }
+        }
+      },
+      "DataUploadImage": {
+        "type": "object",
+        "properties": { "data": { "$ref": "#/components/schemas/UploadImage" } }
+      },
+      "UploadImage": {
+        "type": "object",
+        "properties": {
+          "url": { "type": "string" },
+          "name": { "type": "string" }
+        }
+      },
+      "UserDto": { "type": "object" },
+      "RecipesByNutritionistResponse": {
+        "type": "object",
+        "properties": {
+          "username": { "type": "string" },
+          "recipes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RecipeDto" }
+          }
+        }
+      },
+      "Null": { "type": "object" }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "name": "bearerAuth",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

@@ -41,11 +41,11 @@ public class DatabaseInitConfig {
                 final User user = userRepository.getByUsername_Value(NUTRITIONIST_USERNAME);
                 final List<Recipe> recipes = new ArrayList<>();
                 final List<AddRecipeRequest> recipeRequests = List.of(
-                    getSpaghettiBolognese(),
-                    getCapreseSalad(),
-                    getChickenCurry(),
-                    getGreekSalad(),
-                    getVeganBurrito()
+                        getSpaghettiBolognese(),
+                        getCapreseSalad(),
+                        getChickenCurry(),
+                        getGreekSalad(),
+                        getVeganBurrito()
                 );
                 for (AddRecipeRequest req : recipeRequests) {
                     recipes.add(RecipeFactory.getRecipe(req, (Nutritionist) user));
