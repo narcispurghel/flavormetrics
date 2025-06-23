@@ -25,7 +25,7 @@ spring:
       hibernate:
         '[format_sql]': true
         '[highlight_sql]': true
-        '[generate_statistics]': true
+        '[generate_statistics]': false
   main:
     lazy-initialization: true
   threads:
@@ -34,9 +34,9 @@ spring:
 
 logging:
   level:
-    '[org.hibernate]': DEBUG
-    '[org.springframework]': OFF
-    '[com.flavormetrics.api]': DEBUG
+    '[org.hibernate]': off
+    '[org.springframework]': off
+    '[com.flavormetrics.api]': debug
 
 security:
   jwt:

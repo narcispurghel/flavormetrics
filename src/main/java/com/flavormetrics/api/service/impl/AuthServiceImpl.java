@@ -8,6 +8,7 @@ import com.flavormetrics.api.exception.EmailInUseException;
 import com.flavormetrics.api.exception.UnAuthorizedException;
 import com.flavormetrics.api.mapper.UserMapper;
 import com.flavormetrics.api.model.UserDetailsImpl;
+import com.flavormetrics.api.model.enums.RoleType;
 import com.flavormetrics.api.model.request.LoginRequest;
 import com.flavormetrics.api.model.request.RegisterRequest;
 import com.flavormetrics.api.model.response.RegisterResponse;
@@ -73,8 +74,7 @@ public class AuthServiceImpl implements AuthService {
         }
         User user = new User();
         Email email = new Email(req.email());
-        Authority authority = Optional.of(
-                        authorityRepository.getReferenceById(UUID.fromString("a6fc69e5-3252-44fa-91a3-d2b74bdd24a5")))
+        Authority authority = authorityRepository.getAuthorityByType(RoleType.ROLE_USER)
                 .orElseThrow(() -> new EntityNotFoundException("Authority not found"));
         email.setUser(user);
         user.setEmail(email);
@@ -104,6 +104,12 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    @Override
+    public String logout(HttpServletResponse response) {
+        response.addHeader(HttpHeaders.SET_COOKIE, generateLogoutCookie(ACCESS_TOKEN_NAME).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, generateLogoutCookie(REFRESH_TOKEN_NAME).toString());
+        return "Logout success!";
+    }
 
     private ResponseCookie generateLoginCookie(String name, String value, JwtTokens type) {
         if (type == null) {
@@ -119,14 +125,16 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
-    @Override
-    public String logout(HttpServletResponse response) {
-        Cookie cookie = new Cookie("Authorization", null);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        cookie.setHttpOnly(true);
-        response.addCookie(cookie);
-        return "Logout success!";
+    private ResponseCookie generateLogoutCookie(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("name must not be null");
+        }
+        return ResponseCookie.from(name, "")
+                .path("/")
+                .maxAge(0)
+                .secure(true)
+                .httpOnly(true)
+                .build();
     }
 
 }
