@@ -70,6 +70,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
                     FROM r.allergies ra
                     WHERE ra = pa
                 )
+                ORDER BY random()
             """)
     Page<Recipe> findAllRecommendations(UUID userId, Pageable pageable);
 }
