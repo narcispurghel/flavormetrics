@@ -58,7 +58,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
     Page<Recipe> findByOwner(String email, Pageable pageable);
 
     @Query("""
-                SELECT DISTINCT r
+                SELECT r
                 FROM Recipe r
                 JOIN r.user u
                 JOIN u.profile p
@@ -70,7 +70,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
                     FROM r.allergies ra
                     WHERE ra = pa
                 )
-                ORDER BY random()
+                ORDER BY function('random')
             """)
     Page<Recipe> findAllRecommendations(UUID userId, Pageable pageable);
 }

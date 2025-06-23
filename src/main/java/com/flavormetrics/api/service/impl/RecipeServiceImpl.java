@@ -178,7 +178,6 @@ public class RecipeServiceImpl implements RecipeService {
                             .map(RecipeDto::new)
                             .collect(Collectors.toSet());
                     return new DataWithPagination<>(dtos, p.getSize(), pageNumberMinusOne, p.getTotalPages());
-                })
-                .get();
+                }).get();
     }
 }
