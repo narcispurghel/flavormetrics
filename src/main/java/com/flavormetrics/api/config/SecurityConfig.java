@@ -75,6 +75,6 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
         config.addAllowedHeader("*");
         config.addAllowedOrigin("http://127.0.0.1:3000");
-        return _ -> config;
+        return req -> config;
     }
 }
