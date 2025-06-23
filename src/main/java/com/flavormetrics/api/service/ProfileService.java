@@ -1,12 +1,18 @@
 package com.flavormetrics.api.service;
 
-import com.flavormetrics.api.model.Data;
 import com.flavormetrics.api.model.ProfileDto;
+import com.flavormetrics.api.model.projection.ProfileProjection;
 import com.flavormetrics.api.model.request.CreateProfileRequest;
-import org.springframework.security.core.Authentication;
+
+import java.util.UUID;
 
 public interface ProfileService {
-    Data<ProfileDto> getProfile(Authentication authentication);
 
-    Data<ProfileDto> createProfile(CreateProfileRequest data, Authentication authentication);;
+    ProfileProjection findById(UUID id);
+
+    UUID create(CreateProfileRequest request);
+
+    ProfileDto updateById(CreateProfileRequest request);
+
+    void remove();
 }

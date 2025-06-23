@@ -2,23 +2,21 @@ package com.flavormetrics.api.service.impl;
 
 import com.flavormetrics.api.entity.Rating;
 import com.flavormetrics.api.entity.Recipe;
-import com.flavormetrics.api.entity.user.User;
 import com.flavormetrics.api.exception.MaximumNumberOfRatingException;
-import com.flavormetrics.api.exception.impl.InvalidArgumentException;
-import com.flavormetrics.api.exception.impl.RecipeNotFoundException;
-import com.flavormetrics.api.model.Data;
+import com.flavormetrics.api.exception.RecipeNotFoundException;
 import com.flavormetrics.api.model.RatingDto;
+import com.flavormetrics.api.model.UserDetailsImpl;
 import com.flavormetrics.api.repository.RatingRepository;
 import com.flavormetrics.api.repository.RecipeRepository;
 import com.flavormetrics.api.repository.UserRepository;
 import com.flavormetrics.api.service.RatingService;
-import com.flavormetrics.api.util.ModelConverter;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -36,65 +34,38 @@ public class RatingServiceImpl implements RatingService {
     }
 
     @Override
-    public Data<String> addRecipeRating(UUID recipeId, int ratingValue, Authentication authentication) {
-        if (ratingValue < 0 || ratingValue > 5) {
-            throw new InvalidArgumentException(
-                    "Invalid ratingValue",
-                    "Rating must be in interval [0, 5]",
-                    HttpStatus.BAD_REQUEST,
-                    "data.ratingValue");
+    @Transactional
+    public Map<String, String> addRecipeRating(UUID recipeId, int ratingValue) {
+        Recipe recipe;
+        try {
+            recipe = recipeRepository.getReferenceById(recipeId);
+        } catch (EntityNotFoundException e) {
+            throw new RecipeNotFoundException();
         }
-        final Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new RecipeNotFoundException(
-                        "Invalid recipe id",
-                        "Cannot find a recipe associated with id " + recipeId,
-                        HttpStatus.BAD_REQUEST,
-                        "id"));
-        final User user = userRepository.findByUsername_Value(authentication.getName())
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        "Cannot find a user associated with username " + authentication.getName()));
-        final boolean userCannotRate = isRecipeAlreadyRatedByUser(user, recipeId);
-        if (userCannotRate) {
-            throw new MaximumNumberOfRatingException(
-                    "User already rated this recipe",
-                    "User cannot rate a recipe multiple times",
-                    HttpStatus.BAD_REQUEST,
-                    "user.ratings"
-            );
+        var principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        boolean isRated = ratingRepository.isRecipeAlreadyRatedByUser(principal.id(), recipeId);
+        if (isRated) {
+            throw new MaximumNumberOfRatingException();
         }
-        final Rating rating = new Rating();
-        rating.setUser(user);
+        Rating rating = new Rating();
+        rating.setUser(userRepository.getReferenceById(principal.id()));
         rating.setRecipe(recipe);
-        rating.setValue(ratingValue);
+        rating.setScore(ratingValue);
         recipe.getRatings().add(rating);
-        user.getRatings().add(rating);
         ratingRepository.save(rating);
         recipeRepository.save(recipe);
-        userRepository.save(user);
-        return Data.body("Rating " + ratingValue + " was added successfully to recipe " + recipe.getId());
+        return Map.of("message", "Recipe has been rated");
     }
 
     @Override
-    public Data<List<RatingDto>> getAllRatingsByRecipeId(UUID recipeId) {
-        List<Rating> ratings = ratingRepository.findAllByRecipe_Id(recipeId);
-        List<RatingDto> ratingsDto = ratings.stream()
-                .map(ModelConverter::toRatingDto)
-                .toList();
-        return Data.body(ratingsDto);
+    @Transactional(readOnly = true)
+    public Set<RatingDto> findAllRatingsByRecipeId(UUID recipeId) {
+        return ratingRepository.findAllByRecipeId(recipeId);
     }
 
     @Override
-    public Data<List<RatingDto>> getAllRatingsByUser(Authentication authentication) {
-        List<Rating> ratings = ratingRepository.findAllByUser_Username_Value(authentication.getName());
-        List<RatingDto> ratingsDto = ratings.stream()
-                .map(ModelConverter::toRatingDto)
-                .toList();
-        return Data.body(ratingsDto);
-    }
-
-    private boolean isRecipeAlreadyRatedByUser(User user, UUID recipeId) {
-        return user.getRatings()
-                .stream()
-                .anyMatch(rating -> rating.getRecipe().getId().equals(recipeId));
+    @Transactional(readOnly = true)
+    public Set<RatingDto> findAllRatingsByUserId(UUID userId) {
+        return ratingRepository.findAllRatingsByUserId(userId);
     }
 }

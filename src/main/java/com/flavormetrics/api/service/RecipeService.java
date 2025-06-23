@@ -1,36 +1,29 @@
 package com.flavormetrics.api.service;
 
-import com.flavormetrics.api.model.Data;
-import com.flavormetrics.api.model.ProfileFilter;
-import com.flavormetrics.api.model.RecipeDefaultFilter;
+import com.flavormetrics.api.model.DataWithPagination;
+import com.flavormetrics.api.model.RecipeByOwner;
 import com.flavormetrics.api.model.RecipeDto;
+import com.flavormetrics.api.model.RecipeFilter;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
-import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
-import org.springframework.security.core.Authentication;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public interface RecipeService {
-    Data<RecipeDto> add(AddRecipeRequest data, Authentication authentication);
+    UUID create(AddRecipeRequest request);
 
-    Data<RecipeDto> getById(UUID id);
+    RecipeDto getById(UUID id);
 
-    Data<RecipesByNutritionistResponse> getByNutritionist(String username);
+    RecipeDto updateById(UUID id, AddRecipeRequest request);
 
-    Data<RecipeDto> updateById(UUID id, AddRecipeRequest data, Authentication authentication);
+    void deleteById(UUID id);
 
-    Data<String> deleteById(UUID id, Authentication authentication);
+    DataWithPagination<List<RecipeDto>> findAll(int pageNumber, int pageSize);
 
-    Data<List<RecipeDto>> getAll();
+    DataWithPagination<RecipeByOwner> findAllByUserEmail(String email, int pageNumber, int pageSize);
 
-    ProfileFilter getProfilePreferences(String username);
+    DataWithPagination<List<RecipeDto>> findAllByRecipeFilter(RecipeFilter filter, int pageNumber, int pageSize);
 
-    Data<List<RecipeDto>> findAllByProfilePreferences(ProfileFilter profileFilter);
-
-    Data<List<RecipeDto>> findAllByDefaultFilter(RecipeDefaultFilter recipeDefaultFilter);
-
-    boolean existsById(UUID id);
-
-    Data<RecipeDto> updateImageById(UUID id, String url);
+    DataWithPagination<Set<RecipeDto>> getRecommendations(int pageNumber, int pageSize);
 }

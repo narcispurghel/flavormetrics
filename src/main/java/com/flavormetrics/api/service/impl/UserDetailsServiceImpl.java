@@ -1,5 +1,6 @@
 package com.flavormetrics.api.service.impl;
 
+import com.flavormetrics.api.model.UserDetailsImpl;
 import com.flavormetrics.api.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,7 +18,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername_Value(username)
-                .orElseThrow(() -> new UsernameNotFoundException(username));
+        return userRepository.findByEmailWithAuthoritiesAndEmail(username)
+                .map(UserDetailsImpl::new)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }

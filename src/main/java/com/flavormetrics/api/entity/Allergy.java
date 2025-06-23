@@ -1,44 +1,82 @@
 package com.flavormetrics.api.entity;
 
+import com.flavormetrics.api.model.AllergyDto;
 import com.flavormetrics.api.model.enums.AllergyType;
+import com.flavormetrics.api.model.projection.AllergyProjection;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Entity
-@Table(name = "allergy")
-public class Allergy implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
+@Table(name = "allergies")
+public class Allergy {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
     @Column(nullable = false)
     private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "profile_id")
-    private Profile profile;
+    @Column(name = "updated_at", columnDefinition = "timestamp not null default current_timestamp")
+    private LocalDateTime updatedAt;
 
-    @ManyToOne
-    @JoinColumn(name = "recipe_id")
-    private Recipe recipe;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false, columnDefinition = "timestamp not null default current_timestamp")
+    private LocalDateTime createdAt;
 
-    public Allergy() {}
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "allergies")
+    private Set<Profile> profiles;
+
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "allergies")
+    private Set<Recipe> recipes = new HashSet<>();
+
+    public Allergy() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     public Allergy(AllergyType type) {
-        if (type == null) {
-            throw new IllegalArgumentException("Allergy type cannot be null");
+        this();
+        this.name = Optional.ofNullable(type).map(AllergyType::name).orElseThrow(IllegalArgumentException::new);
+        this.description =
+                Optional.of(type).map(AllergyType::getDescription).orElseThrow(IllegalArgumentException::new);
+    }
+
+    public Allergy(UUID uuid) {
+        this();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public Allergy(String name) {
+        this();
+        Objects.requireNonNull(name, "Allergy name cannot be null");
+        this.name = AllergyType.valueOf(name).name();
+        this.description = AllergyType.valueOf(name).getDescription();
+    }
+
+    public Allergy(AllergyDto dto) {
+        this();
+        if (dto == null) {
+            throw new IllegalArgumentException("AllergyDto cannot be null");
         }
-        this.name = type.name();
-        this.description = type.getDescription();
+        this.id = dto.id();
+        this.name = Objects.requireNonNull(dto.name().name(), "Allergy name cannot be null");
+        this.description = AllergyType.valueOf(name).getDescription();
+    }
+
+    public Allergy(AllergyProjection projection) {
+        this();
+        if (projection == null) {
+            throw new IllegalArgumentException("AllergyProjection cannot be null");
+        }
+        this.id = Objects.requireNonNull(projection.getId(), "Allergy id cannot be null");
+        this.name = Objects.requireNonNull(projection.getName(), "Allergy name cannot be null");
+        this.description = AllergyType.valueOf(name).getDescription();
     }
 
     public UUID getId() {
@@ -57,20 +95,32 @@ public class Allergy implements Serializable {
         this.description = description;
     }
 
-    public Profile getProfile() {
-        return profile;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setProfile(Profile profile) {
-        this.profile = profile;
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
-    public Recipe getRecipe() {
-        return recipe;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setRecipe(Recipe recipe) {
-        this.recipe = recipe;
+    public Set<Profile> getProfiles() {
+        return new HashSet<>(profiles);
+    }
+
+    public void setProfiles(Set<Profile> profiles) {
+        this.profiles = new HashSet<>(profiles);
+    }
+
+    public Set<Recipe> getRecipes() {
+        return recipes;
+    }
+
+    public void setRecipes(Set<Recipe> recipes) {
+        this.recipes = recipes;
     }
 
     public String getName() {
@@ -80,4 +130,35 @@ public class Allergy implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
+
+    @Override public boolean equals(Object o) {
+        if (!(o instanceof Allergy allergy)) {
+            return false;
+        }
+        return Objects.equals(name, allergy.name) &&
+               Objects.equals(description, allergy.description) &&
+               Objects.equals(createdAt, allergy.createdAt) &&
+               Objects.equals(updatedAt, allergy.updatedAt);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, description);
+    }
+
+    @Override
+    @SuppressWarnings("StringBufferReplaceableByString")
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Allergy{");
+        sb.append("id=").append(id);
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", description='").append(description).append('\'');
+        sb.append(", profile=").append(profiles == null ? "null" : profiles.size());
+        sb.append(", recipe=").append(recipes == null ? "null" : recipes.size());
+        sb.append(", createdAt=").append(updatedAt);
+        sb.append(", createdAt=").append(createdAt);
+        sb.append('}');
+        return sb.toString();
+    }
+
 }

@@ -1,168 +1,134 @@
 package com.flavormetrics.api.service.impl;
 
-import com.flavormetrics.api.entity.Jwt;
-import com.flavormetrics.api.entity.user.User;
-import com.flavormetrics.api.exception.impl.JwtException;
-import com.flavormetrics.api.repository.JWTRepository;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.flavormetrics.api.enums.JwtTokens;
+import com.flavormetrics.api.exception.JwtException;
+import com.flavormetrics.api.exception.JwtTokenExpiredException;
 import com.flavormetrics.api.service.JwtService;
-import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.RSASSASigner;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
-import jakarta.transaction.Transactional;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
 import java.time.Instant;
-import java.util.Date;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+
+import static com.flavormetrics.api.constants.JwtConstants.*;
+import static com.flavormetrics.api.enums.JwtTokens.ACCESS;
+import static java.time.Instant.now;
 
 @Service
 public class JwtServiceImpl implements JwtService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtServiceImpl.class);
-    private static final RSAKey privateKey = generateRSAKey();
-    private static final String ISSUER = "flavormetrics";
-    private final JWTRepository jwtRepository;
 
-    @Value("${security.jwt.expiration-time}")
-    private long expirationTime;
+    private final String secretKet;
 
-    public JwtServiceImpl(JWTRepository jwtRepository) {
-        this.jwtRepository = jwtRepository;
+    public JwtServiceImpl(@Value("${security.jwt.key}") String secretKet) {
+        this.secretKet = secretKet;
     }
 
     @Override
-    @Transactional
-    public String generateToken(User user) {
-        if (user == null) {
-            throw new JwtException(
-                    "Cannot generate token", "User is null", HttpStatus.BAD_REQUEST, "token.user");
-        }
-        final JWSSigner signer;
-        try {
-            signer = new RSASSASigner(privateKey);
-        } catch (JOSEException e) {
-            throw new JwtException(
-                    "Invalid private key", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signer");
-        }
-        final String userRole = user.getAuthorities()
-                .getFirst()
-                .getRole()
-                .name();
-        final JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .jwtID(getId().toString())
-                .expirationTime(getExpirationDate(expirationTime))
-                .claim("role", userRole)
-                .issuer(ISSUER)
-                .issueTime(getIssueDate())
-                .subject(user.getUsername())
-                .build();
-        final JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256)
-                .keyID(privateKey.getKeyID())
-                .build();
-        final SignedJWT signedJWT = new SignedJWT(header, claims);
-        try {
-            signedJWT.sign(signer);
-        } catch (JOSEException e) {
-            throw new JwtException("Invalid signedJWT", e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signedJWT");
-        }
-        return signedJWT.serialize();
-    }
-
-    @Override
-    @Transactional
-    public UUID getId() {
-        Jwt jwt = new Jwt();
-        jwt = jwtRepository.save(jwt);
-        LOGGER.info("Getting JWT id: {}", jwt.getId());
-        return jwt.getId();
-    }
-
-    @Override
-    public RSAKey getPublicKey() {
-        return privateKey.toPublicJWK();
-    }
-
-    @Override
-    public boolean isTokenValid(String token) {
-        if (token == null) {
-            return false;
-        }
-        final SignedJWT signedJWT;
-        try {
-            signedJWT = SignedJWT.parse(token);
-        } catch (ParseException e) {
-            throw new JwtException("Cannot parse JWT", e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid.signedJWT");
-        }
-        final JWSVerifier verifier;
-        try {
-            verifier = new RSASSAVerifier(getPublicKey());
-        } catch (JOSEException e) {
-            throw new JwtException("Cannot create JWT verifier", e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid.verifier");
-        }
-        try {
-            return signedJWT.verify(verifier)
-                    && Objects.nonNull(signedJWT.getHeader())
-                    && Objects.nonNull(signedJWT.getPayload())
-                    && Objects.nonNull(signedJWT.getJWTClaimsSet())
-                    && Objects.nonNull(signedJWT.getJWTClaimsSet().getClaim("role"))
-                    && Objects.equals(ISSUER, signedJWT.getJWTClaimsSet().getIssuer())
-                    && new Date().before(signedJWT.getJWTClaimsSet().getExpirationTime());
-        } catch (JOSEException | ParseException e) {
-            throw new JwtException("Cannot verify JWT", e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid");
-        }
-    }
-
-    @Override
-    public String extractUsername(String token) {
-        if (token == null) {
+    public String generateToken(String email, JwtTokens type) {
+        if (email == null || type == null) {
             return null;
         }
-        final SignedJWT signedJWT;
+        long expiration = type == JwtTokens.ACCESS ? ACCESS_TOKEN_EXPIRATION : REFRESH_TOKEN_EXPIRATION;
+        return JWT.create()
+                .withJWTId(UUID.randomUUID().toString())
+                .withIssuer(ISSUER)
+                .withAudience(AUDIENCE)
+                .withSubject(email)
+                .withIssuedAt(now())
+                .withNotBefore(now())
+                .withExpiresAt(now().plusMillis(expiration))
+                .sign(getAlgorithm());
+    }
+
+    @Override
+    public String generateNewAccessToken(String refreshToken) throws JwtException {
+        Objects.requireNonNull(refreshToken, "Type cannot be null");
+        String email;
         try {
-            signedJWT = SignedJWT.parse(token);
-        } catch (ParseException e) {
-            throw new JwtException("Cannot parse JWT", e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid.signedJWT");
+            DecodedJWT decoded = decodeToken(refreshToken);
+            if (decoded.getClaim("userId") == null ||
+                decoded.getClaim("userId").isNull()) {
+                throw new JwtException("JWT is missing 'userId' claim.");
+            }
+            if (decoded.getSubject() == null || decoded.getSubject().isBlank()) {
+                throw new JwtException("JWT is missing 'sub' (subject) claim.");
+            }
+            email = decoded.getSubject();
+        } catch (JwtTokenExpiredException ex) {
+            throw new JwtException("Invalid refresh token: " + ex.getMessage());
+        } catch (JwtException ex) {
+            throw new JwtException(ex.getMessage());
         }
+        return generateToken(email, ACCESS);
+    }
+
+    @Override
+    public DecodedJWT decodeToken(String token) throws JwtException {
+        JWTVerifier verifier = JWT.require(getAlgorithm())
+                .withIssuer(ISSUER)
+                .withAudience(AUDIENCE)
+                .acceptNotBefore(5)
+                .acceptExpiresAt(5)
+                .withClaimPresence("jti")
+                .build();
         try {
-            return signedJWT.getJWTClaimsSet().getSubject();
-        } catch (ParseException e) {
-            throw new JwtException("Cannot verify JWT", e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR, "isTokenValid");
+            return verifier.verify(token);
+        } catch (JWTVerificationException e) {
+            if (e instanceof TokenExpiredException tee) {
+                throw new JwtTokenExpiredException(tee.getMessage());
+            }
+            throw new JwtException(e.getMessage());
         }
     }
 
-    private Date getExpirationDate(long expiration) {
-        LOGGER.info("JWT expiration time: {}", new Date(Instant.now().toEpochMilli() + expiration));
-        return new Date(Instant.now().toEpochMilli() + expiration);
-    }
-
-    private Date getIssueDate() {
-        return new Date(Instant.now().toEpochMilli());
-    }
-
-    private static RSAKey generateRSAKey() {
-        String keyId = UUID.randomUUID().toString();
-        try {
-            return new RSAKeyGenerator(2048)
-                    .keyID(keyId)
-                    .generate();
-        } catch (JOSEException e) {
-            throw new JwtException("Key generation failed", e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR, "createToken.signedJWT");
+    @Override
+    public String extractUsername(String token) throws JwtException {
+        Objects.requireNonNull(token, "Token cannot be null.");
+        LOGGER.info("Extracting email from jwt token");
+        DecodedJWT decoded = decodeToken(token);
+        if (decoded.getSubject() == null || decoded.getSubject().isBlank()) {
+            throw new JwtException("Invalid JWT");
         }
+        return decoded.getSubject();
     }
+
+    private Algorithm getAlgorithm() {
+        return Algorithm.HMAC256(secretKet);
+    }
+
+    @Override
+    public String getCookieValueFromRequest(HttpServletRequest request,
+                                            String cookieName) {
+        Objects.requireNonNull(request, "Request cannot be null.");
+        if (request.getCookies() == null) {
+            return null;
+        }
+        Optional<Cookie> cookie = Optional.ofNullable(request.getCookies())
+                .map(Arrays::asList)
+                .orElse(Collections.emptyList())
+                .stream()
+                .filter(c -> cookieName.equals(c.getName()))
+                .findFirst();
+        return cookie.map(Cookie::getValue).orElse(null);
+    }
+
+    @Override
+    public boolean isAboveThreshold(Instant expire) {
+        Objects.requireNonNull(expire, "Expire cannot be null.");
+        long accessExpiration = expire.toEpochMilli() - Instant.now().toEpochMilli();
+        LOGGER.info("Access token expires in {} ms", accessExpiration);
+        return accessExpiration <= ACCESS_TOKEN_THRESHOLD;
+    }
+
 }

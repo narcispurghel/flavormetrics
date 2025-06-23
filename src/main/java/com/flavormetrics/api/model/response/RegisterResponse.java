@@ -5,26 +5,30 @@ import com.flavormetrics.api.model.enums.RoleType;
 import java.util.UUID;
 
 public record RegisterResponse(
-        UUID userId,
-        String username,
+        UUID id,
+        String email,
         String firstName,
         String lastName,
-        RoleType role
-) {
+        RoleType role) {
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
-        private UUID userId;
-        private  String username;
-        private  String firstName;
-        private  String lastName;
+        private UUID id;
+        private String email;
+        private String firstName;
+        private String lastName;
         private RoleType role;
 
-        public Builder userId(UUID userId) {
-            this.userId = userId;
+        public Builder id(UUID id) {
+            this.id = id;
             return this;
         }
 
-        public Builder username(String username) {
-            this.username = username;
+        public Builder email(String email) {
+            this.email = email;
             return this;
         }
 
@@ -43,8 +47,8 @@ public record RegisterResponse(
             return this;
         }
 
-        public RegisterResponse buid() {
-            return new RegisterResponse(userId, username, firstName, lastName, role);
+        public RegisterResponse build() {
+            return new RegisterResponse(id, email, firstName, lastName, role);
         }
     }
 }

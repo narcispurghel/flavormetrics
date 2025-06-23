@@ -1,30 +1,67 @@
 package com.flavormetrics.api.model;
 
-import com.flavormetrics.api.model.enums.DifficultyType;
-
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.springframework.lang.NonNull;
+
+import com.flavormetrics.api.entity.Recipe;
+import com.flavormetrics.api.model.enums.DifficultyType;
 
 public record RecipeDto(
         UUID id,
         String name,
-        String nutritionist,
+        String user,
         String instructions,
         String imageUrl,
         Integer prepTimeMinutes,
         Integer cookTimeMinutes,
         DifficultyType difficulty,
         Integer estimatedCalories,
-        Double averageRating,
+        Float averageRating,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
-        List<TagDto> tags,
-        List<IngredientDto> ingredients,
-        List<RatingDto> ratings,
-        List<AllergyDto> allergies
-) {
+        Set<TagDto> tags,
+        Set<IngredientDto> ingredients,
+        Set<RatingDto> ratings,
+        Set<AllergyDto> allergies) {
+
+    public RecipeDto(@NonNull Recipe recipe) {
+        this(recipe.getId(),
+                recipe.getName(),
+                recipe.getUser().getEmail().getAddress(),
+                recipe.getInstructions(),
+                recipe.getImageUrl(),
+                recipe.getPrepTimeMinutes(),
+                recipe.getCookTimeMinutes(),
+                recipe.getDifficulty(),
+                recipe.getEstimatedCalories(),
+                recipe.getAverageRating(),
+                recipe.getCreatedAt(),
+                recipe.getUpdatedAt(),
+                Optional.ofNullable(recipe.getTags())
+                        .orElse(Collections.emptySet())
+                        .stream()
+                        .map(TagDto::new)
+                        .collect(Collectors.toSet()),
+                Optional.ofNullable(recipe.getIngredients())
+                        .orElse(Collections.emptySet())
+                        .stream()
+                        .map(IngredientDto::new)
+                        .collect(Collectors.toSet()),
+                Optional.ofNullable(recipe.getRatings())
+                        .orElse(Collections.emptySet())
+                        .stream()
+                        .map(RatingDto::new)
+                        .collect(Collectors.toSet()),
+                Optional.ofNullable(recipe.getAllergies())
+                        .orElse(Collections.emptySet())
+                        .stream()
+                        .map(AllergyDto::new)
+                        .collect(Collectors.toSet()));
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -32,20 +69,20 @@ public record RecipeDto(
     public static class Builder {
         private UUID id;
         private String name;
-        private String nutritionist;
+        private String user;
         private String instructions;
         private String imageUrl;
         private Integer prepTimeMinutes;
         private Integer cookTimeMinutes;
         private DifficultyType difficulty;
         private Integer estimatedCalories;
-        private Double averageRating;
+        private Float averageRating;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
-        private List<TagDto> tags;
-        private List<IngredientDto> ingredients;
-        private List<RatingDto> ratings;
-        private List<AllergyDto> allergies;
+        private Set<TagDto> tags;
+        private Set<IngredientDto> ingredients;
+        private Set<RatingDto> ratings;
+        private Set<AllergyDto> allergies;
 
         private Builder() {
             // Prevent instantiation
@@ -62,7 +99,7 @@ public record RecipeDto(
         }
 
         public Builder nutritionist(String nutritionist) {
-            this.nutritionist = nutritionist;
+            this.user = nutritionist;
             return this;
         }
 
@@ -96,7 +133,7 @@ public record RecipeDto(
             return this;
         }
 
-        public Builder averageRating(Double averageRating) {
+        public Builder averageRating(Float averageRating) {
             this.averageRating = averageRating;
             return this;
         }
@@ -111,23 +148,23 @@ public record RecipeDto(
             return this;
         }
 
-        public Builder tags(List<TagDto> tags) {
-            this.tags = new ArrayList<>(tags);
+        public Builder tags(Set<TagDto> tags) {
+            this.tags = Set.copyOf(tags);
             return this;
         }
 
-        public Builder ingredients(List<IngredientDto> ingredients) {
-            this.ingredients = new ArrayList<>(ingredients);
+        public Builder ingredients(Set<IngredientDto> ingredients) {
+            this.ingredients = Set.copyOf(ingredients);
             return this;
         }
 
-        public Builder ratings(List<RatingDto> ratings) {
-            this.ratings = ratings;
+        public Builder ratings(Set<RatingDto> ratings) {
+            this.ratings = Set.copyOf(ratings);
             return this;
         }
 
-        public Builder allergies(List<AllergyDto> allergies) {
-            this.allergies = new ArrayList<>(allergies);
+        public Builder allergies(Set<AllergyDto> allergies) {
+            this.allergies = Set.copyOf(allergies);
             return this;
         }
 
@@ -135,7 +172,7 @@ public record RecipeDto(
             return new RecipeDto(
                     id,
                     name,
-                    nutritionist,
+                    user,
                     instructions,
                     imageUrl,
                     prepTimeMinutes,
@@ -150,5 +187,60 @@ public record RecipeDto(
                     ratings,
                     allergies);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof RecipeDto recipeDto)) {
+            return false;
+        }
+        return Objects.equals(name, recipeDto.name) &&
+               Objects.equals(imageUrl, recipeDto.imageUrl) &&
+               Objects.equals(user, recipeDto.user) &&
+               Objects.equals(instructions, recipeDto.instructions) &&
+               Objects.equals(averageRating, recipeDto.averageRating) &&
+               Objects.equals(prepTimeMinutes, recipeDto.prepTimeMinutes) &&
+               Objects.equals(cookTimeMinutes, recipeDto.cookTimeMinutes) &&
+               Objects.equals(createdAt, recipeDto.createdAt) &&
+               Objects.equals(updatedAt, recipeDto.updatedAt) &&
+               difficulty == recipeDto.difficulty &&
+               Objects.equals(estimatedCalories, recipeDto.estimatedCalories);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                name,
+                user,
+                instructions,
+                imageUrl,
+                prepTimeMinutes,
+                cookTimeMinutes,
+                difficulty,
+                estimatedCalories,
+                averageRating,
+                createdAt,
+                updatedAt);
+    }
+
+    @Override
+    @NonNull
+    @SuppressWarnings("StringBufferReplaceableByString")
+    public String toString() {
+        StringBuilder sb = new StringBuilder("RecipeDto{");
+        sb.append("id=").append(id);
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", nutritionist='").append(user).append('\'');
+        sb.append(", instructions='").append(instructions).append('\'');
+        sb.append(", imageUrl='").append(imageUrl).append('\'');
+        sb.append(", prepTimeMinutes=").append(prepTimeMinutes);
+        sb.append(", cookTimeMinutes=").append(cookTimeMinutes);
+        sb.append(", difficulty=").append(difficulty);
+        sb.append(", estimatedCalories=").append(estimatedCalories);
+        sb.append(", averageRating=").append(averageRating);
+        sb.append(", createdAt=").append(createdAt);
+        sb.append(", updatedAt=").append(updatedAt);
+        sb.append('}');
+        return sb.toString();
     }
 }

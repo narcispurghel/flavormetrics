@@ -31,7 +31,7 @@ Full documentation of the API endpoints and returned datatypes can be read acces
 
 ### Prerequisite
 This project requires [JRE](https://bell-sw.com/pages/downloads/?version=java-21&os=windows&package=jre-full) or [JDK](https://www.oracle.com/ro/java/technologies/downloads/#java21) version 21 installed on your pc.
-Also, you need to install [PostgreSQL](https://www.postgresql.org/download/) server version 17 and configure [application.properties](src/main/resources/application.properties) file with your database credentials.
+Also, you need to install [PostgreSQL](https://www.postgresql.org/download/) server version 17 and configure [application.properties](src/main/resources/application.yaml) file with your database credentials.
 
 Inside the main folder run:
 ```bash

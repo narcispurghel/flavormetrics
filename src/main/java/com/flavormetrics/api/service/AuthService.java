@@ -1,17 +1,18 @@
 package com.flavormetrics.api.service;
 
-import com.flavormetrics.api.model.Data;
+import com.flavormetrics.api.model.UserDetailsImpl;
 import com.flavormetrics.api.model.request.LoginRequest;
 import com.flavormetrics.api.model.request.RegisterRequest;
 import com.flavormetrics.api.model.response.LoginResponse;
 import com.flavormetrics.api.model.response.RegisterResponse;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.core.Authentication;
 
 public interface AuthService {
-    Data<RegisterResponse> registerUser(RegisterRequest data, Authentication authentication);
 
-    LoginResponse authenticate(LoginRequest data, Authentication authentication);
+    RegisterResponse signup(RegisterRequest request);
+
+    UserDetailsImpl authenticate(LoginRequest req, HttpServletResponse res);
 
     String logout(HttpServletResponse response);
+
 }

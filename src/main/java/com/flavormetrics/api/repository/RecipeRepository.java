@@ -1,43 +1,75 @@
 package com.flavormetrics.api.repository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
+import com.flavormetrics.api.entity.Recipe;
+import com.flavormetrics.api.model.enums.DietaryPreferenceType;
+import com.flavormetrics.api.model.enums.DifficultyType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.flavormetrics.api.entity.Recipe;
-import com.flavormetrics.api.model.enums.DifficultyType;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
-    Optional<Recipe> getRecipeById(UUID id);
 
-    List<Recipe> getRecipesByNutritionist_Username_Value(String username);
-
+    @Query("""
+            SELECT r
+            FROM Recipe r
+            LEFT JOIN FETCH r.ratings
+            LEFT JOIN FETCH r.user
+            LEFT JOIN FETCH r.ingredients
+            WHERE r.id = ?1
+            """)
+    Optional<Recipe> getRecipeByIdEager(UUID id);
 
     @Query(value = """
-            select r
-            from Recipe r
-            join r.tags t
-            join r.allergies a
-            where (a.name is null  or a.name not in :allergies)
-            and (:dietaryPreferences is null or t.name in :dietaryPreferences)
+            SELECT r
+            FROM Recipe r
+            LEFT JOIN FETCH r.ratings
+            LEFT JOIN FETCH r.user
+            LEFT JOIN FETCH r.ingredients
+            LEFT JOIN FETCH r.tags
+            WHERE (r.cookTimeMinutes <= ?1)
+            AND (r.estimatedCalories <= ?2)
+            AND (r.prepTimeMinutes <= ?3)
+            AND (r.difficulty = ?4)
+            AND (r.dietaryPreferences = ?5)
             """)
-    List<Recipe> getAllByProfileFilters(List<String> allergies, String dietaryPreferences);
+    Page<Recipe> findAllByFilter(
+            int prepTimeMinutes,
+            int cookTimeMinutes,
+            int estimatedCalories,
+            DifficultyType difficulty,
+            DietaryPreferenceType dietaryPreference,
+            Pageable pageable);
 
-    @Query(value = """
-            select r
-            from Recipe r
-            where (r.cookTimeMinutes <= :cookTimeMinutes)
-            and (r.estimatedCalories <= :estimatedCalories)
-            and (r.prepTimeMinutes <= :prepTimeMinutes)
-            and (r.difficulty = :difficulty)
+    @Query("""
+            SELECT r
+            FROM Recipe r
+            LEFT JOIN FETCH r.ratings
+            LEFT JOIN FETCH r.user u
+            LEFT JOIN FETCH u.email e
+            LEFT JOIN FETCH r.ingredients
+            WHERE e.address = ?1
             """)
-    List<Recipe> findAllByDefaultFilter(int prepTimeMinutes,
-                                                 int cookTimeMinutes,
-                                                 int estimatedCalories,
-                                                 DifficultyType difficulty);
+    Page<Recipe> findByOwner(String email, Pageable pageable);
+
+    @Query("""
+                SELECT DISTINCT r
+                FROM Recipe r
+                JOIN r.user u
+                JOIN u.profile p
+                JOIN p.allergies pa
+                WHERE u.id = :userId
+                AND u.profile IS NOT NULL
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM r.allergies ra
+                    WHERE ra = pa
+                )
+            """)
+    Page<Recipe> findAllRecommendations(UUID userId, Pageable pageable);
 }

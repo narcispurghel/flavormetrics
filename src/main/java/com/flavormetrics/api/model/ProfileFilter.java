@@ -12,4 +12,5 @@ public record ProfileFilter(DietaryPreferenceType dietaryPreference, List<Allerg
                 .map(Allergy::getName)
                 .toList();
     }
+
 }

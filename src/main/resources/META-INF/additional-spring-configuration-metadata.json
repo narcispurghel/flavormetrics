@@ -1,0 +1,12 @@
+{"properties": [
+  {
+    "name": "security.jwt.expiration-time",
+    "type": "java.lang.String",
+    "description": "Properties for JWT."
+  },
+  {
+    "name": "imagekit.url",
+    "type": "java.lang.String",
+    "description": "Properties for ImageKit."
+  }
+]}

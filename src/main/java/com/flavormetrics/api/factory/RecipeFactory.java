@@ -1,56 +1,73 @@
 package com.flavormetrics.api.factory;
 
-import com.flavormetrics.api.entity.Allergy;
-import com.flavormetrics.api.entity.Ingredient;
-import com.flavormetrics.api.entity.Recipe;
-import com.flavormetrics.api.entity.Tag;
-import com.flavormetrics.api.entity.user.impl.Nutritionist;
+import com.flavormetrics.api.entity.*;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
-import com.flavormetrics.api.util.ModelConverter;
+import com.flavormetrics.api.repository.RecipeRepository;
+import com.flavormetrics.api.repository.UserRepository;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
-public final class RecipeFactory {
+@Component
+public class RecipeFactory {
+    private final RecipeRepository recipeRepo;
+    private final UserRepository userRepo;
+    private final IngredientFactory ingredientFactory;
+    private final TagFactory tagFactory;
+    private final AllergyFactory allergyFactory;
 
-    private RecipeFactory() {
-        // Prevent instantiation
+    RecipeFactory(RecipeRepository recipeRepo,
+                  UserRepository userRepo,
+                  IngredientFactory ingredientFactory,
+                  TagFactory tagFactory,
+                  AllergyFactory allergyFactory) {
+        this.recipeRepo = recipeRepo;
+        this.userRepo = userRepo;
+        this.ingredientFactory = ingredientFactory;
+        this.tagFactory = tagFactory;
+        this.allergyFactory = allergyFactory;
     }
 
-    public static Recipe getRecipe(AddRecipeRequest data, Nutritionist nutritionist) {
-        final List<Ingredient> ingredients = data.ingredients()
-                .stream()
-                .map(ModelConverter::toIngredient)
-                .toList();
-        final Recipe recipe = new Recipe();
-        final List<Tag> tags = data.tags().stream()
-                .map(tagType -> {
-                    Tag tag = ModelConverter.toTag(tagType);
-                    tag.getRecipes().add(recipe);
-                    return tag;
-                })
-                .toList();
-        final List<Allergy> allergies = data.allergies()
-                .stream()
-                .map(allergyDto -> {
-                    Allergy allergy = ModelConverter.toAllergy(allergyDto);
-                    allergy.setRecipe(recipe);
-                    return allergy;
-                })
-                .toList();
-        recipe.setNutritionist(nutritionist);
-        recipe.setInstructions(data.instructions());
+    @Transactional
+    public UUID create(AddRecipeRequest req, UUID userId) {
+        if (req == null) {
+            throw new IllegalArgumentException("AddRecipeRequest cannot be null");
+        }
+
+        Set<Ingredient> ingredients = Optional.of(req)
+                .map(ingredientFactory::checkIfExistsOrElseSave)
+                .orElse(Collections.emptySet());
+
+        Set<Tag> tags = Optional.of(req)
+                .map(tagFactory::checkIfExistsOrElseSave)
+                .orElse(Collections.emptySet());
+
+        Set<Allergy> allergies = Optional.of(req)
+                .map(AddRecipeRequest::allergies)
+                .map(allergyFactory::checkIfExistsOrElseSave)
+                .orElse(Collections.emptySet());
+
+        Recipe recipe = new Recipe();
+        User user = userRepo.getReferenceById(userId);
+        recipe.setIngredients(Set.copyOf(ingredients));
+        recipe.setUser(user);
+        recipe.setName(req.name());
+        recipe.setInstructions(req.instructions());
+        recipe.setDifficulty(req.difficulty());
         recipe.setUpdatedAt(LocalDateTime.now());
-        recipe.setImageUrl(data.imageUrl());
-        recipe.setCookTimeMinutes(data.cookTimeMinutes());
-        recipe.setDifficulty(data.difficulty());
-        recipe.setEstimatedCalories(data.estimatedCalories());
-        recipe.setPrepTimeMinutes(data.prepTimeMinutes());
-        recipe.setTags(tags);
-        recipe.setIngredients(ingredients);
-        recipe.setName(data.name());
+        recipe.setImageUrl(req.imageUrl());
+        recipe.setCookTimeMinutes(req.cookTimeMinutes());
+        recipe.setPrepTimeMinutes(req.prepTimeMinutes());
+        recipe.setEstimatedCalories(req.estimatedCalories());
+        recipe.setDietaryPreferences(req.dietaryPreferences());
         recipe.setAllergies(allergies);
-        recipe.setDietaryPreferences(data.dietaryPreferences());
-        return recipe;
+        recipe.setTags(tags);
+
+        return recipeRepo.save(recipe).getId();
     }
 }

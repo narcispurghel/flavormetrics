@@ -1,6 +1,6 @@
 package com.flavormetrics.api.controller;
 
-import com.flavormetrics.api.model.Data;
+import com.flavormetrics.api.model.UserDetailsImpl;
 import com.flavormetrics.api.model.request.LoginRequest;
 import com.flavormetrics.api.model.request.RegisterRequest;
 import com.flavormetrics.api.model.response.ApiErrorResponse;
@@ -13,9 +13,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -32,30 +31,31 @@ public class AuthController {
             @ApiResponse(
                     responseCode = "201",
                     description = "User account created",
-                    content = @Content(schema = @Schema(implementation = RegisterResponse.class), mediaType = "application/json")
+                    content = @Content(schema = @Schema(implementation = RegisterResponse.class),
+                            mediaType = "application/json")
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid request data",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             ),
             @ApiResponse(
                     responseCode = "409",
                     description = "Username is not available",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             ),
             @ApiResponse(
                     responseCode = "500",
                     description = "Internal Server Error",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             )
     })
-    @PostMapping("/register")
-    public ResponseEntity<Data<RegisterResponse>> register(
-            @RequestBody Data<RegisterRequest> requestBody,
-            Authentication authentication) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(authService.registerUser(requestBody.data(), authentication));
+    @PostMapping("/signup")
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest req) {
+        return ResponseEntity.status(201).body(authService.signup(req));
     }
 
     @Operation(summary = "Login a user", description = "Login in a user based on request data")
@@ -63,7 +63,8 @@ public class AuthController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Login success",
-                    content = @Content(schema = @Schema(implementation = LoginResponse.class), mediaType = "application/json")
+                    content = @Content(schema = @Schema(implementation = LoginResponse.class),
+                            mediaType = "application/json")
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -78,13 +79,13 @@ public class AuthController {
             @ApiResponse(
                     responseCode = "500",
                     description = "Internal Server Error",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             )
     })
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody Data<LoginRequest> requestBody,
-                                               Authentication authentication) {
-        return ResponseEntity.ok(authService.authenticate(requestBody.data(), authentication));
+    public ResponseEntity<UserDetailsImpl> login(@RequestBody LoginRequest req, HttpServletResponse res) {
+        return ResponseEntity.ok(authService.authenticate(req, res));
     }
 
     @Operation(summary = "Logout a user", description = "Logout current user")
@@ -102,7 +103,8 @@ public class AuthController {
             @ApiResponse(
                     responseCode = "500",
                     description = "Internal Server Error",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             )
     })
     @GetMapping("/logout")

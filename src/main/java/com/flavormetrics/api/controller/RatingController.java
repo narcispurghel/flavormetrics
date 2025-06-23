@@ -10,10 +10,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -25,7 +25,6 @@ public class RatingController {
         this.ratingService = ratingService;
     }
 
-
     @Operation(summary = "Create e new rating", description = "Requires to be authenticated")
     @ApiResponses(value = {
             @ApiResponse(
@@ -36,7 +35,8 @@ public class RatingController {
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid request data",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -46,15 +46,15 @@ public class RatingController {
             @ApiResponse(
                     responseCode = "500",
                     description = "Internal Server Error",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             )
     })
     @PostMapping("/{recipeId}")
-    public ResponseEntity<Data<String>> addRating(
+    public ResponseEntity<Map<String, String>> addRating(
             @PathVariable UUID recipeId,
-            @RequestBody Data<Integer> requestBody,
-            Authentication authentication) {
-        return ResponseEntity.ok(ratingService.addRecipeRating(recipeId, requestBody.data(), authentication));
+            @RequestBody Data<Integer> req) {
+        return ResponseEntity.ok(ratingService.addRecipeRating(recipeId, req.data()));
     }
 
     @Operation(summary = "Get all recipe's ratings by id", description = "Requires to be authenticated")
@@ -62,12 +62,14 @@ public class RatingController {
             @ApiResponse(
                     responseCode = "201",
                     description = "Operation success",
-                    content = @Content(schema = @Schema(implementation = RatingDto.class), mediaType = "application/json")
+                    content = @Content(schema = @Schema(implementation = RatingDto.class),
+                            mediaType = "application/json")
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid request data",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -77,12 +79,13 @@ public class RatingController {
             @ApiResponse(
                     responseCode = "500",
                     description = "Internal Server Error",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             )
     })
     @GetMapping("/{recipeId}/all")
-    public ResponseEntity<Data<List<RatingDto>>> getAllRatingsByRecipeId(@PathVariable UUID recipeId) {
-        return ResponseEntity.ok(ratingService.getAllRatingsByRecipeId(recipeId));
+    public ResponseEntity<Set<RatingDto>> getAllRatingsByRecipeId(@PathVariable UUID recipeId) {
+        return ResponseEntity.ok(ratingService.findAllRatingsByRecipeId(recipeId));
     }
 
     @Operation(summary = "Get all user's ratings", description = "Requires to be authenticated")
@@ -90,12 +93,14 @@ public class RatingController {
             @ApiResponse(
                     responseCode = "201",
                     description = "Operation success",
-                    content = @Content(schema = @Schema(implementation = RatingDto.class), mediaType = "application/json")
+                    content = @Content(schema = @Schema(implementation = RatingDto.class),
+                            mediaType = "application/json")
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid request data",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -105,11 +110,12 @@ public class RatingController {
             @ApiResponse(
                     responseCode = "500",
                     description = "Internal Server Error",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             )
     })
-    @GetMapping("/byUser")
-    public ResponseEntity<Data<List<RatingDto>>> getAllRatingsByUser(Authentication authentication) {
-        return ResponseEntity.ok(ratingService.getAllRatingsByUser(authentication));
+    @GetMapping("/byUser/{userId}")
+    public ResponseEntity<Set<RatingDto>> getAllRatingsByUser(@PathVariable UUID userId) {
+        return ResponseEntity.ok(ratingService.findAllRatingsByUserId(userId));
     }
 }

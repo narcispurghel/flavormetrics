@@ -1,160 +1,144 @@
 package com.flavormetrics.api.service.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import java.util.List;
-import java.util.UUID;
-
+import com.flavormetrics.api.entity.Authority;
+import com.flavormetrics.api.entity.Email;
+import com.flavormetrics.api.entity.User;
+import com.flavormetrics.api.enums.JwtTokens;
+import com.flavormetrics.api.exception.EmailInUseException;
+import com.flavormetrics.api.exception.UnAuthorizedException;
+import com.flavormetrics.api.model.UserDetailsImpl;
+import com.flavormetrics.api.model.request.LoginRequest;
+import com.flavormetrics.api.model.request.RegisterRequest;
+import com.flavormetrics.api.model.response.RegisterResponse;
+import com.flavormetrics.api.repository.AuthorityRepository;
+import com.flavormetrics.api.repository.UserRepository;
+import com.flavormetrics.api.service.JwtService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.flavormetrics.api.entity.Authority;
-import com.flavormetrics.api.entity.Email;
-import com.flavormetrics.api.entity.user.User;
-import com.flavormetrics.api.entity.user.impl.Nutritionist;
-import com.flavormetrics.api.exception.impl.DuplicateEmailException;
-import com.flavormetrics.api.exception.impl.NotAllowedRequestException;
-import com.flavormetrics.api.factory.UserFactory;
-import com.flavormetrics.api.model.Data;
-import com.flavormetrics.api.model.enums.RoleType;
-import com.flavormetrics.api.model.request.LoginRequest;
-import com.flavormetrics.api.model.request.RegisterRequest;
-import com.flavormetrics.api.model.response.LoginResponse;
-import com.flavormetrics.api.model.response.RegisterResponse;
-import com.flavormetrics.api.repository.UserRepository;
-import com.flavormetrics.api.service.AuthService;
-import com.flavormetrics.api.service.JwtService;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceImplTest {
-    private static final String USERNAME = "test@flavormetrics.com";
-    private static final UUID ID = UUID.randomUUID();
-    private static final String FIRST_NAME = "Test";
-    private static final String LAST_NAME = "Nutritionist";
-    private static final RoleType ROLE = RoleType.ROLE_NUTRITIONIST;
-    private static final String PASSWORD = "testpassword";
-    private static final String JWT = "mockJwt";
 
     @Mock
-    private AuthenticationManager authenticationManager;
+    private AuthenticationManager authManager;
 
     @Mock
     private JwtService jwtService;
 
     @Mock
-    private UserRepository userRepository;
+    private UserRepository userRepo;
 
     @Mock
-    private UserFactory userFactory;
+    private PasswordEncoder passwordEncoder;
 
-    private AuthService authService;
+    @Mock
+    private AuthorityRepository authorityRepo;
+
+    @Mock
+    private HttpServletResponse httpResponse;
+
+    @InjectMocks
+    private AuthServiceImpl authService;
 
     @BeforeEach
     void setUp() {
         authService = new AuthServiceImpl(
-                authenticationManager,
-                jwtService,
-                userRepository,
-                userFactory
+                authManager, jwtService, userRepo, passwordEncoder, authorityRepo, "dev"
         );
     }
 
     @Test
-    void registerUser() {
-        final Email email = new Email(USERNAME);
-        final User user = new Nutritionist(PASSWORD, email);
-        user.setFirstName(FIRST_NAME);
-        user.setLastName(LAST_NAME);
-        user.setId(ID);
-        user.setAuthorities(List.of(new Authority(ROLE)));
-        final RegisterRequest request = new RegisterRequest(USERNAME, FIRST_NAME, LAST_NAME, PASSWORD, ROLE);
-        Mockito.when(userRepository.existsByUsername_Value(USERNAME))
-                .thenReturn(false);
-        Mockito.when(userFactory.createUser(request))
-                .thenReturn(user);
-        Mockito.when(userRepository.save(user))
-                .thenReturn(user);
-        final Data<RegisterResponse> response = authService.registerUser(request, null);
-        assertNotNull(response);
-        assertNotNull(response.data());
-        assertEquals(ID, response.data().userId());
-        assertEquals(USERNAME, response.data().username());
-        assertEquals(FIRST_NAME, response.data().firstName());
-        assertEquals(LAST_NAME, response.data().lastName());
-        assertEquals(ROLE, response.data().role());
+    void signup_validRequest_returnsResponse() {
+        var req = new RegisterRequest("test@email.com", "TestFirstName", "TestLastName", "testPassword");
+        when(userRepo.existsByEmail_Address(req.email())).thenReturn(false);
+        Authority authority = new Authority();
+        UUID authorityId = UUID.fromString("a6fc69e5-3252-44fa-91a3-d2b74bdd24a5");
+        when(authorityRepo.getReferenceById(authorityId)).thenReturn(authority);
+        when(passwordEncoder.encode(req.password())).thenReturn("hashed");
+
+        User savedUser = new User();
+        savedUser.setFirstName("TestFirstName");
+        savedUser.setLastName("TestLastName");
+        savedUser.setEmail(new Email(req.email()));
+
+        when(userRepo.save(any(User.class))).thenReturn(savedUser);
+
+        RegisterResponse response = authService.signup(req);
+
+        assertEquals("TestFirstName", response.firstName());
+        assertEquals("TestLastName", response.lastName());
+        assertEquals("test@email.com", response.email());
     }
 
     @Test
-    void registerUserThrowsNotAllowedRequestExceptionWithNullData() {
-        assertThrows(NotAllowedRequestException.class, () -> authService.registerUser(null, null));
+    void signup_emailExists_throwsEmailInUseException() {
+        var req = new RegisterRequest("test@email.com", "TestFirstName", "TestLastName", "testPassword");
+        when(userRepo.existsByEmail_Address(req.email())).thenReturn(true);
+
+        assertThrows(EmailInUseException.class, () -> authService.signup(req));
     }
 
     @Test
-    void registerUserThrowsNotAllowedRequestExceptionWithAdminRole() {
-        final RegisterRequest request = new RegisterRequest(USERNAME, FIRST_NAME, LAST_NAME, PASSWORD, RoleType.ROLE_ADMIN);
-        assertThrows(NotAllowedRequestException.class, () -> authService.registerUser(request, null));
+    void signup_authorityNotFound_throwsEntityNotFoundException() {
+        var req = new RegisterRequest("test@email.com", "TestFirstName", "TestLastName", "testPassword");
+        when(userRepo.existsByEmail_Address(req.email())).thenReturn(false);
+        when(authorityRepo.getReferenceById(any())).thenThrow(new EntityNotFoundException("Authority not found"));
+
+        assertThrows(EntityNotFoundException.class, () -> authService.signup(req));
     }
 
     @Test
-    void registerUserThrowsNotAllowedRequestExceptionWithNonNullAuthentication() {
-        final Email email = new Email(USERNAME);
-        final User user = new Nutritionist(PASSWORD, email);
-        user.setFirstName(FIRST_NAME);
-        user.setLastName(LAST_NAME);
-        user.setId(ID);
-        user.setAuthorities(List.of(new Authority(ROLE)));
-        final RegisterRequest request = new RegisterRequest(USERNAME, FIRST_NAME, LAST_NAME, PASSWORD, ROLE);
-        Mockito.when(userRepository.existsByUsername_Value(USERNAME))
-                .thenReturn(false);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-        assertThrows(NotAllowedRequestException.class, () -> authService.registerUser(request, authentication));
+    void authenticate_validCredentials_returnsUser() {
+        LoginRequest req = new LoginRequest("test@email.com", "pass");
+        var user = new User();
+        var email = new Email("test@email.com");
+        user.setEmail(email);
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+        Authentication auth = mock(Authentication.class);
+
+        when(authManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
+        when(auth.getPrincipal()).thenReturn(userDetails);
+        when(jwtService.generateToken(eq(req.email()), eq(JwtTokens.ACCESS))).thenReturn("access-token");
+        when(jwtService.generateToken(eq(req.email()), eq(JwtTokens.REFRESH))).thenReturn("refresh-token");
+
+        UserDetailsImpl result = authService.authenticate(req, httpResponse);
+
+        assertEquals(userDetails.getUsername(), result.getUsername());
+        verify(httpResponse, atLeastOnce()).addHeader(eq("Set-Cookie"), contains("access-token"));
+        verify(httpResponse, atLeastOnce()).addHeader(eq("Set-Cookie"), contains("refresh-token"));
     }
 
     @Test
-    void registerUserThrowsDuplicateEmailException() {
-        final RegisterRequest request = new RegisterRequest(USERNAME, FIRST_NAME, LAST_NAME, PASSWORD, ROLE);
-        Mockito.when(userRepository.existsByUsername_Value(USERNAME))
-                .thenReturn(true);
-        assertThrows(DuplicateEmailException.class, () -> authService.registerUser(request, null));
+    void authenticate_invalidCredentials_throwsUnAuthorizedException() {
+        LoginRequest req = new LoginRequest("wrong@email.com", "wrong");
+        when(authManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad credentials"));
+
+        assertThrows(UnAuthorizedException.class, () -> authService.authenticate(req, httpResponse));
     }
 
     @Test
-    void authenticate() {
-        final Email email = new Email(USERNAME);
-        final User user = new Nutritionist(PASSWORD, email);
-        user.setAuthorities(List.of(new Authority(ROLE)));
-        final List<String> roles = user.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
-        final LoginRequest request = new LoginRequest(USERNAME, PASSWORD);
-        Mockito.when(userRepository.getByUsername_Value(USERNAME))
-                .thenReturn(user);
-        Mockito.when(jwtService.generateToken(user))
-                .thenReturn(JWT);
-        final LoginResponse response = authService.authenticate(request, null);
-        assertNotNull(response);
-        assertEquals(USERNAME, response.username());
-        assertEquals(roles, response.roles());
-        assertEquals(JWT, response.token());
-    }
+    void logout_setsExpiredCookie() {
+        var mockResponse = mock(HttpServletResponse.class);
+        String result = authService.logout(mockResponse);
 
-    @Test
-    void authenticateThrowsNotAllowedRequestExceptionWithNonNullAuthentication() {
-        final Email email = new Email(USERNAME);
-        final User user = new Nutritionist(PASSWORD, email);
-        user.setAuthorities(List.of(new Authority(ROLE)));
-        final LoginRequest request = new LoginRequest(USERNAME, PASSWORD);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-        assertThrows(NotAllowedRequestException.class, () -> authService.authenticate(request, authentication));
+        assertEquals("Logout success!", result);
+        verify(mockResponse).addCookie(argThat(c -> c.getName().equals("Authorization") && c.getMaxAge() == 0));
     }
 }

@@ -3,13 +3,14 @@ package com.flavormetrics.api.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.flavormetrics.api.constants.EndpointsConstants;
+import com.flavormetrics.api.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,73 +21,26 @@ import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import com.flavormetrics.api.security.CustomAccessDeniedHandler;
-import com.flavormetrics.api.security.JwtAuthEntryPoint;
 import com.flavormetrics.api.security.JwtFilter;
 
 @Configuration
-@EnableWebSecurity(debug = true)
 public class SecurityConfig {
-    private static final String[] PUBLIC_API_ENDPOINTS = {
-            "/test",
-            "/static/**",
-            "/",
-            "/favicon.ico",
-            "/api/v1/auth/register",
-            "/api/v1/auth/login",
-            "/api/v1/recipe/all",
-            "/api/v1/recipe/byId/**",
-            "/api/v1/recipe/byFilter",
-            "/api/v1/recipe/byNutritionist/**",
-            "/login"
-    };
-    private static final String[] SWAGGER_ENDPOINTS = {
-            "/v3/api-docs.yaml",
-            "/v3/api-docs/**",
-            "/swagger-resources/**",
-            "/swagger-ui/**",
-            "/swagger-ui/index.html",
-            "/webjars/**",
-            "/swagger-ui/favicon-16x16.png",
-            "/swagger-ui/favicon-32x32.png",
-            "/swagger-ui/index.css",
-            "/swagger-ui/swagger-ui-bundle.js",
-            "/swagger-ui/swagger-ui-standalone-preset.js",
-            "/swagger-ui/swagger-ui.css",
-            "/swagger-ui/swagger-initializer.js",
-            "/v3/api-docs/swagger-config"
-    };
-    private static final String[] USER_ENDPOINTS = {
-            "/api/v1/recipe/byProfile/**",
-            "/api/v1/profile/**"
-    };
-
     private final UserDetailsService userDetailsService;
-    private final JwtFilter jwtFilter;
-    private final JwtAuthEntryPoint jwtAuthEntryPoint;
-    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final JwtAuthenticationFilter jwtFilter;
 
     public SecurityConfig(
             UserDetailsService userDetailsService,
-            JwtFilter jwtFilter,
-            JwtAuthEntryPoint jwtAuthEntryPoint,
-            CustomAccessDeniedHandler customAccessDeniedHandler) {
+            JwtAuthenticationFilter jwtFilter) {
         this.userDetailsService = userDetailsService;
         this.jwtFilter = jwtFilter;
-        this.jwtAuthEntryPoint = jwtAuthEntryPoint;
-        this.customAccessDeniedHandler = customAccessDeniedHandler;
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(request -> {
-                    request.requestMatchers(getPublicEndpoints())
+                    request.requestMatchers(EndpointsConstants.PUBLIC_ENDPOINTS.toArray(new String[0]))
                             .permitAll();
-                    request.requestMatchers("/api/v1/recipe/protected/**")
-                            .hasRole("NUTRITIONIST");
-                    request.requestMatchers(USER_ENDPOINTS)
-                            .hasRole("USER");
                     request.requestMatchers("/api/v1/users/**")
                             .hasRole("ADMIN");
                     request.anyRequest().authenticated();
@@ -96,46 +50,31 @@ public class SecurityConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .authenticationManager(authenticationManager())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(e -> {
-                    e.authenticationEntryPoint(jwtAuthEntryPoint);
-                    e.accessDeniedHandler(customAccessDeniedHandler);
-                })
                 .addFilterAfter(jwtFilter, SecurityContextHolderFilter.class)
                 .build();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager() {
-        final var provider = new DaoAuthenticationProvider(userDetailsService);
+    AuthenticationManager authenticationManager() {
+        var provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return new ProviderManager(provider);
     }
 
-    public static String[] getPublicEndpoints() {
-        List<String> publicEndpointsTemp = new ArrayList<>();
-        publicEndpointsTemp.addAll(List.of(SWAGGER_ENDPOINTS));
-        publicEndpointsTemp.addAll(List.of(PUBLIC_API_ENDPOINTS));
-        String[] publicEndpoints = new String[publicEndpointsTemp.size()];
-        for (int i = 0; i < publicEndpointsTemp.size(); ++i) {
-            publicEndpoints[i] = publicEndpointsTemp.get(i);
-        }
-        return publicEndpoints;
-    }
-
     @Bean
-    public CorsConfigurationSource corsConfig() {
+    CorsConfigurationSource corsConfig() {
         final List<String> allowedMethods = List.of(
                 "DELETE", "POST", "PUT", "OPTIONS", "UPDATE", "GET", "PATCH");
-        final var corsConfig = new CorsConfiguration();
-        corsConfig.setAllowedMethods(allowedMethods);
-        corsConfig.setAllowCredentials(true);
-        corsConfig.addAllowedHeader("*");
-        corsConfig.addAllowedOrigin("http://127.0.0.1:3000");
-        return request -> corsConfig;
+        var config = new CorsConfiguration();
+        config.setAllowedMethods(allowedMethods);
+        config.setAllowCredentials(true);
+        config.addAllowedHeader("*");
+        config.addAllowedOrigin("http://127.0.0.1:3000");
+        return _ -> config;
     }
 }

@@ -2,15 +2,15 @@ package com.flavormetrics.api.entity;
 
 import jakarta.persistence.*;
 
-import java.io.Serial;
-import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 @Entity
-@Table(name = "email")
-public class Email implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
+@Table(name = "emails")
+public class Email  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -18,14 +18,25 @@ public class Email implements Serializable {
     private UUID id;
 
     @Column(nullable = false, unique = true)
-    private String value;
+    private String address;
 
-    public Email(String username) {
-        this.value = username;
-    }
+    @Column(name = "updated_at", columnDefinition = "timestamp not null default current_timestamp")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "created_at", updatable = false, columnDefinition = "timestamp not null default current_timestamp")
+    private final LocalDateTime createdAt;
+
+    @OneToOne(mappedBy = "email")
+    private User user;
 
     public Email() {
-        // No args constructor for JPA
+        this.updatedAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public Email(String address) {
+        this();
+        this.address = Objects.requireNonNull(address, "Address cannot be null");
     }
 
     public UUID getId() {
@@ -36,11 +47,58 @@ public class Email implements Serializable {
         this.id = id;
     }
 
-    public String getValue() {
-        return value;
+    public String getAddress() {
+        return address;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setAddress(String value) {
+        this.address = Objects.requireNonNull(value, "address cannot be null");
     }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = Objects.requireNonNull(user, "user cannot be null");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Email email)) {
+            return false;
+        }
+        return Objects.equals(address, email.address) &&
+                Objects.equals(createdAt, email.createdAt) &&
+                Objects.equals(updatedAt, email.updatedAt);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(address, createdAt, updatedAt);
+    }
+
+    @Override
+    @SuppressWarnings("StringBufferReplaceableByString")
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Email{");
+        sb.append("id=").append(id);
+        sb.append(", address='").append(address).append('\'');
+        sb.append(", user=").append(user == null ? "null" : user.getId());
+        sb.append('}');
+        return sb.toString();
+    }
+
 }

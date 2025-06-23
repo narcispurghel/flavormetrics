@@ -1,190 +1,206 @@
 package com.flavormetrics.api.service.impl;
 
-import com.flavormetrics.api.entity.Authority;
 import com.flavormetrics.api.entity.Email;
 import com.flavormetrics.api.entity.Recipe;
-import com.flavormetrics.api.entity.user.impl.Nutritionist;
+import com.flavormetrics.api.entity.User;
+import com.flavormetrics.api.exception.RecipeNotFoundException;
+import com.flavormetrics.api.exception.UnAuthorizedException;
+import com.flavormetrics.api.factory.AllergyFactory;
+import com.flavormetrics.api.factory.IngredientFactory;
 import com.flavormetrics.api.factory.RecipeFactory;
-import com.flavormetrics.api.model.Data;
-import com.flavormetrics.api.model.IngredientDto;
-import com.flavormetrics.api.model.RecipeDto;
-import com.flavormetrics.api.model.enums.*;
+import com.flavormetrics.api.factory.TagFactory;
+import com.flavormetrics.api.mapper.RecipeMapper;
+import com.flavormetrics.api.model.*;
+import com.flavormetrics.api.model.enums.DietaryPreferenceType;
+import com.flavormetrics.api.model.enums.DifficultyType;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
-import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
-import com.flavormetrics.api.repository.*;
-import com.flavormetrics.api.service.RecipeService;
-import com.flavormetrics.api.util.ModelConverter;
+import com.flavormetrics.api.repository.RecipeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class RecipeServiceImplTest {
-    private static final UUID RECIPE_ID = UUID.randomUUID();
-    private static final String NUTRITIONIST_USERNAME = "Test";
-    private static final String NUTRITIONIST_PASSWORD = "testpassword";
-    private static final RoleType NUTRITIONIST_ROLE = RoleType.ROLE_NUTRITIONIST;
-    private static final String NAME = "Test";
-    private static final List<IngredientDto> INGREDIENTS = List.of(
-            IngredientDto.builder()
-                    .name("Salt")
-                    .build()
-    );
-    private static final String IMAGE_URL = "Test";
-    private static final String INSTRUCTIONS = "Test";
-    private static final Integer PREP_TIME_MINUTES = 30;
-    private static final Integer COOK_TIME_MINUTES = 60;
-    private static final DifficultyType DIFFICULTY = DifficultyType.MEDIUM;
-    private static final Integer ESTIMATED_CALORIES = 600;
-    private static final List<TagType> TAGS = List.of(
-            TagType.ITALIAN,
-            TagType.HEALTHY
-    );
-    private static final List<AllergyType> ALLERGIES = List.of(
-            AllergyType.EGGS,
-            AllergyType.WHEAT
-    );
-    private static final List<DietaryPreferenceType> DIETARY_PREFERENCES = List.of(
-            DietaryPreferenceType.NONE
-    );
+    private UUID recipeId;
+    private UUID userId;
+    private Recipe recipe;
 
     @Mock
     private RecipeRepository recipeRepository;
 
     @Mock
-    private IngredientRepository ingredientRepository;
+    private RecipeFactory recipeFactory;
 
     @Mock
-    private NutritionistRepository nutritionistRepository;
+    private IngredientFactory ingredientFactory;
 
     @Mock
-    private UserRepository userRepository;
+    private AllergyFactory allergyFactory;
 
     @Mock
-    private ProfileRepository profileRepository;
+    private TagFactory tagFactory;
 
-    private RecipeService recipeService;
+    @Mock
+    private RecipeMapper recipeMapper;
+
+    @InjectMocks
+    private RecipeServiceImpl recipeService;
 
     @BeforeEach
     void setUp() {
-        recipeService = new RecipeServiceImpl(
-                recipeRepository,
-                ingredientRepository,
-                nutritionistRepository,
-                userRepository,
-                profileRepository
-        );
+        recipeId = UUID.randomUUID();
+        userId = UUID.randomUUID();
+        User user = new User();
+        user.setId(userId);
+        Email email = new Email();
+        email.setAddress("test@email.com");
+        email.setUser(user);
+        user.setEmail(email);
+        recipe = new Recipe();
+        recipe.setUser(user);
+        recipe.setId(recipeId);
+
+        var principal = new UserDetailsImpl(user);
+        var auth = new TestingAuthenticationToken(principal, null);
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
     @Test
-    void testAddRecipe() {
-        final AddRecipeRequest request = new AddRecipeRequest(
-                NAME,
-                INGREDIENTS,
-                IMAGE_URL,
-                INSTRUCTIONS,
-                PREP_TIME_MINUTES,
-                COOK_TIME_MINUTES,
-                DIFFICULTY,
-                ESTIMATED_CALORIES,
-                TAGS,
-                ALLERGIES,
-                DIETARY_PREFERENCES
-        );
-        final Email email = new Email(NUTRITIONIST_USERNAME);
-        final Nutritionist nutritionist = new Nutritionist(NUTRITIONIST_PASSWORD, email);
-        nutritionist.setAuthorities(List.of(new Authority(NUTRITIONIST_ROLE)));
-        final Recipe recipe = RecipeFactory.getRecipe(request, nutritionist);
-        recipe.setId(RECIPE_ID);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(nutritionist, null, nutritionist.getAuthorities());
-        Mockito.when(nutritionistRepository.getByUsername_Value(NUTRITIONIST_USERNAME))
-                .thenReturn(Optional.of(nutritionist));
-        Mockito.when(ingredientRepository.existsByName(INGREDIENTS.getFirst().name()))
-                .thenReturn(false);
-        Mockito.when(ingredientRepository.save(ModelConverter.toIngredient(INGREDIENTS.getFirst())))
-                .thenReturn(ModelConverter.toIngredient(INGREDIENTS.getFirst()));
-        Mockito.when(recipeRepository.save(any(Recipe.class)))
-                .thenReturn(recipe);
-        final Data<RecipeDto> response = recipeService.add(request, authentication);
-        assertNotNull(response);
-        assertNotNull(response.data());
-        assertEquals(NUTRITIONIST_USERNAME, response.data().nutritionist());
-        assertEquals(RECIPE_ID, response.data().id());
-        assertEquals(NAME, response.data().name());
-        assertEquals(INSTRUCTIONS, response.data().instructions());
-        assertEquals(IMAGE_URL, response.data().imageUrl());
-        assertEquals(PREP_TIME_MINUTES, response.data().prepTimeMinutes());
-        assertEquals(COOK_TIME_MINUTES, response.data().cookTimeMinutes());
-        assertEquals(DIFFICULTY, response.data().difficulty());
-        assertEquals(ESTIMATED_CALORIES, response.data().estimatedCalories());
-        assertNull(response.data().averageRating());
-        assertFalse(LocalDateTime.now().isBefore(response.data().createdAt()));
-        assertFalse(LocalDateTime.now().isBefore(response.data().updatedAt()));
+    void create_validRequest_returnsId() {
+        AddRecipeRequest req = mock(AddRecipeRequest.class);
+        UUID expectedId = UUID.randomUUID();
+
+        when(recipeFactory.create(req, userId)).thenReturn(expectedId);
+
+        UUID result = recipeService.create(req);
+
+        assertEquals(expectedId, result);
+        verify(recipeFactory).create(req, userId);
     }
 
     @Test
-    void getById() {
-        final AddRecipeRequest request = new AddRecipeRequest(
-                NAME,
-                INGREDIENTS,
-                IMAGE_URL,
-                INSTRUCTIONS,
-                PREP_TIME_MINUTES,
-                COOK_TIME_MINUTES,
-                DIFFICULTY,
-                ESTIMATED_CALORIES,
-                TAGS,
-                ALLERGIES,
-                DIETARY_PREFERENCES
-        );
-        final Email email = new Email(NUTRITIONIST_USERNAME);
-        final Nutritionist nutritionist = new Nutritionist(NUTRITIONIST_PASSWORD, email);
-        nutritionist.setAuthorities(List.of(new Authority(NUTRITIONIST_ROLE)));
-        final Recipe recipe = RecipeFactory.getRecipe(request, nutritionist);
-        recipe.setId(RECIPE_ID);
-        Mockito.when(recipeRepository.getRecipeById(RECIPE_ID))
-                .thenReturn(Optional.of(recipe));
-        final Data<RecipeDto> response = recipeService.getById(RECIPE_ID);
-        assertNotNull(response);
-        assertNotNull(response.data());
-        assertEquals(NUTRITIONIST_USERNAME, response.data().nutritionist());
-        assertEquals(RECIPE_ID, response.data().id());
-        assertEquals(NAME, response.data().name());
-        assertEquals(INSTRUCTIONS, response.data().instructions());
-        assertEquals(IMAGE_URL, response.data().imageUrl());
-        assertEquals(PREP_TIME_MINUTES, response.data().prepTimeMinutes());
-        assertEquals(COOK_TIME_MINUTES, response.data().cookTimeMinutes());
-        assertEquals(DIFFICULTY, response.data().difficulty());
-        assertEquals(ESTIMATED_CALORIES, response.data().estimatedCalories());
-        assertNull(response.data().averageRating());
-        assertFalse(LocalDateTime.now().isBefore(response.data().createdAt()));
-        assertFalse(LocalDateTime.now().isBefore(response.data().updatedAt()));
+    void getById_existingRecipe_returnsDto() {
+        RecipeDto dto = new RecipeDto(recipe);
+
+        when(recipeRepository.getRecipeByIdEager(recipeId)).thenReturn(Optional.of(recipe));
+
+        RecipeDto result = recipeService.getById(recipeId);
+
+        assertEquals(dto, result);
     }
 
     @Test
-    void getByNutritionist() {
-        Mockito.when(userRepository.existsByUsername_Value(NUTRITIONIST_USERNAME))
-                .thenReturn(true);
-        Mockito.when(recipeRepository.getRecipesByNutritionist_Username_Value(NUTRITIONIST_USERNAME))
-                .thenReturn(List.of());
-        final Data<RecipesByNutritionistResponse> response = recipeService.getByNutritionist(NUTRITIONIST_USERNAME);
-        assertNotNull(response);
-        assertNotNull(response.data());
-        assertEquals(NUTRITIONIST_USERNAME, response.data().username());
-        assertNotNull(response.data().recipes());
+    void getById_notFound_throwsException() {
+        when(recipeRepository.getRecipeByIdEager(recipeId)).thenReturn(Optional.empty());
+
+        assertThrows(RecipeNotFoundException.class, () -> recipeService.getById(recipeId));
     }
 
+    @Test
+    void updateById_authorized_updatesAndReturnsDto() {
+        AddRecipeRequest req = mock(AddRecipeRequest.class);
+
+        when(recipeRepository.getRecipeByIdEager(recipeId)).thenReturn(Optional.of(recipe));
+        when(ingredientFactory.checkIfExistsOrElseSave(req)).thenReturn(Set.of());
+        when(allergyFactory.checkIfExistsOrElseSave(any())).thenReturn(Set.of());
+        when(tagFactory.checkIfExistsOrElseSave(req)).thenReturn(Set.of());
+        when(recipeRepository.save(any())).thenReturn(recipe);
+
+        RecipeDto result = recipeService.updateById(recipeId, req);
+
+        assertEquals(new RecipeDto(recipe), result);
+    }
+
+    @Test
+    void updateById_unauthorized_throwsException() {
+        AddRecipeRequest req = mock(AddRecipeRequest.class);
+        Recipe recipe = new Recipe();
+        User otherUser = new User();
+        Email email = new Email();
+        email.setAddress("other@example.com");
+        otherUser.setEmail(email);
+        recipe.setUser(otherUser);
+
+        when(recipeRepository.getRecipeByIdEager(recipeId)).thenReturn(Optional.of(recipe));
+
+        assertThrows(UnAuthorizedException.class, () -> recipeService.updateById(recipeId, req));
+    }
+
+    @Test
+    void deleteById_callsRepositoryDelete() {
+        recipeService.deleteById(recipeId);
+        verify(recipeRepository).deleteById(recipeId);
+    }
+
+    @Test
+    void findAll_returnsPaginatedData() {
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Recipe> recipes = List.of(recipe);
+
+        when(recipeRepository.findAll(pageable)).thenReturn(new PageImpl<>(recipes));
+
+        DataWithPagination<List<RecipeDto>> result = recipeService.findAll(1, 10);
+
+        assertEquals(1, result.data().size());
+    }
+
+    @Test
+    void findAllByUserEmail_returnsPaginatedOwnerData() {
+        Pageable pageable = PageRequest.of(0, 10);
+        String email = "test@example.com";
+        List<Recipe> recipes = List.of(recipe);
+        List<RecipeDto> recipesDto = recipes.stream().map(RecipeDto::new).toList();
+
+        when(recipeRepository.findByOwner(email, pageable)).thenReturn(new PageImpl<>(recipes));
+        when(recipeMapper.toRecipeByOwner(any(), eq(email))).thenReturn(new RecipeByOwner(email, recipesDto));
+
+        DataWithPagination<RecipeByOwner> result = recipeService.findAllByUserEmail(email, 1, 10);
+
+        assertEquals(1, result.data().recipes().size());
+        assertEquals(email, result.data().owner());
+    }
+
+    @Test
+    void findAllByRecipeFilter_returnsFilteredPaginatedData() {
+        Pageable pageable = PageRequest.of(0, 10);
+        RecipeFilter filter = new RecipeFilter(10, 10, 200, DifficultyType.EASY, DietaryPreferenceType.VEGAN);
+        List<Recipe> recipes = List.of(recipe);
+
+        when(recipeRepository.findAllByFilter(10, 10, 200, DifficultyType.EASY, DietaryPreferenceType.VEGAN, pageable))
+                .thenReturn(new PageImpl<>(recipes));
+
+        DataWithPagination<List<RecipeDto>> result = recipeService.findAllByRecipeFilter(filter, 1, 10);
+
+        assertEquals(1, result.data().size());
+    }
+
+    @Test
+    void getRecommendations_returnsPaginatedData() {
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Recipe> recipes = List.of(recipe);
+
+        when(recipeRepository.findAllRecommendations(userId, pageable)).thenReturn(new PageImpl<>(recipes));
+
+        DataWithPagination<Set<RecipeDto>> result = recipeService.getRecommendations(0, 10);
+
+        assertEquals(1, result.data().size());
+    }
 }
