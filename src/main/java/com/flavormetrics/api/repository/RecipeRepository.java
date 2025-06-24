@@ -21,6 +21,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
             LEFT JOIN FETCH r.ratings
             LEFT JOIN FETCH r.user
             LEFT JOIN FETCH r.ingredients
+            LEFT JOIN FETCH r.allergies
             WHERE r.id = ?1
             """)
     Optional<Recipe> getRecipeByIdEager(UUID id);
@@ -39,9 +40,9 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
             AND (r.dietaryPreferences = ?5)
             """)
     Page<Recipe> findAllByFilter(
-            int prepTimeMinutes,
             int cookTimeMinutes,
             int estimatedCalories,
+            int prepTimeMinutes,
             DifficultyType difficulty,
             DietaryPreferenceType dietaryPreference,
             Pageable pageable);
@@ -63,7 +64,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
                 JOIN r.user u
                 JOIN u.profile p
                 JOIN p.allergies pa
-                WHERE u.id = :userId
+                WHERE u.id = ?1
                 AND u.profile IS NOT NULL
                 AND NOT EXISTS (
                     SELECT 1

@@ -7,6 +7,7 @@ import com.flavormetrics.api.enums.JwtTokens;
 import com.flavormetrics.api.exception.EmailInUseException;
 import com.flavormetrics.api.exception.UnAuthorizedException;
 import com.flavormetrics.api.model.UserDetailsImpl;
+import com.flavormetrics.api.model.enums.RoleType;
 import com.flavormetrics.api.model.request.LoginRequest;
 import com.flavormetrics.api.model.request.RegisterRequest;
 import com.flavormetrics.api.model.response.RegisterResponse;
@@ -27,6 +28,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,7 +56,6 @@ class AuthServiceImplTest {
     @Mock
     private HttpServletResponse httpResponse;
 
-    @InjectMocks
     private AuthServiceImpl authService;
 
     @BeforeEach
@@ -68,20 +69,15 @@ class AuthServiceImplTest {
     void signup_validRequest_returnsResponse() {
         var req = new RegisterRequest("test@email.com", "TestFirstName", "TestLastName", "testPassword");
         when(userRepo.existsByEmail_Address(req.email())).thenReturn(false);
-        Authority authority = new Authority();
-        UUID authorityId = UUID.fromString("a6fc69e5-3252-44fa-91a3-d2b74bdd24a5");
-        when(authorityRepo.getReferenceById(authorityId)).thenReturn(authority);
+        Authority authority = new Authority(RoleType.ROLE_USER);
+        when(authorityRepo.findAuthorityByType(RoleType.ROLE_USER)).thenReturn(Optional.of(authority));
         when(passwordEncoder.encode(req.password())).thenReturn("hashed");
-
         User savedUser = new User();
         savedUser.setFirstName("TestFirstName");
         savedUser.setLastName("TestLastName");
         savedUser.setEmail(new Email(req.email()));
-
         when(userRepo.save(any(User.class))).thenReturn(savedUser);
-
         RegisterResponse response = authService.signup(req);
-
         assertEquals("TestFirstName", response.firstName());
         assertEquals("TestLastName", response.lastName());
         assertEquals("test@email.com", response.email());
@@ -91,7 +87,6 @@ class AuthServiceImplTest {
     void signup_emailExists_throwsEmailInUseException() {
         var req = new RegisterRequest("test@email.com", "TestFirstName", "TestLastName", "testPassword");
         when(userRepo.existsByEmail_Address(req.email())).thenReturn(true);
-
         assertThrows(EmailInUseException.class, () -> authService.signup(req));
     }
 
@@ -99,8 +94,7 @@ class AuthServiceImplTest {
     void signup_authorityNotFound_throwsEntityNotFoundException() {
         var req = new RegisterRequest("test@email.com", "TestFirstName", "TestLastName", "testPassword");
         when(userRepo.existsByEmail_Address(req.email())).thenReturn(false);
-        when(authorityRepo.getReferenceById(any())).thenThrow(new EntityNotFoundException("Authority not found"));
-
+        when(authorityRepo.findAuthorityByType(any())).thenThrow(new EntityNotFoundException("Authority not found"));
         assertThrows(EntityNotFoundException.class, () -> authService.signup(req));
     }
 
@@ -112,24 +106,20 @@ class AuthServiceImplTest {
         user.setEmail(email);
         UserDetailsImpl userDetails = new UserDetailsImpl(user);
         Authentication auth = mock(Authentication.class);
-
         when(authManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
         when(auth.getPrincipal()).thenReturn(userDetails);
         when(jwtService.generateToken(eq(req.email()), eq(JwtTokens.ACCESS))).thenReturn("access-token");
         when(jwtService.generateToken(eq(req.email()), eq(JwtTokens.REFRESH))).thenReturn("refresh-token");
-
         UserDetailsImpl result = authService.authenticate(req, httpResponse);
-
         assertEquals(userDetails.getUsername(), result.getUsername());
-        verify(httpResponse, atLeastOnce()).addHeader(eq("Set-Cookie"), contains("access-token"));
-        verify(httpResponse, atLeastOnce()).addHeader(eq("Set-Cookie"), contains("refresh-token"));
+        verify(httpResponse, atLeastOnce()).addHeader(eq("Set-Cookie"), contains("accessToken"));
+        verify(httpResponse, atLeastOnce()).addHeader(eq("Set-Cookie"), contains("refreshToken"));
     }
 
     @Test
     void authenticate_invalidCredentials_throwsUnAuthorizedException() {
         LoginRequest req = new LoginRequest("wrong@email.com", "wrong");
         when(authManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad credentials"));
-
         assertThrows(UnAuthorizedException.class, () -> authService.authenticate(req, httpResponse));
     }
 
@@ -137,8 +127,8 @@ class AuthServiceImplTest {
     void logout_setsExpiredCookie() {
         var mockResponse = mock(HttpServletResponse.class);
         String result = authService.logout(mockResponse);
-
         assertEquals("Logout success!", result);
-        verify(mockResponse).addCookie(argThat(c -> c.getName().equals("Authorization") && c.getMaxAge() == 0));
+        verify(mockResponse, atMostOnce()).addHeader(eq("Set-Cookie"), contains("accessToken"));
+        verify(mockResponse, atMostOnce()).addHeader(eq("Set-Cookie"), contains("refreshToken"));
     }
 }

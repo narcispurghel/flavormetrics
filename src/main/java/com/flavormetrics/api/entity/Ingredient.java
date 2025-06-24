@@ -4,6 +4,7 @@ import com.flavormetrics.api.model.IngredientDto;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -25,7 +26,7 @@ public class Ingredient {
     private final LocalDateTime createdAt;
 
     @ManyToMany(mappedBy = "ingredients")
-    private Set<Recipe> recipes;
+    private Set<Recipe> recipes =  new HashSet<>();
 
     public Ingredient() {
         this.updatedAt = LocalDateTime.now();
@@ -103,7 +104,7 @@ public class Ingredient {
         StringBuilder sb = new StringBuilder("Ingredient{");
         sb.append("id=").append(id);
         sb.append(", name='").append(name).append('\'');
-        sb.append(", recipes=").append(recipes.size());
+        sb.append(", recipes=").append(recipes == null ? "null" : recipes.size());
         sb.append(", updatedAt=").append(updatedAt);
         sb.append(", createdAt=").append(createdAt);
         sb.append('}');

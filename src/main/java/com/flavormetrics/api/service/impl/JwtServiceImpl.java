@@ -26,7 +26,7 @@ import static java.time.Instant.now;
 
 @Service
 public class JwtServiceImpl implements JwtService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JwtServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(JwtServiceImpl.class);
 
     private final String secretKet;
 
@@ -95,7 +95,7 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String extractUsername(String token) throws JwtException {
         Objects.requireNonNull(token, "Token cannot be null.");
-        LOGGER.info("Extracting email from jwt token");
+        log.info("Extracting email from jwt token");
         DecodedJWT decoded = decodeToken(token);
         if (decoded.getSubject() == null || decoded.getSubject().isBlank()) {
             throw new JwtException("Invalid JWT");
@@ -108,26 +108,26 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public String getCookieValueFromRequest(HttpServletRequest request,
-                                            String cookieName) {
+    public String getCookieValueFromRequest(HttpServletRequest request, String cookieName) {
         Objects.requireNonNull(request, "Request cannot be null.");
         if (request.getCookies() == null) {
             return null;
         }
-        Optional<Cookie> cookie = Optional.ofNullable(request.getCookies())
+        return Optional.ofNullable(request.getCookies())
                 .map(Arrays::asList)
                 .orElse(Collections.emptyList())
                 .stream()
                 .filter(c -> cookieName.equals(c.getName()))
-                .findFirst();
-        return cookie.map(Cookie::getValue).orElse(null);
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElse(null);
     }
 
     @Override
     public boolean isAboveThreshold(Instant expire) {
         Objects.requireNonNull(expire, "Expire cannot be null.");
         long accessExpiration = expire.toEpochMilli() - Instant.now().toEpochMilli();
-        LOGGER.info("Access token expires in {} ms", accessExpiration);
+        log.info("Access token expires in {} ms", accessExpiration);
         return accessExpiration <= ACCESS_TOKEN_THRESHOLD;
     }
 

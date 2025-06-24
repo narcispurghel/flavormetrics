@@ -9,5 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.flavormetrics.api.entity.Authority;
 
 public interface AuthorityRepository extends JpaRepository<Authority, UUID> {
-    Optional<Authority> getAuthorityByType(RoleType roleType);
+    Optional<Authority> findAuthorityByType(RoleType roleType);
 }

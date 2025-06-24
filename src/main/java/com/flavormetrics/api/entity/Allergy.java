@@ -43,8 +43,7 @@ public class Allergy {
     public Allergy(AllergyType type) {
         this();
         this.name = Optional.ofNullable(type).map(AllergyType::name).orElseThrow(IllegalArgumentException::new);
-        this.description =
-                Optional.of(type).map(AllergyType::getDescription).orElseThrow(IllegalArgumentException::new);
+        this.description = Optional.of(type).map(AllergyType::getDescription).orElseThrow(IllegalArgumentException::new);
     }
 
     public Allergy(UUID uuid) {

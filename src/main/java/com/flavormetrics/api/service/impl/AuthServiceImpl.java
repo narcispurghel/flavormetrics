@@ -17,7 +17,6 @@ import com.flavormetrics.api.repository.UserRepository;
 import com.flavormetrics.api.service.AuthService;
 import com.flavormetrics.api.service.JwtService;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -34,7 +33,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import static com.flavormetrics.api.constants.JwtConstants.*;
 import static com.flavormetrics.api.enums.JwtTokens.ACCESS;
@@ -42,7 +40,7 @@ import static com.flavormetrics.api.enums.JwtTokens.REFRESH;
 
 @Service
 public class AuthServiceImpl implements AuthService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -74,7 +72,7 @@ public class AuthServiceImpl implements AuthService {
         }
         User user = new User();
         Email email = new Email(req.email());
-        Authority authority = authorityRepository.getAuthorityByType(RoleType.ROLE_USER)
+        Authority authority = authorityRepository.findAuthorityByType(RoleType.ROLE_USER)
                 .orElseThrow(() -> new EntityNotFoundException("Authority not found"));
         email.setUser(user);
         user.setEmail(email);
@@ -99,7 +97,7 @@ public class AuthServiceImpl implements AuthService {
             res.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
             return user;
         } catch (AuthenticationException e) {
-            LOGGER.debug("Authentication failed for user: {}", req.email());
+            log.debug("Authentication failed for user: {}", req.email());
             throw new UnAuthorizedException(e.getMessage());
         }
     }

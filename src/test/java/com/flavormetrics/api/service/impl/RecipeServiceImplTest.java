@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -57,9 +59,6 @@ class RecipeServiceImplTest {
 
     @Mock
     private TagFactory tagFactory;
-
-    @Mock
-    private RecipeMapper recipeMapper;
 
     @InjectMocks
     private RecipeServiceImpl recipeService;
@@ -164,18 +163,17 @@ class RecipeServiceImplTest {
 
     @Test
     void findAllByUserEmail_returnsPaginatedOwnerData() {
-        Pageable pageable = PageRequest.of(0, 10);
-        String email = "test@example.com";
-        List<Recipe> recipes = List.of(recipe);
-        List<RecipeDto> recipesDto = recipes.stream().map(RecipeDto::new).toList();
-
-        when(recipeRepository.findByOwner(email, pageable)).thenReturn(new PageImpl<>(recipes));
-        when(recipeMapper.toRecipeByOwner(any(), eq(email))).thenReturn(new RecipeByOwner(email, recipesDto));
-
-        DataWithPagination<RecipeByOwner> result = recipeService.findAllByUserEmail(email, 1, 10);
-
-        assertEquals(1, result.data().recipes().size());
-        assertEquals(email, result.data().owner());
+        try (MockedStatic<RecipeMapper> mockedRecipeMapper = mockStatic(RecipeMapper.class)) {
+            Pageable pageable = PageRequest.of(0, 10);
+            String email = "test@example.com";
+            List<Recipe> recipes = List.of(recipe);
+            List<RecipeDto> recipesDto = recipes.stream().map(RecipeDto::new).toList();
+            when(recipeRepository.findByOwner(email, pageable)).thenReturn(new PageImpl<>(recipes));
+            when(RecipeMapper.toRecipeByOwner(any(), eq(email))).thenReturn(new RecipeByOwner(email, recipesDto));
+            DataWithPagination<RecipeByOwner> result = recipeService.findAllByUserEmail(email, 1, 10);
+            assertEquals(1, result.data().recipes().size());
+            assertEquals(email, result.data().owner());
+        }
     }
 
     @Test

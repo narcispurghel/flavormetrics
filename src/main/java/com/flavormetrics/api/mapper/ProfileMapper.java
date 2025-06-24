@@ -4,7 +4,6 @@ import com.flavormetrics.api.entity.Profile;
 import com.flavormetrics.api.entity.User;
 import com.flavormetrics.api.model.AllergyDto;
 import com.flavormetrics.api.model.ProfileDto;
-import com.flavormetrics.api.model.request.CreateProfileRequest;
 
 import java.util.Collections;
 import java.util.Optional;

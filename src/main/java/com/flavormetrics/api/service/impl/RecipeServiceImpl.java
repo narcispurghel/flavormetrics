@@ -33,20 +33,17 @@ public class RecipeServiceImpl implements RecipeService {
     private final IngredientFactory ingredientFactory;
     private final AllergyFactory allergyFactory;
     private final TagFactory tagFactory;
-    private final RecipeMapper recipeMapper;
 
     public RecipeServiceImpl(RecipeRepository recipeRepository,
                              RecipeFactory recipeFactory,
                              IngredientFactory ingredientFactory,
                              AllergyFactory allergyFactory,
-                             TagFactory tagFactory,
-                             RecipeMapper recipeMapper) {
+                             TagFactory tagFactory) {
         this.recipeRepository = recipeRepository;
         this.recipeFactory = recipeFactory;
         this.ingredientFactory = ingredientFactory;
         this.allergyFactory = allergyFactory;
         this.tagFactory = tagFactory;
-        this.recipeMapper = recipeMapper;
     }
 
     @Override
@@ -134,7 +131,7 @@ public class RecipeServiceImpl implements RecipeService {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return Optional.of(recipeRepository.findByOwner(email, pageable))
                 .map(p -> new DataWithPagination<>(
-                        recipeMapper.toRecipeByOwner(p.getContent(), email), pageSize, pageNumberMinusOne,
+                        RecipeMapper.toRecipeByOwner(p.getContent(), email), pageSize, pageNumberMinusOne,
                         p.getTotalPages()))
                 .get();
     }
