@@ -1,79 +1,194 @@
-# FlavorMetrics
+# FlavorMetrics API
 
-FlavorMetrics is an REST API created in Java programming language using Spring Framework.
+FlavorMetrics is a robust RESTful API built with Spring Boot 3 that allows users to manage recipes, provide ratings, and interact through a secure and role-based authorization system.
+This API is designed with clean architecture principles, DTO separation, and data validation, making it scalable and easy to maintain.
 
-I created this REST API as the final project for the Java programming course at IT-School. The application showcases advanced features like authentication for three types of users, recipe management, and personalized user profiles. It combines practical functionality with a user-centered design, reflecting the skills and knowledge gained during the course.
+---
 
-## Key Features:
-- **Advanced Authentication**: Support for three types of users with distinct roles.
-- **Recipe Addition**: Users can create and save new recipes.
-- **Advanced Search**: Find recipes based on specific criteria (e.g., ingredients, preparation time).
-- **Profile Customization**:
-    - Set **culinary preferences** (e.g., preferred cuisine types).
-    - Add **allergy information** to filter relevant and safe recipes.
+## 🚀 Features
 
-This application is designed for cooking enthusiasts, providing a well-organized, safe, and personalized platform for managing and searching recipes
+- ✅ User registration and authentication (JWT-based)
+- ✅ Role-based access control (ADMIN / USER)
+- ✅ Recipe CRUD operations
+- ✅ Rating system for recipes
+- ✅ Profile and email management
+- ✅ Ownership filtering and data projection via DTOs
+- ✅ Exception handling with meaningful HTTP responses
+---
 
-## Technologies Used
+## 🧱 Tech Stack
 
-This project utilizes the following technologies and frameworks:
+| Technology      | Purpose                                 |
+|-----------------|-----------------------------------------|
+| Java 21         | Core language                           |
+| Spring Boot 3   | Application framework                   |
+| Spring Security | JWT-based authentication                |
+| Hibernate (JPA) | ORM and persistence                     |
+| PostgreSQL      | Relational database                     |
+| Maven           | Build and dependency management         |
+| Mockito         | Mocking dependencies and service layers |
+| JUnit 5         | Unit testing framework                  |
+| AssertJ         | Fluent and expressive test assertions   |
 
-- **[PostgreSQL](https://www.postgresql.org/)** - A relational database management system.
-- **[Spring Boot](https://spring.io/projects/spring-boot)** - A Java-based framework for rapid application development.
-- **[Spring Framework](https://spring.io/projects/spring-framework)** - A robust, modular framework for building Java applications.
-- **[Hibernate](https://hibernate.org/)** - An Object-Relational Mapping (ORM) framework for Java.
-- **[Java](https://www.java.com/)** - The main programming language used in this application.
+---
 
-## Documentation:
-Full documentation of the API endpoints and returned datatypes can be read accessing [Swagger-UI](http://localhost:8080/swagger-ui/index.html) as soon as you run the app.
+## 🗂️ Domain Model Overview
 
-## Installation
+### Entities
 
-### Prerequisite
-This project requires [JRE](https://bell-sw.com/pages/downloads/?version=java-21&os=windows&package=jre-full) or [JDK](https://www.oracle.com/ro/java/technologies/downloads/#java21) version 21 installed on your pc.
-Also, you need to install [PostgreSQL](https://www.postgresql.org/download/) server version 17 and configure [application.properties](src/main/resources/application.yaml) file with your database credentials.
+- **User**
+  - First name, last name, email (wrapped in a value object)
+  - Roles (authorities)
+  - Profile, ratings, and owned recipes
 
-Inside the main folder run:
+
+- **Recipe**
+  - Name, description, difficulty, dietary preferences
+  - Linked to an owner (user)
+  - Can be rated by other users
+
+
+- **Rating**
+  - Linked to a user and a recipe
+  - Score from 1 to 5
+  - DTO projection supports score and ownership
+
+
+- **Profile**
+  - Profile picture URL
+  - Bio / description
+  - Linked one-to-one with a User
+
+
+- **Email**
+  - Wrapper for user email address
+  - Allows future extensibility (e.g. verified flag, change history)
+  - Embedded or referenced from User
+
+
+- **Authority**
+  - Defines user roles (e.g. ROLE_USER, ROLE_ADMIN)
+  - Used by Spring Security for access control
+  - Mapped many-to-many with Users
+
+
+- **Recipe**
+  - Name, description
+  - Difficulty level (enum)
+  - Dietary preferences (e.g. vegan, gluten-free)
+  - Linked to an owner (User)
+  - Can be rated by other users
+  - Contains multiple ingredients, tags, and allergy warnings
+
+* Rating
+  * Score from 1 to 5
+  * Linked to a user and a recipe
+  * Used in DTO projections to show ownership and rating details
+
+
+* Ingredient
+  * Name, quantity, unit
+  * Associated with a Recipe
+  * Cascade persisted with the parent Recipe
+
+
+* Allergy
+  * Common allergens (e.g. peanuts, dairy)
+  * Linked to Recipes to help filter based on user sensitivities
+  * Cascade persisted with the parent Recipe
+
+
+* Tag
+  * Free-form keywords or categories (e.g. "keto", "quick", "Italian")
+  * Used for organizing and searching Recipes
+  * Cascade persisted with the parent Recipe
+
+---
+
+## 📦 DTOs
+
+- `UserDto`: Public view of a user
+- `RegisterResponse`: Returned after user registration
+- `RatingDto`: Maps rating with user and recipe
+- `RatingWithScore`: Projection used in user mappings
+- `RecipeDto`: Lightweight representation of a recipe
+- `RecipeByOwner`: Groups recipes by a specific owner
+- `ProfileDto`: Public view of a user's profile
+- `LoginResponse`: Returned after user authentication
+- `DataWithPaginations`: Groups recipes by a specific page-size and page-number
+
+---
+
+## 🔐 Authentication
+
+- JWT token issued after login
+- Roles and authorities used to restrict endpoints
+- Email-based user identification
+- Endpoints protected via custom security filter
+
+---
+
+## 🧪 Testing
+
+- Unit tests for services, mappers
+- Integration tests for repositories
+- Assertions via AssertJ and Mockito Assertions
+
+To run tests and generate coverage:
+
 ```bash
-./mvnw clean install
+mvn clean test
 ```
 
-### Run the application
-Again in the main folder run:
+## 📦 Build & Run
+### Prerequisites
+
+Java 21
+
+Maven 3.8+
+
+Docker & Docker Compose
+
+PostgreSQL (local or container)
+
+### !!! Don't skip this
+Create a .env file on the root folder of the project with properties:
+
+* SPRING_DATASOURCE_URL=jdbc:postgresql://<localhost | postgres>:5432/<your_db>
+* SPRING_DATASOURCE_USERNAME=<your_db_username>
+* SPRING_DATASOURCE_PASSWORD=<your_db_password>
+* POSTGRES_DB=<your_db>
+* POSTGRES_USER=<your_db_username>
+* POSTGRES_PASSWORD=<your_db_password>
+* JWT_SECURITY_KEY=<your_super_secret_key> (min 32 characters)
+* IMAGE_KIT_URL=<your_imagekit_url>
+* IMAGE_KIT_PRIVATE_KEY=<your_imagekit_private_key>
+* IMAGE_KIT_PUBLIC_KEY=<your_imagekit_public_key>
+
+### ▶️ Option 1: Run with Maven
+
 ```bash
-./mvnw spring-boot:run
+mvn clean install
 ```
-or run the jar script generated inside the target folder:
-```java
-java -jar ./target/flavormetrics-1.0.0.jar
+
+```bash
+mvn spring-boot:run
 ```
-## Contributing
+App will be available at: http://localhost:8080
 
-Pull requests are welcome. For major changes, please open an issue first
-to discuss what you would like to change.
+### 🐳 Option 2: Run with Docker Compose
+You can spin up the Spring Boot app + PostgreSQL using Docker Compose.
 
-Please make sure to update tests as appropriate.
+Run with Docker Compose:
 
-## License
+```bash
+docker-compose up --build
+```
 
-MIT License
+This will start:
 
-Copyright (c) [2025] [Narcis Purghel]
+1. [ ] PostgreSQL on port 5432
+2. [ ] 
+3. [ ] Spring Boot app on port 8080
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Access the app: http://localhost:8080
