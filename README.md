@@ -822,11 +822,8 @@ ROLE_ADMIN | ROLE_USER
 
 ## 🔑 Authentication
 
-Most endpoints require authentication via JWT token. Include the token in the Authorization header:
-
-```http
-Authorization: Bearer <your-jwt-token>
-```
+Most endpoints require authentication via JWT access and refresh tokens.
+Don't worry about that, after you log in the server puts them in the browser's cookies.
 
 ## 📝 Notes
 
