@@ -152,18 +152,20 @@ Docker & Docker Compose
 PostgreSQL (local or container)
 
 ### ❗ Don't skip this
-Create a .env file on the root folder of the project with properties:
+Create a `.env` file on the root folder of the project with properties:
 
-* SPRING_DATASOURCE_URL=jdbc:postgresql://<localhost | postgres>:5432/<your_db>
-* SPRING_DATASOURCE_USERNAME=<your_db_username>
-* SPRING_DATASOURCE_PASSWORD=<your_db_password>
-* POSTGRES_DB=<your_db>
-* POSTGRES_USER=<your_db_username>
-* POSTGRES_PASSWORD=<your_db_password>
-* JWT_SECURITY_KEY=<your_super_secret_key> (min 32 characters)
-* IMAGE_KIT_URL=<your_imagekit_url>
-* IMAGE_KIT_PRIVATE_KEY=<your_imagekit_private_key>
-* IMAGE_KIT_PUBLIC_KEY=<your_imagekit_public_key>
+```dotenv
+SPRING_DATASOURCE_URL=jdbc:postgresql://<localhost | postgres>:5432/<your_db>
+SPRING_DATASOURCE_USERNAME=<your_db_username>
+SPRING_DATASOURCE_PASSWORD=<your_db_password>
+POSTGRES_DB=<your_db>
+POSTGRES_USER=<your_db_username>
+POSTGRES_PASSWORD=<your_db_password>
+JWT_SECURITY_KEY=<your_super_secret_key> (min 32 characters)
+IMAGE_KIT_URL=<your_imagekit_url>
+IMAGE_KIT_PRIVATE_KEY=<your_imagekit_private_key>
+IMAGE_KIT_PUBLIC_KEY=<your_imagekit_public_key>
+```
 
 ### ▶️ Option 1: Run with Maven
 
