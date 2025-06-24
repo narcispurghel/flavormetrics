@@ -87,14 +87,12 @@ public class Authority {
         if (!(o instanceof Authority authority)) {
             return false;
         }
-        return type == authority.type &&
-               this.createdAt.equals((authority.createdAt)) &&
-               this.updatedAt.equals((authority.updatedAt));
+        return type == authority.type;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, createdAt, updatedAt);
+        return Objects.hash(type);
     }
 
     @Override

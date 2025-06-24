@@ -5,7 +5,7 @@ import com.flavormetrics.api.entity.Rating;
 import com.flavormetrics.api.entity.Recipe;
 import com.flavormetrics.api.entity.User;
 import com.flavormetrics.api.model.RatingDto;
-import com.flavormetrics.api.model.RatingWithAuthority;
+import com.flavormetrics.api.model.RatingWithScore;
 
 import java.util.Optional;
 
@@ -24,11 +24,11 @@ public final class RatingMapper {
         );
     }
 
-    public static RatingWithAuthority toRatingWithAuthority(Rating rating) {
+    public static RatingWithScore toRatingWithScore(Rating rating) {
         if (rating == null) {
             throw new IllegalArgumentException("Rating cannot be null");
         }
-        return new RatingWithAuthority(
+        return new RatingWithScore(
                 Optional.ofNullable(rating.getRecipe()).map(Recipe::getId).orElse(null),
                 rating.getScore()
         );

@@ -110,14 +110,12 @@ public class Tag {
         if (!(o instanceof Tag tag)) {
             return false;
         }
-        return Objects.equals(name, tag.name) &&
-               Objects.equals(updatedAt, tag.updatedAt) &&
-               Objects.equals(createdAt, tag.createdAt);
+        return Objects.equals(name, tag.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, updatedAt, createdAt);
+        return Objects.hash(name);
     }
 
     @Override

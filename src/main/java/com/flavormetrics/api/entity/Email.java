@@ -80,14 +80,12 @@ public class Email  {
         if (!(o instanceof Email email)) {
             return false;
         }
-        return Objects.equals(address, email.address) &&
-                Objects.equals(createdAt, email.createdAt) &&
-                Objects.equals(updatedAt, email.updatedAt);
+        return Objects.equals(address, email.address);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(address, createdAt, updatedAt);
+        return Objects.hash(address);
     }
 
     @Override

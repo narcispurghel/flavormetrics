@@ -188,16 +188,13 @@ public class User {
                isEnabled == user.isEnabled &&
                Objects.equals(passwordHash, user.passwordHash) &&
                Objects.equals(firstName, user.firstName) &&
-               Objects.equals(lastName, user.lastName) &&
-               Objects.equals(updatedAt, user.updatedAt) &&
-               Objects.equals(createdAt, user.createdAt);
+               Objects.equals(lastName, user.lastName);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(passwordHash, firstName, lastName, isAccountNonExpired,
-                isAccountNonLocked,
-                isCredentialsNonExpired, isEnabled, updatedAt, createdAt);
+                isAccountNonLocked, isCredentialsNonExpired, isEnabled);
     }
 
     @Override

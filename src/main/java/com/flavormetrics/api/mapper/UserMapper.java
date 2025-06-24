@@ -3,7 +3,7 @@ package com.flavormetrics.api.mapper;
 import com.flavormetrics.api.entity.Authority;
 import com.flavormetrics.api.entity.Recipe;
 import com.flavormetrics.api.entity.User;
-import com.flavormetrics.api.model.RatingWithAuthority;
+import com.flavormetrics.api.model.RatingWithScore;
 import com.flavormetrics.api.model.UserDto;
 import com.flavormetrics.api.model.enums.RoleType;
 import com.flavormetrics.api.model.response.RegisterResponse;
@@ -34,10 +34,10 @@ public final class UserMapper {
 		if (user == null) {
 			throw new IllegalArgumentException("User cannot be null");
 		}
-		Set<RatingWithAuthority> ratings = Optional.ofNullable(user.getRatings())
+		Set<RatingWithScore> ratings = Optional.ofNullable(user.getRatings())
 				.orElse(Collections.emptySet())
 				.stream()
-				.map(RatingMapper::toRatingWithAuthority)
+				.map(RatingMapper::toRatingWithScore)
 				.collect(Collectors.toSet());
 		Set<UUID> recipes = Optional.ofNullable(user.getRecipes())
 				.orElse(Collections.emptySet())

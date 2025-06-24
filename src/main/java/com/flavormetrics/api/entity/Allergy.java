@@ -53,9 +53,12 @@ public class Allergy {
 
     public Allergy(String name) {
         this();
-        Objects.requireNonNull(name, "Allergy name cannot be null");
-        this.name = AllergyType.valueOf(name).name();
-        this.description = AllergyType.valueOf(name).getDescription();
+        this.name = Objects.requireNonNull(name, "Allergy name cannot be null");
+        try {
+            this.description = AllergyType.valueOf(name.toUpperCase()).getDescription();
+        } catch (IllegalArgumentException e) {
+            this.description = "";
+        }
     }
 
     public Allergy(AllergyDto dto) {
@@ -65,7 +68,11 @@ public class Allergy {
         }
         this.id = dto.id();
         this.name = Objects.requireNonNull(dto.name(), "Allergy name cannot be null");
-        this.description = AllergyType.valueOf(name).getDescription();
+        try {
+            this.description = AllergyType.valueOf(name.toUpperCase()).getDescription();
+        } catch (IllegalArgumentException e) {
+            this.description = "";
+        }
     }
 
     public Allergy(AllergyProjection projection) {
@@ -135,9 +142,7 @@ public class Allergy {
             return false;
         }
         return Objects.equals(name, allergy.name) &&
-               Objects.equals(description, allergy.description) &&
-               Objects.equals(createdAt, allergy.createdAt) &&
-               Objects.equals(updatedAt, allergy.updatedAt);
+               Objects.equals(description, allergy.description);
     }
 
     @Override

@@ -92,15 +92,12 @@ public class Profile {
         if (!(o instanceof Profile profile)) {
             return false;
         }
-        return dietaryPreference == profile.dietaryPreference &&
-               Objects.equals(updatedAt, profile.updatedAt) &&
-               Objects.equals(createdAt, profile.createdAt) &&
-               Objects.equals(allergies, profile.allergies);
+        return dietaryPreference == profile.dietaryPreference;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(dietaryPreference, updatedAt, createdAt, allergies);
+        return Objects.hash(dietaryPreference);
     }
 
     @Override

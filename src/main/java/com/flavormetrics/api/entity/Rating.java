@@ -93,14 +93,12 @@ public class Rating {
         if (!(o instanceof Rating rating)) {
             return false;
         }
-        return score == rating.score &&
-               Objects.equals(updatedAt, rating.updatedAt) &&
-               Objects.equals(createdAt, rating.createdAt);
+        return score == rating.score;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(score, updatedAt, createdAt);
+        return Objects.hash(score);
     }
 
     @Override

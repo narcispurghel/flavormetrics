@@ -227,16 +227,13 @@ public class Recipe {
                Objects.equals(cookTimeMinutes, recipe.cookTimeMinutes) &&
                difficulty == recipe.difficulty &&
                Objects.equals(estimatedCalories, recipe.estimatedCalories) &&
-               dietaryPreferences == recipe.dietaryPreferences &&
-               Objects.equals(createdAt, recipe.createdAt) &&
-               Objects.equals(updatedAt, recipe.updatedAt);
+               dietaryPreferences == recipe.dietaryPreferences;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(name, instructions, imageUrl, prepTimeMinutes, cookTimeMinutes,
-                difficulty,
-                estimatedCalories, dietaryPreferences, createdAt, updatedAt);
+                difficulty, estimatedCalories, dietaryPreferences);
     }
 
     @Override

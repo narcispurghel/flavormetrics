@@ -36,13 +36,13 @@ public class UserDto {
 
     private final Set<String> authorities;
 
-    private final Set<RatingWithAuthority> ratings;
+    private final Set<RatingWithScore> ratings;
 
     public UserDto(UUID id, String passwordHash, String firstName, String lastName,
                    boolean isAccountNonExpired, boolean isAccountNonLocked,
                    boolean isCredentialsNonExpired, boolean isEnabled,
                    LocalDateTime updatedAt, LocalDateTime createdAt,
-                   String email, UUID profileId, Set<UUID> recipes, Set<String> authorities, Set<RatingWithAuthority> ratings) {
+                   String email, UUID profileId, Set<UUID> recipes, Set<String> authorities, Set<RatingWithScore> ratings) {
         this.id = id;
         this.passwordHash = passwordHash;
         this.firstName = firstName;
@@ -109,11 +109,11 @@ public class UserDto {
         return profileId;
     }
 
-    protected Set<String> getAuthorities() {
+    public Set<String> getAuthorities() {
         return Optional.ofNullable(authorities).map(Set::copyOf).orElse(Collections.emptySet());
     }
 
-    protected Set<RatingWithAuthority> getRatings() {
+    public Set<RatingWithScore> getRatings() {
         return Optional.ofNullable(ratings).map(Set::copyOf).orElse(Collections.emptySet());
     }
 

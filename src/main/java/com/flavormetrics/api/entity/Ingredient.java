@@ -88,14 +88,12 @@ public class Ingredient {
         if (!(o instanceof Ingredient that)) {
             return false;
         }
-        return Objects.equals(name, that.name) &&
-               Objects.equals(updatedAt, that.updatedAt) &&
-               Objects.equals(createdAt, that.createdAt);
+        return Objects.equals(name, that.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, updatedAt, createdAt);
+        return Objects.hash(name);
     }
 
     @Override
