@@ -53,7 +53,7 @@ public class Tag {
             throw new IllegalArgumentException("TagDto cannot be null");
         }
         this.id = dto.id();
-        this.name = Objects.requireNonNull(dto.name().name());
+        this.name = Objects.requireNonNull(dto.name());
     }
 
     public Tag(TagProjection projection) {

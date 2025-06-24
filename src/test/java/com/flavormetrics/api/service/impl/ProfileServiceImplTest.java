@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ProfileServiceImplTest {
     private static final Set<AllergyDto> allergiesDtos = Set.of(
-            new AllergyDto(null, AllergyType.EGGS, AllergyType.EGGS.getDescription())
+            new AllergyDto(null, AllergyType.EGGS.name(), AllergyType.EGGS.getDescription())
     );
 
     private UUID userId;

@@ -11,12 +11,12 @@ public record AllergyDto(
         @JsonIgnore
         UUID id,
 
-        AllergyType name,
+        String name,
 
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
         String description
 ) {
     public AllergyDto(Allergy allergy) {
-        this(allergy.getId(), AllergyType.valueOf(allergy.getName()), allergy.getDescription());
+        this(allergy.getId(), allergy.getName(), allergy.getDescription());
     }
 }

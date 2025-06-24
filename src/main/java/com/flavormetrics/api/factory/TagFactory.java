@@ -1,6 +1,7 @@
 package com.flavormetrics.api.factory;
 
 import com.flavormetrics.api.entity.Tag;
+import com.flavormetrics.api.model.TagDto;
 import com.flavormetrics.api.model.projection.TagProjection;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.repository.TagRepository;
@@ -27,7 +28,7 @@ public class TagFactory {
         List<String> tagsName = Optional.ofNullable(req.tags())
                 .orElse(Collections.emptySet())
                 .stream()
-                .map(t -> t.name().name())
+                .map(TagDto::name)
                 .toList();
 
         List<TagProjection> existing = tagRepository.getIdsAndNames(tagsName);
@@ -39,7 +40,7 @@ public class TagFactory {
             newTags = Optional.ofNullable(req.tags())
                     .orElse(Collections.emptySet())
                     .stream()
-                    .filter(t -> !existingNames.contains(t.name().name()))
+                    .filter(t -> !existingNames.contains(t.name()))
                     .map(Tag::new)
                     .toList();
         } else {

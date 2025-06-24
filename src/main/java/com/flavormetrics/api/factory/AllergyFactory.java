@@ -28,7 +28,7 @@ public class AllergyFactory {
         List<String> allergyNames = Optional.of(allergies)
                 .orElse(Collections.emptySet())
                 .stream()
-                .map(a -> a.name().name())
+                .map(AllergyDto::name)
                 .toList();
 
         List<AllergyProjection> existing = allergyRepository.getIdsAndNames(allergyNames);
@@ -39,7 +39,7 @@ public class AllergyFactory {
             newAllergies = Optional.of(allergies)
                     .orElse(Collections.emptySet())
                     .stream()
-                    .filter(a -> !existingNames.contains(a.name().name()))
+                    .filter(a -> !existingNames.contains(a.name()))
                     .map(Allergy::new)
                     .toList();
         } else {

@@ -64,7 +64,7 @@ public class Allergy {
             throw new IllegalArgumentException("AllergyDto cannot be null");
         }
         this.id = dto.id();
-        this.name = Objects.requireNonNull(dto.name().name(), "Allergy name cannot be null");
+        this.name = Objects.requireNonNull(dto.name(), "Allergy name cannot be null");
         this.description = AllergyType.valueOf(name).getDescription();
     }
 

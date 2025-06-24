@@ -15,13 +15,13 @@ import com.flavormetrics.api.model.enums.DietaryPreferenceType;
 import com.flavormetrics.api.model.enums.DifficultyType;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.repository.RecipeRepository;
+import com.flavormetrics.api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -58,6 +57,9 @@ class RecipeServiceImplTest {
     private AllergyFactory allergyFactory;
 
     @Mock
+    private UserRepository userRepository;
+
+    @Mock
     private TagFactory tagFactory;
 
     @InjectMocks
@@ -76,7 +78,6 @@ class RecipeServiceImplTest {
         recipe = new Recipe();
         recipe.setUser(user);
         recipe.setId(recipeId);
-
         var principal = new UserDetailsImpl(user);
         var auth = new TestingAuthenticationToken(principal, null);
         SecurityContextHolder.getContext().setAuthentication(auth);
@@ -86,11 +87,8 @@ class RecipeServiceImplTest {
     void create_validRequest_returnsId() {
         AddRecipeRequest req = mock(AddRecipeRequest.class);
         UUID expectedId = UUID.randomUUID();
-
         when(recipeFactory.create(req, userId)).thenReturn(expectedId);
-
         UUID result = recipeService.create(req);
-
         assertEquals(expectedId, result);
         verify(recipeFactory).create(req, userId);
     }
@@ -98,33 +96,26 @@ class RecipeServiceImplTest {
     @Test
     void getById_existingRecipe_returnsDto() {
         RecipeDto dto = new RecipeDto(recipe);
-
         when(recipeRepository.getRecipeByIdEager(recipeId)).thenReturn(Optional.of(recipe));
-
         RecipeDto result = recipeService.getById(recipeId);
-
         assertEquals(dto, result);
     }
 
     @Test
     void getById_notFound_throwsException() {
         when(recipeRepository.getRecipeByIdEager(recipeId)).thenReturn(Optional.empty());
-
         assertThrows(RecipeNotFoundException.class, () -> recipeService.getById(recipeId));
     }
 
     @Test
     void updateById_authorized_updatesAndReturnsDto() {
         AddRecipeRequest req = mock(AddRecipeRequest.class);
-
         when(recipeRepository.getRecipeByIdEager(recipeId)).thenReturn(Optional.of(recipe));
         when(ingredientFactory.checkIfExistsOrElseSave(req)).thenReturn(Set.of());
         when(allergyFactory.checkIfExistsOrElseSave(any())).thenReturn(Set.of());
         when(tagFactory.checkIfExistsOrElseSave(req)).thenReturn(Set.of());
         when(recipeRepository.save(any())).thenReturn(recipe);
-
         RecipeDto result = recipeService.updateById(recipeId, req);
-
         assertEquals(new RecipeDto(recipe), result);
     }
 
@@ -137,9 +128,7 @@ class RecipeServiceImplTest {
         email.setAddress("other@example.com");
         otherUser.setEmail(email);
         recipe.setUser(otherUser);
-
         when(recipeRepository.getRecipeByIdEager(recipeId)).thenReturn(Optional.of(recipe));
-
         assertThrows(UnAuthorizedException.class, () -> recipeService.updateById(recipeId, req));
     }
 
@@ -153,11 +142,8 @@ class RecipeServiceImplTest {
     void findAll_returnsPaginatedData() {
         Pageable pageable = PageRequest.of(0, 10);
         List<Recipe> recipes = List.of(recipe);
-
         when(recipeRepository.findAll(pageable)).thenReturn(new PageImpl<>(recipes));
-
         DataWithPagination<List<RecipeDto>> result = recipeService.findAll(1, 10);
-
         assertEquals(1, result.data().size());
     }
 
@@ -181,12 +167,9 @@ class RecipeServiceImplTest {
         Pageable pageable = PageRequest.of(0, 10);
         RecipeFilter filter = new RecipeFilter(10, 10, 200, DifficultyType.EASY, DietaryPreferenceType.VEGAN);
         List<Recipe> recipes = List.of(recipe);
-
         when(recipeRepository.findAllByFilter(10, 10, 200, DifficultyType.EASY, DietaryPreferenceType.VEGAN, pageable))
                 .thenReturn(new PageImpl<>(recipes));
-
         DataWithPagination<List<RecipeDto>> result = recipeService.findAllByRecipeFilter(filter, 1, 10);
-
         assertEquals(1, result.data().size());
     }
 
@@ -194,11 +177,9 @@ class RecipeServiceImplTest {
     void getRecommendations_returnsPaginatedData() {
         Pageable pageable = PageRequest.of(0, 10);
         List<Recipe> recipes = List.of(recipe);
-
+        when(userRepository.hasProfile(any())).thenReturn(true);
         when(recipeRepository.findAllRecommendations(userId, pageable)).thenReturn(new PageImpl<>(recipes));
-
         DataWithPagination<Set<RecipeDto>> result = recipeService.getRecommendations(0, 10);
-
         assertEquals(1, result.data().size());
     }
 }

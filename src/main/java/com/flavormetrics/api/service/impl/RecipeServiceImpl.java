@@ -1,6 +1,7 @@
 package com.flavormetrics.api.service.impl;
 
 import com.flavormetrics.api.entity.*;
+import com.flavormetrics.api.exception.ProfileNotFoundException;
 import com.flavormetrics.api.exception.RecipeNotFoundException;
 import com.flavormetrics.api.exception.UnAuthorizedException;
 import com.flavormetrics.api.factory.AllergyFactory;
@@ -11,6 +12,7 @@ import com.flavormetrics.api.mapper.RecipeMapper;
 import com.flavormetrics.api.model.*;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.repository.RecipeRepository;
+import com.flavormetrics.api.repository.UserRepository;
 import com.flavormetrics.api.service.RecipeService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,17 +31,19 @@ import java.util.stream.Collectors;
 public class RecipeServiceImpl implements RecipeService {
 
     private final RecipeRepository recipeRepository;
+    private final UserRepository userRepository;
     private final RecipeFactory recipeFactory;
     private final IngredientFactory ingredientFactory;
     private final AllergyFactory allergyFactory;
     private final TagFactory tagFactory;
 
-    public RecipeServiceImpl(RecipeRepository recipeRepository,
+    public RecipeServiceImpl(RecipeRepository recipeRepository, UserRepository userRepository,
                              RecipeFactory recipeFactory,
                              IngredientFactory ingredientFactory,
                              AllergyFactory allergyFactory,
                              TagFactory tagFactory) {
         this.recipeRepository = recipeRepository;
+        this.userRepository = userRepository;
         this.recipeFactory = recipeFactory;
         this.ingredientFactory = ingredientFactory;
         this.allergyFactory = allergyFactory;
@@ -65,6 +69,9 @@ public class RecipeServiceImpl implements RecipeService {
     @Override
     @Transactional
     public RecipeDto updateById(UUID id, AddRecipeRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("AddRecipeRequest is null");
+        }
         Recipe fromDb = recipeRepository.getRecipeByIdEager(id).orElseThrow(RecipeNotFoundException::new);
         String principal = SecurityContextHolder.getContext().getAuthentication().getName();
         User owner = fromDb.getUser();
@@ -108,30 +115,30 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     @Transactional(readOnly = true)
-    public DataWithPagination<List<RecipeDto>> findAll(int pageNumber, int pageSize) {
+    public DataWithPagination<List<RecipeDto>> findAll(final int pageNumber, int pageSize) {
         // In Spring Data JPA first page is 0, and I think it's more convenient that the client to start from 1
-        final int pageNumberMinusOne = pageNumber == 0 ? pageNumber : --pageNumber;
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        final int pageNumberMinusOne = pageNumber == 0 ? pageNumber : pageNumber - 1;
+        Pageable pageable = PageRequest.of(pageNumberMinusOne, pageSize);
         return Optional.of(recipeRepository.findAll(pageable))
                 .map(p -> {
                     List<RecipeDto> dtos = p.getContent()
                             .stream()
                             .map(RecipeDto::new)
                             .toList();
-                    return new DataWithPagination<>(dtos, p.getSize(), pageNumberMinusOne, p.getTotalPages());
+                    return new DataWithPagination<>(dtos, p.getSize(), pageNumber, p.getTotalPages());
                 })
                 .get();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public DataWithPagination<RecipeByOwner> findAllByUserEmail(String email, int pageNumber, int pageSize) {
+    public DataWithPagination<RecipeByOwner> findAllByUserEmail(String email, final int pageNumber, int pageSize) {
         // In Spring Data JPA first page is 0, and I think it's more convenient that the client to start from 1
-        final int pageNumberMinusOne = pageNumber == 0 ? pageNumber : --pageNumber;
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        final int pageNumberMinusOne = pageNumber == 0 ? pageNumber : pageNumber - 1;
+        Pageable pageable = PageRequest.of(pageNumberMinusOne, pageSize);
         return Optional.of(recipeRepository.findByOwner(email, pageable))
                 .map(p -> new DataWithPagination<>(
-                        RecipeMapper.toRecipeByOwner(p.getContent(), email), pageSize, pageNumberMinusOne,
+                        RecipeMapper.toRecipeByOwner(p.getContent(), email), pageSize, pageNumber,
                         p.getTotalPages()))
                 .get();
     }
@@ -139,9 +146,9 @@ public class RecipeServiceImpl implements RecipeService {
     @Override
     @Transactional(readOnly = true)
     public DataWithPagination<List<RecipeDto>> findAllByRecipeFilter(
-            RecipeFilter filter, int pageNumber, int pageSize) {
-        final int pageNumberMinusOne = pageNumber == 0 ? pageNumber : --pageNumber;
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            RecipeFilter filter, final int pageNumber, int pageSize) {
+        final int pageNumberMinusOne = pageNumber == 0 ? pageNumber : pageNumber - 1;
+        Pageable pageable = PageRequest.of(pageNumberMinusOne, pageSize);
         return Optional.of(recipeRepository.findAllByFilter(
                         filter.prepTimeMinutes(),
                         filter.cookTimeMinutes(),
@@ -155,18 +162,21 @@ public class RecipeServiceImpl implements RecipeService {
                             .stream()
                             .map(RecipeDto::new)
                             .toList();
-                    return new DataWithPagination<>(dtos, p.getSize(), pageNumberMinusOne, p.getTotalPages());
+                    return new DataWithPagination<>(dtos, p.getSize(), pageNumber, p.getTotalPages());
                 })
                 .get();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public DataWithPagination<Set<RecipeDto>> getRecommendations(int pageNumber, int pageSize) {
+    public DataWithPagination<Set<RecipeDto>> getRecommendations(final int pageNumber, int pageSize) {
         var principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         // In Spring Data JPA first page is 0, and I think it's more convenient that the client to start from 1
-        final int pageNumberMinusOne = pageNumber == 0 ? pageNumber : --pageNumber;
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        if (!userRepository.hasProfile(principal.id())) {
+            throw new ProfileNotFoundException();
+        }
+        final int pageNumberMinusOne = pageNumber == 0 ? pageNumber : pageNumber - 1;
+        Pageable pageable = PageRequest.of(pageNumberMinusOne, pageSize);
         return Optional.of(recipeRepository.findAllRecommendations(principal.id(), pageable)
                 )
                 .map(p -> {
@@ -174,7 +184,7 @@ public class RecipeServiceImpl implements RecipeService {
                             .stream()
                             .map(RecipeDto::new)
                             .collect(Collectors.toSet());
-                    return new DataWithPagination<>(dtos, p.getSize(), pageNumberMinusOne, p.getTotalPages());
+                    return new DataWithPagination<>(dtos, p.getSize(), pageNumber, p.getTotalPages());
                 }).get();
     }
 }
