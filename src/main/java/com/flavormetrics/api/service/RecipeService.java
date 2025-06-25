@@ -3,6 +3,7 @@ package com.flavormetrics.api.service;
 import com.flavormetrics.api.model.*;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Set;
@@ -26,4 +27,6 @@ public interface RecipeService {
     DataWithPagination<Set<RecipeDto>> getRecommendations(int pageNumber, int pageSize);
 
     RecipeDto updateRecipeImageById(UUID id, UploadImage request);
+
+    RecipeDto updateRecipeImageById(UUID id, MultipartFile file);
 }

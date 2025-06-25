@@ -1,8 +1,6 @@
 package com.flavormetrics.api.exception;
 
-import java.util.Map;
-
-import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,14 +15,22 @@ import com.flavormetrics.api.model.response.ApiErrorResponse;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(TypeMismatchException.class)
-    public ResponseEntity<ApiErrorResponse> handleTypeMismatchException(TypeMismatchException e) {
-        ApiErrorResponse response = new ApiErrorResponse(401, e.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleTypeMismatchException(TypeMismatchException e, HttpServletRequest request) {
+        var response = new ApiErrorResponse(
+                401,
+                HttpStatus.BAD_REQUEST.name(),
+                e.getMessage(), request.getRequestURI()
+        );
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
-        ApiErrorResponse response = new ApiErrorResponse(401, e.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e, HttpServletRequest request) {
+        var response = new ApiErrorResponse(
+                401,
+                HttpStatus.BAD_REQUEST.name(),
+                e.getMessage(), request.getRequestURI()
+        );
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
@@ -33,21 +39,47 @@ public class GlobalExceptionHandler {
             ProfileExistsException.class,
             MaximumNumberOfRatingException.class
     })
-    public ResponseEntity<Map<String, String>> handleConflictExceptions(RuntimeException e) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(Map.of("message", e.getMessage(), "code", "409"));
+    public ResponseEntity<ApiErrorResponse> handleConflictExceptions(RuntimeException e, HttpServletRequest request) {
+        var response = new ApiErrorResponse(
+                409,
+                HttpStatus.CONFLICT.name(),
+                e.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(response.code()).body(response);
     }
 
     @ExceptionHandler(value = {RecipeNotFoundException.class, ProfileNotFoundException.class})
-    public ResponseEntity<Map<String, String>> handleNotFoundExceptions(RuntimeException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", e.getMessage(), "code", "404"));
+    public ResponseEntity<ApiErrorResponse> handleNotFoundExceptions(RuntimeException e, HttpServletRequest request) {
+        var response = new ApiErrorResponse(
+                409,
+                HttpStatus.NOT_FOUND.name(),
+                e.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(response.code()).body(response);
     }
 
     @ExceptionHandler(value = {UnAuthorizedException.class, UsernameNotFoundException.class})
-    public ResponseEntity<Map<String, String>> handleAuthExceptions(UnAuthorizedException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("message", e.getMessage(), "code", "401"));
+    public ResponseEntity<ApiErrorResponse> handleAuthExceptions(UnAuthorizedException e, HttpServletRequest request) {
+        var response = new ApiErrorResponse(
+                401,
+                HttpStatus.UNAUTHORIZED.name(),
+                e.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(response.code()).body(response);
+    }
+
+    @ExceptionHandler(value = InvalidImageException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidFileException(InvalidImageException e, HttpServletRequest request) {
+        var response = new ApiErrorResponse(
+                400,
+                HttpStatus.BAD_REQUEST.name(),
+                e.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(response.code()).body(response);
     }
 
 }

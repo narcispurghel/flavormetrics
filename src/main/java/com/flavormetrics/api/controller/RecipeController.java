@@ -5,13 +5,16 @@ import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.model.response.ApiErrorResponse;
 import com.flavormetrics.api.service.RecipeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Set;
@@ -262,10 +265,44 @@ public class RecipeController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
             )
     })
-    @PatchMapping("/{id}")
-    public ResponseEntity<RecipeDto> upload(
+    @PatchMapping("/uploadImage/byUrl/{id}")
+    public ResponseEntity<RecipeDto> uploadByUrl(
             @RequestBody UploadImage request,
             @PathVariable UUID id) {
         return ResponseEntity.ok(recipeService.updateRecipeImageById(id, request));
+    }
+
+    @Operation(
+            summary = "Update a recipe's image url by given id",
+            description = "Requires to be authenticated as nutritionist and to be the owner of the recipe"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Operation success",
+                    content = @Content(schema = @Schema(implementation = RecipeDto.class), mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request data",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthenticated",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal Server Error",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+            )
+    })
+    @PatchMapping(value = "/uploadImage/byMultipartFile/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<RecipeDto> uploadByMultipartFile(
+            @Parameter(description = "Image file to upload", required = true)
+            @RequestBody MultipartFile file,
+            @PathVariable UUID id) {
+        return ResponseEntity.ok(recipeService.updateRecipeImageById(id, file));
     }
 }

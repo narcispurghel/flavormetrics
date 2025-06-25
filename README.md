@@ -561,7 +561,70 @@ GET /api/v1/recipe/recommendations?pageNumber=0&pageSize=20
 200 - Recommendations retrieved
 400 - Invalid parameters
 401 - Not authenticated
-403 - No profile found
+404 - No profile found
+500 - Internal server error
+```
+
+### Update Recipe Image
+
+```http
+PATCH /api/v1/recipe/updateImage/byUrl/{id}
+```
+
+🔒 **Authentication required**
+
+**Example:**
+
+```http request
+GET /api/v1/recipe/updateImage/byUrl/123e4567-e89b-12d3-a456-426
+```
+
+**Request Body:** `ImageUpload`
+
+```json
+{
+  "url": "https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg",
+  "name": "Pancakes"
+}
+```
+
+**Responses:**
+
+```
+200 - Image url updated
+401 - Not authenticated
+404 - Recipe not found
+500 - Internal server error
+```
+
+### Update Recipe Image
+
+```http
+PATCH /api/v1/recipe/updateImage/byMultipartFile/{id}
+```
+
+🔒 **Authentication required**
+
+**Example:**
+
+```http request
+GET /api/v1/recipe/updateImage/byMultipartFile/123e4567-e89b-12d3-a456-426
+```
+
+**Request Body:** `ImageUpload`
+
+```json
+{
+  "url": "path/to/image.jpg"
+}
+```
+
+**Responses:**
+
+```
+200 - Image url updated
+401 - Not authenticated
+404 - Recipe not found
 500 - Internal server error
 ```
 
@@ -569,7 +632,7 @@ GET /api/v1/recipe/recommendations?pageNumber=0&pageSize=20
 
 ### Create Profile
 
-```http
+```http request
 POST /api/v1/profile
 ```
 

@@ -1,6 +1,7 @@
 package com.flavormetrics.api.service.impl;
 
 import com.flavormetrics.api.entity.*;
+import com.flavormetrics.api.exception.InvalidImageException;
 import com.flavormetrics.api.exception.ProfileNotFoundException;
 import com.flavormetrics.api.exception.RecipeNotFoundException;
 import com.flavormetrics.api.exception.UnAuthorizedException;
@@ -20,7 +21,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -191,9 +195,42 @@ public class RecipeServiceImpl implements RecipeService {
         if (request == null) {
             throw new IllegalArgumentException("UploadImage is null");
         }
-        String url = imageKitService.upload(request.url(), request.name());
+        var principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return recipeRepository.getRecipeByIdEager(id)
                 .map(r -> {
+                    if (r.getUser() == null || !r.getUser().getId().equals(principal.id())) {
+                        throw new UnAuthorizedException("You're not authorized to perform this operation");
+                    }
+                    String url = imageKitService.upload(request.url(), request.name());
+                    r.setImageUrl(url);
+                    return r;
+                })
+                .map(recipeRepository::save)
+                .map(RecipeDto::new)
+                .orElseThrow(RecipeNotFoundException::new);
+    }
+
+    @Override
+    @Transactional
+    public RecipeDto updateRecipeImageById(UUID id, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new InvalidImageException();
+        }
+        try {
+            var image = ImageIO.read(file.getInputStream());
+            if (image == null) {
+                throw new InvalidImageException("File is not an image");
+            }
+        } catch (IOException e) {
+            throw new InvalidImageException(e.getMessage(), e);
+        }
+        var principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return recipeRepository.getRecipeByIdEager(id)
+                .map(r -> {
+                    if (r.getUser() == null || !r.getUser().getId().equals(principal.id())) {
+                        throw new UnAuthorizedException("You're not authorized to perform this operation");
+                    }
+                    String url = imageKitService.upload(file, file.getOriginalFilename());
                     r.setImageUrl(url);
                     return r;
                 })

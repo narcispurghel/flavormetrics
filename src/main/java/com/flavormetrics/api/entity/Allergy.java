@@ -82,7 +82,11 @@ public class Allergy {
         }
         this.id = Objects.requireNonNull(projection.getId(), "Allergy id cannot be null");
         this.name = Objects.requireNonNull(projection.getName(), "Allergy name cannot be null");
-        this.description = AllergyType.valueOf(name).getDescription();
+        try {
+            this.description = AllergyType.valueOf(name).getDescription();
+        } catch (IllegalArgumentException e) {
+            this.description = "";
+        }
     }
 
     public UUID getId() {

@@ -11,6 +11,9 @@ import io.imagekit.sdk.config.Configuration;
 import io.imagekit.sdk.models.FileCreateRequest;
 import io.imagekit.sdk.models.results.Result;
 import jakarta.annotation.PostConstruct;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Service
 public class ImageKitServiceImpl implements ImageKitService {
@@ -37,6 +40,21 @@ public class ImageKitServiceImpl implements ImageKitService {
         FileCreateRequest fileCreateRequest = new FileCreateRequest(url, fileName);
         fileCreateRequest.setFolder("/flavormetrics");
         try {
+            Result result = IMAGE_KIT.upload(fileCreateRequest);
+            return result.getUrl();
+        } catch (Exception e) {
+            throw new ImageKitUploadException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public String upload(MultipartFile file, String fileName) {
+        if (!fileName.contains(".")) {
+            fileName = fileName + ".jpg";
+        }
+        try {
+            FileCreateRequest fileCreateRequest = new FileCreateRequest(file.getBytes(), fileName);
+            fileCreateRequest.setFolder("/flavormetrics");
             Result result = IMAGE_KIT.upload(fileCreateRequest);
             return result.getUrl();
         } catch (Exception e) {
