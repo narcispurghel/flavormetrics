@@ -8,8 +8,8 @@ import com.flavormetrics.api.exception.ProfileNotFoundException;
 import com.flavormetrics.api.factory.AllergyFactory;
 import com.flavormetrics.api.model.AllergyDto;
 import com.flavormetrics.api.model.UserDetailsImpl;
-import com.flavormetrics.api.model.enums.AllergyType;
-import com.flavormetrics.api.model.enums.DietaryPreferenceType;
+import com.flavormetrics.api.enums.AllergyType;
+import com.flavormetrics.api.enums.DietaryPreferenceType;
 import com.flavormetrics.api.model.projection.ProfileProjection;
 import com.flavormetrics.api.model.request.CreateProfileRequest;
 import com.flavormetrics.api.repository.ProfileRepository;
@@ -81,7 +81,7 @@ class ProfileServiceImplTest {
 
     @Test
     void create_validRequest_createsProfile() {
-        CreateProfileRequest request = new CreateProfileRequest(DietaryPreferenceType.VEGAN, allergiesDtos);
+        CreateProfileRequest request = new CreateProfileRequest(DietaryPreferenceType.vegan, allergiesDtos);
         Profile profile = new Profile();
         Set<Allergy> allergies = new HashSet<>();
         Profile saved = new Profile();
@@ -111,7 +111,7 @@ class ProfileServiceImplTest {
     void updateById_updatesProfileSuccessfully() {
         Profile profile = new Profile();
         Set<Allergy> allergies = new HashSet<>();
-        CreateProfileRequest request = new CreateProfileRequest(DietaryPreferenceType.DIABETIC_FRIENDLY, allergiesDtos);
+        CreateProfileRequest request = new CreateProfileRequest(DietaryPreferenceType.diabetic_friendly, allergiesDtos);
 
         when(profileRepository.findByIdUserId(userId)).thenReturn(Optional.of(profile));
         when(allergyFactory.checkIfExistsOrElseSave(any())).thenReturn(allergies);
@@ -126,7 +126,7 @@ class ProfileServiceImplTest {
     @Test
     void updateById_notFound_throwsException() {
         when(profileRepository.findByIdUserId(userId)).thenReturn(Optional.empty());
-        CreateProfileRequest request = new CreateProfileRequest(DietaryPreferenceType.VEGAN, Set.copyOf(allergiesDtos));
+        CreateProfileRequest request = new CreateProfileRequest(DietaryPreferenceType.vegan, Set.copyOf(allergiesDtos));
 
         assertThrows(ProfileNotFoundException.class, () -> profileService.updateById(request));
     }

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,7 +59,9 @@ public class ProfileController {
             )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ProfileProjection> getProfileById(@PathVariable("id") UUID id) {
+    public ResponseEntity<ProfileProjection> getProfileById(
+            @org.hibernate.validator.constraints.UUID
+            @PathVariable("id") UUID id) {
         return ResponseEntity.ok(profileService.findById(id));
     }
 
@@ -94,13 +97,12 @@ public class ProfileController {
             )
     })
     @PostMapping
-    public ResponseEntity<UUID> create(@RequestBody CreateProfileRequest req) {
+    public ResponseEntity<UUID> create(@RequestBody @Valid CreateProfileRequest req) {
         return ResponseEntity.ok(profileService.create(req));
     }
 
     @PutMapping("/update")
-    public ResponseEntity<ProfileDto> update(
-            @RequestBody CreateProfileRequest req) {
+    public ResponseEntity<ProfileDto> update(@RequestBody @Valid CreateProfileRequest req) {
         return ResponseEntity.ok(profileService.updateById(req));
     }
 

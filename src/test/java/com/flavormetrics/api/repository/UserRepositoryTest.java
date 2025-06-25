@@ -3,7 +3,7 @@ package com.flavormetrics.api.repository;
 import com.flavormetrics.api.entity.Email;
 import com.flavormetrics.api.entity.Profile;
 import com.flavormetrics.api.entity.User;
-import com.flavormetrics.api.model.enums.DietaryPreferenceType;
+import com.flavormetrics.api.enums.DietaryPreferenceType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ class UserRepositoryTest {
         user.setEmail(email);
         user = userRepository.save(user);
         profile = new Profile();
-        profile.setDietaryPreference(DietaryPreferenceType.VEGAN);
+        profile.setDietaryPreference(DietaryPreferenceType.vegan);
         profile.setUser(user);
         profileRepository.save(profile);
     }

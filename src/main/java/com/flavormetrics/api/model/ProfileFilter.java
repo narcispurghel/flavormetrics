@@ -1,7 +1,7 @@
 package com.flavormetrics.api.model;
 
 import com.flavormetrics.api.entity.Allergy;
-import com.flavormetrics.api.model.enums.DietaryPreferenceType;
+import com.flavormetrics.api.enums.DietaryPreferenceType;
 
 import java.util.List;
 

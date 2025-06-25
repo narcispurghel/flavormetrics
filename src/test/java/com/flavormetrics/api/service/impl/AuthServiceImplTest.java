@@ -7,7 +7,7 @@ import com.flavormetrics.api.enums.JwtTokens;
 import com.flavormetrics.api.exception.EmailInUseException;
 import com.flavormetrics.api.exception.UnAuthorizedException;
 import com.flavormetrics.api.model.UserDetailsImpl;
-import com.flavormetrics.api.model.enums.RoleType;
+import com.flavormetrics.api.enums.RoleType;
 import com.flavormetrics.api.model.request.LoginRequest;
 import com.flavormetrics.api.model.request.RegisterRequest;
 import com.flavormetrics.api.model.response.RegisterResponse;
@@ -19,7 +19,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,7 +28,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

@@ -2,7 +2,7 @@ package com.flavormetrics.api.mapper;
 
 import com.flavormetrics.api.entity.*;
 import com.flavormetrics.api.model.UserDto;
-import com.flavormetrics.api.model.enums.RoleType;
+import com.flavormetrics.api.enums.RoleType;
 import com.flavormetrics.api.model.response.RegisterResponse;
 import org.junit.jupiter.api.Test;
 

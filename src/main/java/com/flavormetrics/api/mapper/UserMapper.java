@@ -5,7 +5,7 @@ import com.flavormetrics.api.entity.Recipe;
 import com.flavormetrics.api.entity.User;
 import com.flavormetrics.api.model.RatingWithScore;
 import com.flavormetrics.api.model.UserDto;
-import com.flavormetrics.api.model.enums.RoleType;
+import com.flavormetrics.api.enums.RoleType;
 import com.flavormetrics.api.model.response.RegisterResponse;
 
 import java.util.Collections;

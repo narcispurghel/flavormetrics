@@ -11,8 +11,8 @@ import com.flavormetrics.api.factory.RecipeFactory;
 import com.flavormetrics.api.factory.TagFactory;
 import com.flavormetrics.api.mapper.RecipeMapper;
 import com.flavormetrics.api.model.*;
-import com.flavormetrics.api.model.enums.DietaryPreferenceType;
-import com.flavormetrics.api.model.enums.DifficultyType;
+import com.flavormetrics.api.enums.DietaryPreferenceType;
+import com.flavormetrics.api.enums.DifficultyType;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.repository.RecipeRepository;
 import com.flavormetrics.api.repository.UserRepository;
@@ -174,9 +174,9 @@ class RecipeServiceImplTest {
     @Test
     void findAllByRecipeFilter_returnsFilteredPaginatedData() {
         Pageable pageable = PageRequest.of(0, 10);
-        RecipeFilter filter = new RecipeFilter(10, 10, 200, DifficultyType.EASY, DietaryPreferenceType.VEGAN);
+        RecipeFilter filter = new RecipeFilter(10, 10, 200, DifficultyType.easy, DietaryPreferenceType.vegan);
         List<Recipe> recipes = List.of(recipe);
-        when(recipeRepository.findAllByFilter(10, 10, 200, DifficultyType.EASY, DietaryPreferenceType.VEGAN, pageable))
+        when(recipeRepository.findAllByFilter(10, 10, 200, DifficultyType.easy, DietaryPreferenceType.vegan, pageable))
                 .thenReturn(new PageImpl<>(recipes));
         DataWithPagination<List<RecipeDto>> result = recipeService.findAllByRecipeFilter(filter, 0, 10);
         assertEquals(1, result.data().size());

@@ -64,7 +64,7 @@ public class RecipeFactory {
         recipe.setCookTimeMinutes(req.cookTimeMinutes());
         recipe.setPrepTimeMinutes(req.prepTimeMinutes());
         recipe.setEstimatedCalories(req.estimatedCalories());
-        recipe.setDietaryPreferences(req.dietaryPreferences());
+        recipe.setDietaryPreferences(req.dietaryPreference());
         recipe.setAllergies(allergies);
         recipe.setTags(tags);
 

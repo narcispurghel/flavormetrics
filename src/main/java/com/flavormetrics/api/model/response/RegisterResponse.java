@@ -1,6 +1,6 @@
 package com.flavormetrics.api.model.response;
 
-import com.flavormetrics.api.model.enums.RoleType;
+import com.flavormetrics.api.enums.RoleType;
 
 import java.util.UUID;
 

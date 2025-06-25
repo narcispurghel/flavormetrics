@@ -8,7 +8,7 @@ import com.flavormetrics.api.exception.EmailInUseException;
 import com.flavormetrics.api.exception.UnAuthorizedException;
 import com.flavormetrics.api.mapper.UserMapper;
 import com.flavormetrics.api.model.UserDetailsImpl;
-import com.flavormetrics.api.model.enums.RoleType;
+import com.flavormetrics.api.enums.RoleType;
 import com.flavormetrics.api.model.request.LoginRequest;
 import com.flavormetrics.api.model.request.RegisterRequest;
 import com.flavormetrics.api.model.response.RegisterResponse;

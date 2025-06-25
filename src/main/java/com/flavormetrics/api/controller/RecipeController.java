@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,8 +51,7 @@ public class RecipeController {
                             schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @PostMapping("/create")
-    public ResponseEntity<Map<String, String>> create(
-            @RequestBody AddRecipeRequest request) {
+    public ResponseEntity<Map<String, String>> create(@RequestBody @Valid AddRecipeRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of("message", "Recipe create successfully", "id",
                         String.valueOf(recipeService.create(request))));
@@ -76,8 +77,7 @@ public class RecipeController {
                             schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @GetMapping("/{id}")
-    public ResponseEntity<RecipeDto> getById(
-            @PathVariable("id") UUID id) {
+    public ResponseEntity<RecipeDto> getById(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(recipeService.getById(id));
     }
 
@@ -104,7 +104,7 @@ public class RecipeController {
     @PutMapping("/update/{id}")
     public ResponseEntity<RecipeDto> updateRecipeById(
             @PathVariable UUID id,
-            @RequestBody AddRecipeRequest request) {
+            @RequestBody @Valid AddRecipeRequest request) {
         RecipeDto responseBody = recipeService.updateById(id, request);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
@@ -151,8 +151,8 @@ public class RecipeController {
     })
     @GetMapping("/all")
     public ResponseEntity<DataWithPagination<List<RecipeDto>>> getALL(
-            @RequestParam("pageNumber") int pageNumber,
-            @RequestParam("pageSize") int pageSize) {
+            @RequestParam("pageNumber") @Min(0) int pageNumber,
+            @RequestParam("pageSize") @Min(1) int pageSize) {
         return ResponseEntity.ok(recipeService.findAll(pageNumber, pageSize));
     }
 
@@ -179,9 +179,9 @@ public class RecipeController {
 
     @GetMapping("/byOwner/{email}")
     public ResponseEntity<DataWithPagination<RecipeByOwner>> getAllByUserEmail(
-            @PathVariable("email") String email,
-            @RequestParam("pageNumber") int pageNumber,
-            @RequestParam("pageSize") int pageSize) {
+            @PathVariable("email") @NotBlank @Email(regexp = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+") String email,
+            @RequestParam("pageNumber") @Min(0) int pageNumber,
+            @RequestParam("pageSize") @Min(1) int pageSize) {
         return ResponseEntity.ok(recipeService.findAllByUserEmail(email, pageNumber, pageSize));
     }
 
@@ -207,9 +207,9 @@ public class RecipeController {
     })
     @PostMapping("/byFilter")
     public ResponseEntity<DataWithPagination<List<RecipeDto>>> getAllByFilter(
-            @RequestBody RecipeFilter filter,
-            @RequestParam("pageNumber") int pageNumber,
-            @RequestParam("pageSize") int pageSize) {
+            @RequestBody @Valid RecipeFilter filter,
+            @RequestParam("pageNumber") @Min(0) int pageNumber,
+            @RequestParam("pageSize") @Min(1) int pageSize) {
         return ResponseEntity.ok(recipeService.findAllByRecipeFilter(filter, pageNumber, pageSize));
     }
 
@@ -234,8 +234,8 @@ public class RecipeController {
     })
     @GetMapping("/recommendations")
     public ResponseEntity<DataWithPagination<Set<RecipeDto>>> getRecommendations(
-            @RequestParam("pageNumber") int pageNumber,
-            @RequestParam("pageSize") int pageSize) {
+            @RequestParam("pageNumber") @Min(0) int pageNumber,
+            @RequestParam("pageSize") @Min(1) int pageSize) {
         return ResponseEntity.ok(recipeService.getRecommendations(pageNumber, pageSize));
     }
 
@@ -267,8 +267,15 @@ public class RecipeController {
     })
     @PatchMapping("/uploadImage/byUrl/{id}")
     public ResponseEntity<RecipeDto> uploadByUrl(
-            @RequestBody UploadImage request,
-            @PathVariable UUID id) {
+            @RequestBody
+            @Valid
+            UploadImage request,
+
+            @PathVariable
+            @NotBlank
+            @org.hibernate.validator.constraints.UUID
+            UUID id
+    ) {
         return ResponseEntity.ok(recipeService.updateRecipeImageById(id, request));
     }
 
@@ -301,8 +308,14 @@ public class RecipeController {
     @PatchMapping(value = "/uploadImage/byMultipartFile/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RecipeDto> uploadByMultipartFile(
             @Parameter(description = "Image file to upload", required = true)
-            @RequestBody MultipartFile file,
-            @PathVariable UUID id) {
+            @RequestBody
+            @NotBlank
+            MultipartFile file,
+
+            @PathVariable
+            @org.hibernate.validator.constraints.UUID
+            UUID id
+    ) {
         return ResponseEntity.ok(recipeService.updateRecipeImageById(id, file));
     }
 }

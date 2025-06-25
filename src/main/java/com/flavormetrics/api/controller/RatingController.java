@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,9 +53,14 @@ public class RatingController {
     })
     @PostMapping("/{recipeId}")
     public ResponseEntity<Map<String, String>> addRating(
-            @PathVariable UUID recipeId,
-            @RequestBody Data<Integer> req) {
-        return ResponseEntity.ok(ratingService.addRecipeRating(recipeId, req.data()));
+            @PathVariable
+            @org.hibernate.validator.constraints.UUID
+            UUID recipeId,
+
+            @RequestBody
+            @Valid
+            RatingDto req) {
+        return ResponseEntity.ok(ratingService.addRecipeRating(recipeId, req.score()));
     }
 
     @Operation(summary = "Get all recipe's ratings by id", description = "Requires to be authenticated")
@@ -84,7 +90,10 @@ public class RatingController {
             )
     })
     @GetMapping("/{recipeId}/all")
-    public ResponseEntity<Set<RatingDto>> getAllRatingsByRecipeId(@PathVariable UUID recipeId) {
+    public ResponseEntity<Set<RatingDto>> getAllRatingsByRecipeId(
+            @PathVariable
+            @org.hibernate.validator.constraints.UUID
+            UUID recipeId) {
         return ResponseEntity.ok(ratingService.findAllRatingsByRecipeId(recipeId));
     }
 
@@ -115,7 +124,10 @@ public class RatingController {
             )
     })
     @GetMapping("/byUser/{userId}")
-    public ResponseEntity<Set<RatingDto>> getAllRatingsByUser(@PathVariable UUID userId) {
+    public ResponseEntity<Set<RatingDto>> getAllRatingsByUser(
+            @PathVariable
+            @org.hibernate.validator.constraints.UUID
+            UUID userId) {
         return ResponseEntity.ok(ratingService.findAllRatingsByUserId(userId));
     }
 }

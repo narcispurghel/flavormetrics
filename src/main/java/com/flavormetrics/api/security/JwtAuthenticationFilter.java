@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -59,8 +60,7 @@ public class JwtAuthenticationFilter extends JwtFilter {
             response.sendError(401, "Missing authentication cookie");
             return;
         }
-        String refreshToken =
-                jwtService.getCookieValueFromRequest(request, REFRESH_TOKEN_NAME);
+        String refreshToken = jwtService.getCookieValueFromRequest(request, REFRESH_TOKEN_NAME);
         Instant expiresAt = null;
         try {
             expiresAt = jwtService.decodeToken(accessToken).getExpiresAtAsInstant();
@@ -118,7 +118,12 @@ public class JwtAuthenticationFilter extends JwtFilter {
             response.sendError(401, ex.getMessage());
             return;
         }
-        setAuthentication(userEmail);
+        try {
+            setAuthentication(userEmail);
+        } catch (AuthenticationException e) {
+            response.sendError(401, e.getMessage());
+            return;
+        }
         filterChain.doFilter(request, response);
     }
 

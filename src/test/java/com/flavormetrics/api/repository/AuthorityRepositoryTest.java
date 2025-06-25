@@ -1,7 +1,7 @@
 package com.flavormetrics.api.repository;
 
 import com.flavormetrics.api.entity.Authority;
-import com.flavormetrics.api.model.enums.RoleType;
+import com.flavormetrics.api.enums.RoleType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;

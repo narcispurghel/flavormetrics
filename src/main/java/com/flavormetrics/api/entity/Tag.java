@@ -1,9 +1,14 @@
 package com.flavormetrics.api.entity;
 
 import com.flavormetrics.api.model.TagDto;
-import com.flavormetrics.api.model.enums.TagType;
+import com.flavormetrics.api.enums.TagType;
 import com.flavormetrics.api.model.projection.TagProjection;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -15,21 +20,25 @@ public class Tag {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @NotBlank
+    @Size(max = 255)
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 
+    @UpdateTimestamp
     @Column(name = "updated_at", columnDefinition = "timestamp not null default current_timestamp")
     private LocalDateTime updatedAt;
 
+    @CreationTimestamp
     @Column(name = "created_at", updatable = false, columnDefinition = "timestamp not null default current_timestamp")
-    private final LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
+    @NotNull
     @ManyToMany(mappedBy = "tags")
     private List<Recipe> recipes = new ArrayList<>();
 
     public Tag() {
-        this.updatedAt = LocalDateTime.now();
-        this.createdAt = LocalDateTime.now();
+        // for JPA
     }
 
     public Tag(TagType type) {

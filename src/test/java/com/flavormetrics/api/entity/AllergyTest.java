@@ -1,7 +1,7 @@
 package com.flavormetrics.api.entity;
 
 import com.flavormetrics.api.model.AllergyDto;
-import com.flavormetrics.api.model.enums.AllergyType;
+import com.flavormetrics.api.enums.AllergyType;
 import com.flavormetrics.api.model.projection.AllergyProjection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

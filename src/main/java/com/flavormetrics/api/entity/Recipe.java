@@ -1,8 +1,13 @@
 package com.flavormetrics.api.entity;
 
-import com.flavormetrics.api.model.enums.DietaryPreferenceType;
-import com.flavormetrics.api.model.enums.DifficultyType;
+import com.flavormetrics.api.enums.DietaryPreferenceType;
+import com.flavormetrics.api.enums.DifficultyType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -10,71 +15,82 @@ import java.util.*;
 @Entity
 @Table(name = "recipes")
 public class Recipe {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @NotBlank
+    @Size(max = 255)
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "instructions")
+    @NotBlank
+    @Size(min = 15, max = 2500)
+    @Column(name = "instructions", nullable = false)
     private String instructions;
 
     @Column(name = "image_url")
     private String imageUrl;
 
     @Column(name = "prep_time_minutes")
-    private Integer prepTimeMinutes;
+    private int prepTimeMinutes;
 
     @Column(name = "cook_time_minutes")
-    private Integer cookTimeMinutes;
+    private int cookTimeMinutes;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "difficulty")
     private DifficultyType difficulty;
 
     @Column(name = "estimated_calories")
-    private Integer estimatedCalories;
+    private int estimatedCalories;
 
+    @NotNull
     @Enumerated(value = EnumType.STRING)
     @Column(name = "dietary_preferences")
     private DietaryPreferenceType dietaryPreferences;
 
+    @UpdateTimestamp
     @Column(name = "updated_at", columnDefinition = "timestamp not null default current_timestamp")
     private LocalDateTime updatedAt;
 
+    @CreationTimestamp
     @Column(name = "created_at", updatable = false, columnDefinition = "timestamp not null default current_timestamp")
-    private final LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
+    @NotNull
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinTable(name = "recipes_tags",
             joinColumns = @JoinColumn(name = "recipe_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private Set<Tag> tags = new HashSet<>();
 
+    @NotNull
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinTable(name = "recipes_ingredients",
             joinColumns = @JoinColumn(name = "recipe_id"),
             inverseJoinColumns = @JoinColumn(name = "ingredient_id"))
     private Set<Ingredient> ingredients = new HashSet<>();
 
+    @NotNull
     @OneToMany(mappedBy = "recipe", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Rating> ratings = new HashSet<>();
 
+    @NotNull
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinTable(name = "recipes_allergies",
             joinColumns = @JoinColumn(name = "recipe_id"),
             inverseJoinColumns = @JoinColumn(name = "allergy_id"))
     private Set<Allergy> allergies = new HashSet<>();
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
     public Recipe() {
-        this.updatedAt = LocalDateTime.now();
-        this.createdAt = LocalDateTime.now();
+        // for JPA
     }
 
     public Float getAverageRating() {
@@ -248,7 +264,7 @@ public class Recipe {
         sb.append(", cookTimeMinutes=").append(cookTimeMinutes);
         sb.append(", difficulty=").append(difficulty);
         sb.append(", estimatedCalories=").append(estimatedCalories);
-        sb.append(", dietaryPreferences=").append(dietaryPreferences);
+        sb.append(", dietaryPreference=").append(dietaryPreferences);
         sb.append(", createdAt=").append(createdAt);
         sb.append(", updatedAt=").append(updatedAt);
         sb.append(", tags=").append(tags.size());

@@ -14,7 +14,12 @@ import java.util.UUID;
 public interface IngredientRepository extends JpaRepository<Ingredient, UUID> {
 
     @Query("""
-            SELECT new com.flavormetrics.api.model.IngredientDto(i.id, i.name)
+            SELECT new com.flavormetrics.api.model.IngredientDto(
+                        i.id,
+                        i.name,
+                        i.quantity,
+                        i.unit
+            )
             FROM Ingredient i
             WHERE i.name IN (?1)
             """)

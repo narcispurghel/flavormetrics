@@ -5,6 +5,9 @@ import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "ratings")
@@ -16,23 +19,26 @@ public class Rating {
     @Column(name = "score", nullable = false)
     private int score;
 
+    @UpdateTimestamp
     @Column(name = "updated_at", columnDefinition = "timestamp not null default current_timestamp")
     private LocalDateTime updatedAt;
 
+    @CreationTimestamp
     @Column(name = "created_at", updatable = false, columnDefinition = "timestamp not null default current_timestamp")
-    private final LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recipe_id")
     private Recipe recipe;
 
     public Rating() {
-        this.updatedAt = LocalDateTime.now();
-        this.createdAt = LocalDateTime.now();
+        // for JPA
     }
 
     public UUID getId() {

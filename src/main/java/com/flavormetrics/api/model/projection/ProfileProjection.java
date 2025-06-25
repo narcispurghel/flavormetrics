@@ -1,6 +1,6 @@
 package com.flavormetrics.api.model.projection;
 
-import com.flavormetrics.api.model.enums.DietaryPreferenceType;
+import com.flavormetrics.api.enums.DietaryPreferenceType;
 
 import java.util.Set;
 import java.util.UUID;

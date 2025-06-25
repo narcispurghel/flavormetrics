@@ -6,32 +6,36 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
+import jakarta.validation.constraints.NotBlank;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "emails")
 public class Email  {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(nullable = false)
     private UUID id;
 
+    @NotBlank
+    @jakarta.validation.constraints.Email(regexp = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+")
     @Column(nullable = false, unique = true)
     private String address;
 
+    @UpdateTimestamp
     @Column(name = "updated_at", columnDefinition = "timestamp not null default current_timestamp")
     private LocalDateTime updatedAt;
 
+    @CreationTimestamp
     @Column(name = "created_at", updatable = false, columnDefinition = "timestamp not null default current_timestamp")
-    private final LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @OneToOne(mappedBy = "email")
     private User user;
 
     public Email() {
-        this.updatedAt = LocalDateTime.now();
-        this.createdAt = LocalDateTime.now();
+        // for JPA
     }
 
     public Email(String address) {

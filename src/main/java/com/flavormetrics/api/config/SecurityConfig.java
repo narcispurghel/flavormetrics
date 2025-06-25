@@ -46,6 +46,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .authenticationManager(authenticationManager())
+                .exceptionHandling(eh -> {
+                    eh.authenticationEntryPoint((req, res, e) -> {
+                        res.sendError(401, e.getMessage());
+                    });
+                })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterAfter(jwtFilter, SecurityContextHolderFilter.class)
                 .build();

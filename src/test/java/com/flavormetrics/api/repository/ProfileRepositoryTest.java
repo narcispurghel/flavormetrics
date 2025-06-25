@@ -3,7 +3,7 @@ package com.flavormetrics.api.repository;
 import com.flavormetrics.api.entity.Email;
 import com.flavormetrics.api.entity.Profile;
 import com.flavormetrics.api.entity.User;
-import com.flavormetrics.api.model.enums.DietaryPreferenceType;
+import com.flavormetrics.api.enums.DietaryPreferenceType;
 import com.flavormetrics.api.model.projection.ProfileProjection;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +26,12 @@ class ProfileRepositoryTest {
     @Test
     void testIf_findProfileById_ReturnsProfileProjection() {
         Profile profile = new Profile();
-        profile.setDietaryPreference(DietaryPreferenceType.VEGAN);
+        profile.setDietaryPreference(DietaryPreferenceType.vegan);
         profile = profileRepository.save(profile);
         Optional<ProfileProjection> found = profileRepository.findProfileProjectionById(profile.getId());
         assertTrue(found.isPresent());
         assertEquals(profile.getId(), found.get().getId());
-        assertEquals(DietaryPreferenceType.VEGAN, found.get().getDietaryPreference());
+        assertEquals(DietaryPreferenceType.vegan, found.get().getDietaryPreference());
     }
 
     @Test

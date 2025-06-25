@@ -26,6 +26,7 @@ public final class ProfileMapper {
                 .collect(Collectors.toSet());
         return new ProfileDto(
                 profile.getId(),
+                profile.getBio(),
                 profile.getDietaryPreference(),
                 allergies,
                 Optional.ofNullable(profile.getUser()).map(User::getId).orElse(null),

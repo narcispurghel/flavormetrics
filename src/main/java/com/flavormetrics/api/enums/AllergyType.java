@@ -1,4 +1,4 @@
-package com.flavormetrics.api.model.enums;
+package com.flavormetrics.api.enums;
 
 public enum AllergyType {
     DAIRY("Allergy to dairy products"),

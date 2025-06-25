@@ -1,8 +1,8 @@
 package com.flavormetrics.api.repository;
 
 import com.flavormetrics.api.entity.*;
-import com.flavormetrics.api.model.enums.DietaryPreferenceType;
-import com.flavormetrics.api.model.enums.DifficultyType;
+import com.flavormetrics.api.enums.DietaryPreferenceType;
+import com.flavormetrics.api.enums.DifficultyType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,8 +70,8 @@ class RecipeRepositoryTest {
         recipe.setPrepTimeMinutes(5);
         recipe.setCookTimeMinutes(0);
         recipe.setEstimatedCalories(200);
-        recipe.setDifficulty(DifficultyType.EASY);
-        recipe.setDietaryPreferences(DietaryPreferenceType.VEGAN);
+        recipe.setDifficulty(DifficultyType.easy);
+        recipe.setDietaryPreferences(DietaryPreferenceType.vegan);
         recipe.setUser(user);
         recipe.setIngredients(Set.of(ing));
         recipe.setTags(Set.of(tag));
@@ -100,8 +100,8 @@ class RecipeRepositoryTest {
         var result = recipeRepository.getRecipeByIdEager(recipe.getId());
         Page<Recipe> page = recipeRepository.findAllByFilter(
                 10, 300, 10,
-                DifficultyType.EASY,
-                DietaryPreferenceType.VEGAN,
+                DifficultyType.easy,
+                DietaryPreferenceType.vegan,
                 PageRequest.of(0, 10)
         );
         assertThat(page.getContent()).isNotEmpty();
@@ -113,8 +113,8 @@ class RecipeRepositoryTest {
     void testIf_FindAllByFilter_ReturnsEmpty() {
         Page<Recipe> page = recipeRepository.findAllByFilter(
                 100, 199, 5,
-                DifficultyType.EASY,
-                DietaryPreferenceType.VEGAN,
+                DifficultyType.easy,
+                DietaryPreferenceType.vegan,
                 PageRequest.of(0, 10)
         );
         assertThat(page.getContent()).isEmpty();

@@ -1,7 +1,10 @@
 package com.flavormetrics.api.entity;
 
-import com.flavormetrics.api.model.enums.RoleType;
+import com.flavormetrics.api.enums.RoleType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -9,32 +12,33 @@ import java.util.*;
 @Entity
 @Table(name = "authorities")
 public class Authority {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(nullable = false)
     private UUID id;
 
+    @NotNull
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private RoleType type;
 
+    @UpdateTimestamp
     @Column(name = "updated_at", columnDefinition = "timestamp not null default current_timestamp")
     private LocalDateTime updatedAt;
 
+    @CreationTimestamp
     @Column(name = "created_at", updatable = false, columnDefinition = "timestamp not null default current_timestamp")
-    private final LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
+    @NotNull
     @ManyToMany(mappedBy = "authorities")
     private Set<User> users = new HashSet<>();
 
     public Authority() {
-        this.updatedAt = LocalDateTime.now();
-        this.createdAt = LocalDateTime.now();
+        // for JPA
     }
 
     public Authority(RoleType type) {
-        this();
         this.type = Objects.requireNonNull(type, "RoleType cannot be null");
     }
 

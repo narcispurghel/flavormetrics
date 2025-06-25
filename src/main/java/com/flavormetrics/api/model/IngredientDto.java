@@ -4,13 +4,17 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flavormetrics.api.entity.Ingredient;
+import com.flavormetrics.api.enums.UnitType;
+import jakarta.persistence.Column;
 
 public record IngredientDto(
         @JsonIgnore
         UUID id,
-        String name
+        String name,
+        int quantity,
+        UnitType unit
 ) {
     public IngredientDto(Ingredient ingredient) {
-        this(ingredient.getId(), ingredient.getName());
+        this(ingredient.getId(), ingredient.getName(), ingredient.getQuantity(), ingredient.getUnit());
     }
 }

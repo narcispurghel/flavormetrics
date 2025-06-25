@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.lang.NonNull;
 
 import com.flavormetrics.api.entity.Recipe;
-import com.flavormetrics.api.model.enums.DifficultyType;
+import com.flavormetrics.api.enums.DifficultyType;
 
 public record RecipeDto(
         UUID id,

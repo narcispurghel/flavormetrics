@@ -1,7 +1,7 @@
 package com.flavormetrics.api.config;
 
 import com.flavormetrics.api.entity.Authority;
-import com.flavormetrics.api.model.enums.RoleType;
+import com.flavormetrics.api.enums.RoleType;
 import com.flavormetrics.api.repository.AuthorityRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

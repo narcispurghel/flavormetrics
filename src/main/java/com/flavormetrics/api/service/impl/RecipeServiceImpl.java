@@ -107,7 +107,7 @@ public class RecipeServiceImpl implements RecipeService {
                     fromDb.setCookTimeMinutes(request.cookTimeMinutes());
                     fromDb.setPrepTimeMinutes(request.prepTimeMinutes());
                     fromDb.setEstimatedCalories(request.estimatedCalories());
-                    fromDb.setDietaryPreferences(request.dietaryPreferences());
+                    fromDb.setDietaryPreferences(request.dietaryPreference());
                     return fromDb;
                 })
                 .map(recipeRepository::save)

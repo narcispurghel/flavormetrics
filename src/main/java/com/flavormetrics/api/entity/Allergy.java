@@ -1,10 +1,14 @@
 package com.flavormetrics.api.entity;
 
+import com.flavormetrics.api.enums.AllergyType;
 import com.flavormetrics.api.model.AllergyDto;
-import com.flavormetrics.api.model.enums.AllergyType;
 import com.flavormetrics.api.model.projection.AllergyProjection;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -12,43 +16,46 @@ import java.util.*;
 @Entity
 @Table(name = "allergies")
 public class Allergy {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @NotBlank
+    @Size(max = 255)
     @Column(nullable = false, unique = true)
     private String name;
 
+    @NotNull
     @Column(nullable = false)
     private String description;
 
     @Column(name = "updated_at", columnDefinition = "timestamp not null default current_timestamp")
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, columnDefinition = "timestamp not null default current_timestamp")
     private LocalDateTime createdAt;
 
+    @NotNull
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "allergies")
-    private Set<Profile> profiles;
+    private Set<Profile> profiles = new HashSet<>();
 
+    @NotNull
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "allergies")
     private Set<Recipe> recipes = new HashSet<>();
 
     public Allergy() {
-        this.updatedAt = LocalDateTime.now();
+        // For JPA
+    }
+
+    public Allergy(UUID id) {
+        this.id = id;
     }
 
     public Allergy(AllergyType type) {
-        this();
         this.name = Optional.ofNullable(type).map(AllergyType::name).orElseThrow(IllegalArgumentException::new);
         this.description = Optional.of(type).map(AllergyType::getDescription).orElseThrow(IllegalArgumentException::new);
-    }
-
-    public Allergy(UUID uuid) {
-        this();
-        this.updatedAt = LocalDateTime.now();
     }
 
     public Allergy(String name) {

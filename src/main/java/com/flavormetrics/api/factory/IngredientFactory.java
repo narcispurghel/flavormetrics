@@ -24,25 +24,23 @@ public class IngredientFactory {
             throw new IllegalArgumentException("AddRecipeRequest cannot be null");
         }
 
-        List<String> ingredientsNames = Optional.ofNullable(req.ingredients())
-                .orElse(Collections.emptySet())
-                .stream()
-                .map(IngredientDto::name)
-                .toList();
+        Set<IngredientDto> ingredientsFromReq = Optional.ofNullable(req.ingredients())
+                .orElse(Collections.emptySet());
 
-        List<IngredientDto> existingIngredients = ingredientRepository.getIdsAndNames(ingredientsNames);
+        List<String> ingredientsFromReqAsNames = ingredientsFromReq.stream().map(IngredientDto::name).toList();
+
+        List<IngredientDto> existingIngredients = ingredientRepository.getIdsAndNames(ingredientsFromReqAsNames);
         List<String> existingNames = existingIngredients.stream().map(IngredientDto::name).toList();
 
-        List<Ingredient> newIngredients = new ArrayList<>();
+        List<Ingredient> newIngredients;
         if (!existingIngredients.isEmpty()) {
-            newIngredients = Optional.ofNullable(req.ingredients())
-                    .orElse(Collections.emptySet())
+            newIngredients = ingredientsFromReq
                     .stream()
-                    .filter(i -> !existingNames.contains(i.name()))
+                    .filter(n -> !existingNames.contains(n.name()))
                     .map(Ingredient::new)
                     .toList();
         } else {
-            newIngredients = ingredientsNames.stream()
+            newIngredients = ingredientsFromReq.stream()
                     .map(Ingredient::new)
                     .toList();
         }

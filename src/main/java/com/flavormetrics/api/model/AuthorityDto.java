@@ -2,7 +2,7 @@ package com.flavormetrics.api.model;
 
 import java.util.UUID;
 
-import com.flavormetrics.api.model.enums.RoleType;
+import com.flavormetrics.api.enums.RoleType;
 
 public record AuthorityDto(
         UUID id,

@@ -4,7 +4,7 @@ import com.flavormetrics.api.entity.Allergy;
 import com.flavormetrics.api.entity.Profile;
 import com.flavormetrics.api.entity.User;
 import com.flavormetrics.api.model.ProfileDto;
-import com.flavormetrics.api.model.enums.DietaryPreferenceType;
+import com.flavormetrics.api.enums.DietaryPreferenceType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,8 +26,9 @@ class ProfileMapperTest {
         user.setId(UUID.randomUUID());
         profile = new Profile();
         profile.setId(UUID.randomUUID());
+        profile.setBio("mock-bio");
         profile.setUser(user);
-        profile.setDietaryPreference(DietaryPreferenceType.FISH_INCLUSIVE);
+        profile.setDietaryPreference(DietaryPreferenceType.fish_inclusive);
         profile.setAllergies(Set.of(new Allergy("mock-allergy")));
     }
 
@@ -35,6 +36,7 @@ class ProfileMapperTest {
     void testIf_toDto_MapsCorrectly() {
         ProfileDto result =  ProfileMapper.toDto(profile);
         assertNotNull(result);
+        assertEquals(profile.getBio(), result.bio());
         assertEquals(profile.getId(), result.id());
         assertEquals(profile.getUser().getId(), result.userId());
         assertEquals(profile.getDietaryPreference(), result.dietaryPreference());

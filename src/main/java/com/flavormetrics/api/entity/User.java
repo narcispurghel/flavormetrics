@@ -1,6 +1,11 @@
 package com.flavormetrics.api.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -12,12 +17,18 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @NotBlank
+    @Size(min = 8, max = 2000)
+    @Column(nullable = false, columnDefinition = "text")
     private String passwordHash;
 
+    @NotBlank
+    @Size(max = 255)
     @Column(nullable = false)
     private String firstName;
 
+    @NotBlank
+    @Size(max = 255)
     @Column(nullable = false)
     private String lastName;
 
@@ -33,32 +44,37 @@ public class User {
     @Column(columnDefinition = "boolean not null default false")
     private boolean isEnabled = true;
 
+    @UpdateTimestamp
     @Column(name = "updated_at", columnDefinition = "timestamp not null default current_timestamp")
     private LocalDateTime updatedAt;
 
+    @CreationTimestamp
     @Column(name = "created_at", updatable = false, columnDefinition = "timestamp not null default current_timestamp")
-    private final LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @OneToOne(mappedBy = "user")
     private Profile profile;
 
+    @NotNull
     @OneToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     @JoinColumn(name = "email_id", nullable = false, unique = true)
     private Email email;
 
+    @NotNull
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "authority_id"))
     private Set<Authority> authorities = new HashSet<>();
 
+    @NotNull
     @OneToMany(mappedBy = "user")
     private Set<Rating> ratings = new HashSet<>();
 
+    @NotNull
     @OneToMany(mappedBy = "user")
     private Set<Recipe> recipes = new HashSet<>();
 
     public User() {
-        this.updatedAt = LocalDateTime.now();
-        this.createdAt = LocalDateTime.now();
+        // for JPA
     }
 
     public UUID getId() {
