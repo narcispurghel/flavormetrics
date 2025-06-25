@@ -13,6 +13,7 @@ import com.flavormetrics.api.model.*;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.repository.RecipeRepository;
 import com.flavormetrics.api.repository.UserRepository;
+import com.flavormetrics.api.service.ImageKitService;
 import com.flavormetrics.api.service.RecipeService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,18 +37,21 @@ public class RecipeServiceImpl implements RecipeService {
     private final IngredientFactory ingredientFactory;
     private final AllergyFactory allergyFactory;
     private final TagFactory tagFactory;
+    private final ImageKitService imageKitService;
 
     public RecipeServiceImpl(RecipeRepository recipeRepository, UserRepository userRepository,
                              RecipeFactory recipeFactory,
                              IngredientFactory ingredientFactory,
                              AllergyFactory allergyFactory,
-                             TagFactory tagFactory) {
+                             TagFactory tagFactory,
+                             ImageKitService imageKitService) {
         this.recipeRepository = recipeRepository;
         this.userRepository = userRepository;
         this.recipeFactory = recipeFactory;
         this.ingredientFactory = ingredientFactory;
         this.allergyFactory = allergyFactory;
         this.tagFactory = tagFactory;
+        this.imageKitService = imageKitService;
     }
 
     @Override
@@ -116,9 +120,7 @@ public class RecipeServiceImpl implements RecipeService {
     @Override
     @Transactional(readOnly = true)
     public DataWithPagination<List<RecipeDto>> findAll(final int pageNumber, int pageSize) {
-        // In Spring Data JPA first page is 0, and I think it's more convenient that the client to start from 1
-        final int pageNumberMinusOne = pageNumber == 0 ? pageNumber : pageNumber - 1;
-        Pageable pageable = PageRequest.of(pageNumberMinusOne, pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return Optional.of(recipeRepository.findAll(pageable))
                 .map(p -> {
                     List<RecipeDto> dtos = p.getContent()
@@ -133,9 +135,7 @@ public class RecipeServiceImpl implements RecipeService {
     @Override
     @Transactional(readOnly = true)
     public DataWithPagination<RecipeByOwner> findAllByUserEmail(String email, final int pageNumber, int pageSize) {
-        // In Spring Data JPA first page is 0, and I think it's more convenient that the client to start from 1
-        final int pageNumberMinusOne = pageNumber == 0 ? pageNumber : pageNumber - 1;
-        Pageable pageable = PageRequest.of(pageNumberMinusOne, pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return Optional.of(recipeRepository.findByOwner(email, pageable))
                 .map(p -> new DataWithPagination<>(
                         RecipeMapper.toRecipeByOwner(p.getContent(), email), pageSize, pageNumber,
@@ -147,8 +147,7 @@ public class RecipeServiceImpl implements RecipeService {
     @Transactional(readOnly = true)
     public DataWithPagination<List<RecipeDto>> findAllByRecipeFilter(
             RecipeFilter filter, final int pageNumber, int pageSize) {
-        final int pageNumberMinusOne = pageNumber == 0 ? pageNumber : pageNumber - 1;
-        Pageable pageable = PageRequest.of(pageNumberMinusOne, pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return Optional.of(recipeRepository.findAllByFilter(
                         filter.prepTimeMinutes(),
                         filter.cookTimeMinutes(),
@@ -171,12 +170,10 @@ public class RecipeServiceImpl implements RecipeService {
     @Transactional(readOnly = true)
     public DataWithPagination<Set<RecipeDto>> getRecommendations(final int pageNumber, int pageSize) {
         var principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        // In Spring Data JPA first page is 0, and I think it's more convenient that the client to start from 1
         if (!userRepository.hasProfile(principal.id())) {
             throw new ProfileNotFoundException();
         }
-        final int pageNumberMinusOne = pageNumber == 0 ? pageNumber : pageNumber - 1;
-        Pageable pageable = PageRequest.of(pageNumberMinusOne, pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return Optional.of(recipeRepository.findAllRecommendations(principal.id(), pageable)
                 )
                 .map(p -> {
@@ -186,5 +183,22 @@ public class RecipeServiceImpl implements RecipeService {
                             .collect(Collectors.toSet());
                     return new DataWithPagination<>(dtos, p.getSize(), pageNumber, p.getTotalPages());
                 }).get();
+    }
+
+    @Override
+    @Transactional
+    public RecipeDto updateRecipeImageById(UUID id, UploadImage request) {
+        if (request == null) {
+            throw new IllegalArgumentException("UploadImage is null");
+        }
+        String url = imageKitService.upload(request.url(), request.name());
+        return recipeRepository.getRecipeByIdEager(id)
+                .map(r -> {
+                    r.setImageUrl(url);
+                    return r;
+                })
+                .map(recipeRepository::save)
+                .map(RecipeDto::new)
+                .orElseThrow(RecipeNotFoundException::new);
     }
 }

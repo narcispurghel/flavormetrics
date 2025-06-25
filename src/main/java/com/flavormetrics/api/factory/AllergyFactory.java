@@ -3,7 +3,6 @@ package com.flavormetrics.api.factory;
 import com.flavormetrics.api.entity.Allergy;
 import com.flavormetrics.api.model.AllergyDto;
 import com.flavormetrics.api.model.projection.AllergyProjection;
-import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.repository.AllergyRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

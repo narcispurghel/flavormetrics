@@ -16,11 +16,18 @@ import jakarta.annotation.PostConstruct;
 public class ImageKitServiceImpl implements ImageKitService {
     private static final ImageKit IMAGE_KIT = ImageKit.getInstance();
 
-    @Value("${imagekit.url}") String publicKey;
+    private final String publicKey;
+    private final String privateKey;
+    private final String urlEndpoint;
 
-    @Value("${imagekit.private-key}") String privateKey;
-
-    @Value("${imagekit.public-key}") String urlEndpoint;
+    public ImageKitServiceImpl(
+            @Value("${imagekit.url}") String publicKey,
+            @Value("${imagekit.private-key}") String privateKey,
+            @Value("${imagekit.public-key}") String urlEndpoint) {
+        this.publicKey = publicKey;
+        this.privateKey = privateKey;
+        this.urlEndpoint = urlEndpoint;
+    }
 
     @Override
     public String upload(String url, String fileName) {
@@ -38,7 +45,7 @@ public class ImageKitServiceImpl implements ImageKitService {
     }
 
     @PostConstruct void configure() {
-        Configuration config = new Configuration(publicKey, privateKey, urlEndpoint);
+        var config = new Configuration(publicKey, privateKey, urlEndpoint);
         IMAGE_KIT.setConfig(config);
     }
 }

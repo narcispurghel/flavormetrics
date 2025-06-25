@@ -29,10 +29,7 @@ class ImageKitServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new ImageKitServiceImpl();
-        service.publicKey = "mock-public-key";
-        service.privateKey = "mock-private-key";
-        service.urlEndpoint = "mock-url-endpoint";
+        service = new ImageKitServiceImpl("mock-public-key", "mock-private-key", "mock-url-endpoint");
         service.configure();
     }
 

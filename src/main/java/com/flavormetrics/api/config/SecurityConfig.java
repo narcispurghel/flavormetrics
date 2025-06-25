@@ -1,10 +1,7 @@
 package com.flavormetrics.api.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.flavormetrics.api.constants.EndpointsConstants;
-import com.flavormetrics.api.security.JwtAuthenticationFilter;
+import com.flavormetrics.api.security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,16 +18,16 @@ import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import com.flavormetrics.api.security.JwtFilter;
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
     private final UserDetailsService userDetailsService;
-    private final JwtAuthenticationFilter jwtFilter;
+    private final JwtFilter jwtFilter;
 
     public SecurityConfig(
             UserDetailsService userDetailsService,
-            JwtAuthenticationFilter jwtFilter) {
+            JwtFilter jwtFilter) {
         this.userDetailsService = userDetailsService;
         this.jwtFilter = jwtFilter;
     }
@@ -68,8 +65,7 @@ public class SecurityConfig {
 
     @Bean
     CorsConfigurationSource corsConfig() {
-        final List<String> allowedMethods = List.of(
-                "DELETE", "POST", "PUT", "OPTIONS", "UPDATE", "GET", "PATCH");
+        var allowedMethods = List.of("DELETE", "POST", "PUT", "OPTIONS", "UPDATE", "GET", "PATCH");
         var config = new CorsConfiguration();
         config.setAllowedMethods(allowedMethods);
         config.setAllowCredentials(true);

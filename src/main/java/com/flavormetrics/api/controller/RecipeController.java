@@ -1,9 +1,6 @@
 package com.flavormetrics.api.controller;
 
-import com.flavormetrics.api.model.DataWithPagination;
-import com.flavormetrics.api.model.RecipeByOwner;
-import com.flavormetrics.api.model.RecipeDto;
-import com.flavormetrics.api.model.RecipeFilter;
+import com.flavormetrics.api.model.*;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
 import com.flavormetrics.api.model.response.ApiErrorResponse;
 import com.flavormetrics.api.service.RecipeService;
@@ -237,5 +234,38 @@ public class RecipeController {
             @RequestParam("pageNumber") int pageNumber,
             @RequestParam("pageSize") int pageSize) {
         return ResponseEntity.ok(recipeService.getRecommendations(pageNumber, pageSize));
+    }
+
+    @Operation(
+            summary = "Update a recipe's image url by given id",
+            description = "Requires to be authenticated as nutritionist and to be the owner of the recipe"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Operation success",
+                    content = @Content(schema = @Schema(implementation = RecipeDto.class), mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request data",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthenticated",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal Server Error",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+            )
+    })
+    @PatchMapping("/{id}")
+    public ResponseEntity<RecipeDto> upload(
+            @RequestBody UploadImage request,
+            @PathVariable UUID id) {
+        return ResponseEntity.ok(recipeService.updateRecipeImageById(id, request));
     }
 }
