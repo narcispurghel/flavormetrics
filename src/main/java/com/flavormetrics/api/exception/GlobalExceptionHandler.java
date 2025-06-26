@@ -84,8 +84,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = InvalidImageException.class)
-    public ResponseEntity<ApiErrorResponse> handleInvalidFileException(InvalidImageException e,
-                                                                       HttpServletRequest request) {
+    public ResponseEntity<ApiErrorResponse> handleInvalidFileException(
+            InvalidImageException e,
+            HttpServletRequest request) {
         var response = new ApiErrorResponse(
                 400,
                 HttpStatus.BAD_REQUEST.name(),
@@ -119,7 +120,8 @@ public class GlobalExceptionHandler {
         TreeMap<String, String> details = new TreeMap<>();
         for (ParameterValidationResult error : e.getParameterValidationResults()) {
             if (error.getArgument() != null) {
-                details.put(error.getMethodParameter().getParameterName(), error.getResolvableErrors().getFirst().getDefaultMessage());
+                details.put(error.getMethodParameter().getParameterName(),
+                        error.getResolvableErrors().getFirst().getDefaultMessage());
             } else {
                 details.put(error.getMethodParameter().getParameterName(), "null");
             }

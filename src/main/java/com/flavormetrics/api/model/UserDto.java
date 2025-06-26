@@ -119,7 +119,6 @@ public class UserDto {
 
     public Set<UUID> getRecipes() {
         return Optional.ofNullable(recipes).map(Set::copyOf).orElse(Collections.emptySet());
-
     }
 
     @Override

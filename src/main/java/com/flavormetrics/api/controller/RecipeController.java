@@ -141,10 +141,12 @@ public class RecipeController {
             @ApiResponse(responseCode = "400", description = "Invalid request data",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthenticated", content =
-            @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
-            @ApiResponse(responseCode = "403", description = "Unauthorized", content =
-            @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthenticated",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "403", description = "Unauthorized",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorResponse.class)))
@@ -247,12 +249,14 @@ public class RecipeController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Operation success",
-                    content = @Content(schema = @Schema(implementation = RecipeDto.class), mediaType = "application/json")
+                    content = @Content(schema = @Schema(implementation = RecipeDto.class),
+                            mediaType = "application/json")
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid request data",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -262,19 +266,14 @@ public class RecipeController {
             @ApiResponse(
                     responseCode = "500",
                     description = "Internal Server Error",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             )
     })
     @PatchMapping("/uploadImage/byUrl/{id}")
     public ResponseEntity<RecipeDto> uploadByUrl(
-            @RequestBody
-            @Valid
-            UploadImage request,
-
-            @PathVariable
-            @NotBlank
-            @org.hibernate.validator.constraints.UUID
-            UUID id
+            @RequestBody @Valid UploadImage request,
+            @PathVariable @NotBlank @org.hibernate.validator.constraints.UUID UUID id
     ) {
         return ResponseEntity.ok(recipeService.updateRecipeImageById(id, request));
     }
@@ -287,12 +286,14 @@ public class RecipeController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Operation success",
-                    content = @Content(schema = @Schema(implementation = RecipeDto.class), mediaType = "application/json")
+                    content = @Content(schema = @Schema(implementation = RecipeDto.class),
+                            mediaType = "application/json")
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid request data",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -302,20 +303,14 @@ public class RecipeController {
             @ApiResponse(
                     responseCode = "500",
                     description = "Internal Server Error",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             )
     })
     @PatchMapping(value = "/uploadImage/byMultipartFile/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RecipeDto> uploadByMultipartFile(
-            @Parameter(description = "Image file to upload", required = true)
-            @RequestBody
-            @NotBlank
-            MultipartFile file,
-
-            @PathVariable
-            @org.hibernate.validator.constraints.UUID
-            UUID id
-    ) {
+            @Parameter(description = "Image file to upload", required = true) @RequestBody @NotBlank MultipartFile file,
+            @PathVariable @org.hibernate.validator.constraints.UUID UUID id) {
         return ResponseEntity.ok(recipeService.updateRecipeImageById(id, file));
     }
 }

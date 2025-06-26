@@ -192,7 +192,7 @@ public class Recipe {
     }
 
     public Set<Tag> getTags() {
-        return tags;
+        return new HashSet<>(tags);
     }
 
     public void setTags(Set<Tag> tags) {
@@ -208,7 +208,7 @@ public class Recipe {
     }
 
     public Set<Rating> getRatings() {
-        return ratings;
+        return new HashSet<>(ratings);
     }
 
     public void setRatings(Set<Rating> ratings) {
@@ -216,7 +216,7 @@ public class Recipe {
     }
 
     public Set<Allergy> getAllergies() {
-        return allergies;
+        return new HashSet<>(allergies);
     }
 
     public void setAllergies(Set<Allergy> allergies) {

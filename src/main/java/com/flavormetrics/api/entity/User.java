@@ -162,19 +162,19 @@ public class User {
     }
 
     public Set<Authority> getAuthorities() {
-        return Set.copyOf(authorities);
+        return new HashSet<>(authorities);
     }
 
     public void setAuthorities(Set<Authority> authorities) {
-        this.authorities = Optional.ofNullable(authorities).map(Set::copyOf).orElse(Set.of());
+        this.authorities = Optional.ofNullable(authorities).map(HashSet::new).orElse(new HashSet<>());
     }
 
     public Set<Rating> getRatings() {
-        return Set.copyOf(ratings);
+        return new HashSet<>(ratings);
     }
 
     public void setRatings(Set<Rating> ratings) {
-        this.ratings = Optional.ofNullable(ratings).map(Set::copyOf).orElse(Set.of());
+        this.ratings = Optional.ofNullable(ratings).map(HashSet::new).orElse(new HashSet<>());
     }
 
     public Profile getProfile() {
@@ -186,11 +186,11 @@ public class User {
     }
 
     public Set<Recipe> getRecipes() {
-        return Set.copyOf(recipes);
+        return new HashSet<>(recipes);
     }
 
     public void setRecipes(Set<Recipe> recipes) {
-        this.recipes = Optional.ofNullable(recipes).map(Set::copyOf).orElse(Set.of());
+        this.recipes = Optional.ofNullable(recipes).map(HashSet::new).orElse(new HashSet<>());
     }
 
     @Override

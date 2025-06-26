@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import aj.org.objectweb.asm.commons.Remapper;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -51,4 +52,15 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             WHERE u.id = ?1
             """)
     Optional<UUID> getProfileId(UUID id);
+
+    @Query("""
+            SELECT u
+            FROM User u
+            JOIN FETCH u.profile
+            JOIN FETCH u.email
+            JOIN FETCH u.authorities
+            JOIN FETCH u.recipes
+            JOIN FETCH u.ratings
+            """)
+    Optional<User> findByIdEager(UUID id);
 }
