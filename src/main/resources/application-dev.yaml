@@ -35,7 +35,7 @@ spring:
 logging:
   level:
     '[org.hibernate]': off
-    '[org.springframework]': off
+    '[org.springframework.security]': debug
     '[com.flavormetrics.api]': debug
 
 security:
