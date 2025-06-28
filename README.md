@@ -309,8 +309,9 @@ Create a new recipe.
 {
   "name": "Delicious Pasta",
   "ingredients": [
-    {"name": "pasta"},
-    {"name": "tomatoes"}
+    { "name": "pasta", "quantity": 200, "unit": "grams" },
+    { "name": "tomatoes", "quantity": 3, "unit": "pieces" },
+    { "name": "garlic", "quantity": 2, "unit": "cloves" }
   ],
   "imageUrl": "https://example.com/image.jpg",
   "instructions": "Cook pasta, add tomatoes...",
@@ -381,9 +382,9 @@ Update an existing recipe.
 {
   "name": "Updated Delicious Pasta",
   "ingredients": [
-    {"name": "pasta"},
-    {"name": "tomatoes"},
-    {"name": "garlic"}
+    { "name": "pasta", "quantity": 200, "unit": "grams" },
+    { "name": "tomatoes", "quantity": 3, "unit": "pieces" },
+    { "name": "garlic", "quantity": 2, "unit": "cloves" }
   ],
   "imageUrl": "https://example.com/updated-image.jpg",
   "instructions": "Cook pasta, add tomatoes and basil...",
