@@ -25,12 +25,16 @@ public record UserDetailsImpl(
         @JsonIgnore
         String passwordHash,
 
+        @JsonIgnore
         boolean isAccountNonExpired,
 
+        @JsonIgnore
         boolean isAccountNonLocked,
 
+        @JsonIgnore
         boolean isCredentialsNonExpired,
 
+        @JsonIgnore
         boolean isEnabled,
 
         @NotEmpty
