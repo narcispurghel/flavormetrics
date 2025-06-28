@@ -52,14 +52,7 @@ public class RatingController {
             )
     })
     @PostMapping("/{recipeId}")
-    public ResponseEntity<Map<String, String>> addRating(
-            @PathVariable
-            @org.hibernate.validator.constraints.UUID
-            UUID recipeId,
-
-            @RequestBody
-            @Valid
-            RatingDto req) {
+    public ResponseEntity<Map<String, String>> addRating(@PathVariable UUID recipeId, @RequestBody @Valid RatingDto req) {
         return ResponseEntity.ok(ratingService.addRecipeRating(recipeId, req.score()));
     }
 
@@ -90,10 +83,7 @@ public class RatingController {
             )
     })
     @GetMapping("/{recipeId}/all")
-    public ResponseEntity<Set<RatingDto>> getAllRatingsByRecipeId(
-            @PathVariable
-            @org.hibernate.validator.constraints.UUID
-            UUID recipeId) {
+    public ResponseEntity<Set<RatingDto>> getAllRatingsByRecipeId(@PathVariable UUID recipeId) {
         return ResponseEntity.ok(ratingService.findAllRatingsByRecipeId(recipeId));
     }
 
@@ -124,10 +114,7 @@ public class RatingController {
             )
     })
     @GetMapping("/byUser/{userId}")
-    public ResponseEntity<Set<RatingDto>> getAllRatingsByUser(
-            @PathVariable
-            @org.hibernate.validator.constraints.UUID
-            UUID userId) {
+    public ResponseEntity<Set<RatingDto>> getAllRatingsByUser(@PathVariable UUID userId) {
         return ResponseEntity.ok(ratingService.findAllRatingsByUserId(userId));
     }
 }

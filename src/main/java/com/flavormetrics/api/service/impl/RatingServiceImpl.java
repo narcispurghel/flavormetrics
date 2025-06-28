@@ -42,13 +42,8 @@ public class RatingServiceImpl implements RatingService {
     public Map<String, String> addRecipeRating(UUID recipeId, int ratingValue) {
         log.debug("Initialization of adding recipe rating");
         Recipe recipe;
-        try {
-            log.debug("Getting recipe with id {}", recipeId);
-            recipe = recipeRepository.getReferenceById(recipeId);
-        } catch (EntityNotFoundException e) {
-            log.warn("Recipe with id {} not found", recipeId);
-            throw new RecipeNotFoundException();
-        }
+        log.debug("Getting recipe with id {}", recipeId);
+        recipe = recipeRepository.getRecipeByIdEager(recipeId).orElseThrow(RecipeNotFoundException::new);
         log.debug("Recipe found");
         var principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         log.debug("Checking if the recipe is already rated by the current user");

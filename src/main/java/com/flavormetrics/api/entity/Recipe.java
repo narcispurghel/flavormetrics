@@ -74,7 +74,7 @@ public class Recipe {
     private Set<Ingredient> ingredients = new HashSet<>();
 
     @NotNull
-    @OneToMany(mappedBy = "recipe", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "recipe", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     private Set<Rating> ratings = new HashSet<>();
 
     @NotNull

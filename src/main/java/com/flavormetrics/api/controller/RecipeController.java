@@ -271,10 +271,7 @@ public class RecipeController {
             )
     })
     @PatchMapping("/uploadImage/byUrl/{id}")
-    public ResponseEntity<RecipeDto> uploadByUrl(
-            @RequestBody @Valid UploadImage request,
-            @PathVariable @NotBlank @org.hibernate.validator.constraints.UUID UUID id
-    ) {
+    public ResponseEntity<RecipeDto> uploadByUrl(@RequestBody @Valid UploadImage request, @PathVariable @NotBlank UUID id) {
         return ResponseEntity.ok(recipeService.updateRecipeImageById(id, request));
     }
 
@@ -310,7 +307,7 @@ public class RecipeController {
     @PatchMapping(value = "/uploadImage/byMultipartFile/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RecipeDto> uploadByMultipartFile(
             @Parameter(description = "Image file to upload", required = true) @RequestBody @NotBlank MultipartFile file,
-            @PathVariable @org.hibernate.validator.constraints.UUID UUID id) {
+            @PathVariable UUID id) {
         return ResponseEntity.ok(recipeService.updateRecipeImageById(id, file));
     }
 }

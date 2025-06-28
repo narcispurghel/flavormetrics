@@ -66,7 +66,7 @@ public class User {
     private Set<Authority> authorities = new HashSet<>();
 
     @NotNull
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.REMOVE})
     private Set<Rating> ratings = new HashSet<>();
 
     @NotNull

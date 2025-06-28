@@ -16,6 +16,7 @@ import com.flavormetrics.api.repository.RecipeRepository;
 import com.flavormetrics.api.repository.UserRepository;
 import com.flavormetrics.api.service.ImageKitService;
 import com.flavormetrics.api.service.RecipeService;
+import org.hibernate.dialect.lock.OptimisticEntityLockException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -118,7 +119,11 @@ public class RecipeServiceImpl implements RecipeService {
     @Override
     @Transactional
     public void deleteById(UUID id) {
-        recipeRepository.deleteById(id);
+        try {
+            recipeRepository.deleteById(id);
+        } catch (OptimisticEntityLockException e) {
+            throw new RecipeNotFoundException();
+        }
     }
 
     @Override
