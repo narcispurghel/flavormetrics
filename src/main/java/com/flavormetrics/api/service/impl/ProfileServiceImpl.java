@@ -9,12 +9,10 @@ import com.flavormetrics.api.factory.AllergyFactory;
 import com.flavormetrics.api.mapper.ProfileMapper;
 import com.flavormetrics.api.model.ProfileDto;
 import com.flavormetrics.api.model.UserDetailsImpl;
-import com.flavormetrics.api.model.projection.ProfileProjection;
 import com.flavormetrics.api.model.request.CreateProfileRequest;
 import com.flavormetrics.api.repository.ProfileRepository;
 import com.flavormetrics.api.repository.UserRepository;
 import com.flavormetrics.api.service.ProfileService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,9 +37,10 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProfileProjection findById(UUID id) {
-        return profileRepository.findProfileProjectionById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Profile with id %s not found".formatted(id)));
+    public ProfileDto findById(UUID id) {
+        return profileRepository.findById(id)
+                .map(ProfileMapper::toDto)
+                .orElseThrow(ProfileNotFoundException::new);
     }
 
     @Override

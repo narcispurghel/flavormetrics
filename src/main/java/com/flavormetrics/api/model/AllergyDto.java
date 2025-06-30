@@ -12,7 +12,6 @@ public record AllergyDto(
 
         String name,
 
-        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
         String description
 ) {
     public AllergyDto(Allergy allergy) {

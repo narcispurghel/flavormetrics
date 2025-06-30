@@ -14,16 +14,6 @@ import com.flavormetrics.api.entity.Profile;
 public interface ProfileRepository extends JpaRepository<Profile, UUID> {
 
     @Query("""
-            SELECT p.id as id,
-                   p.dietaryPreference as dietaryPreference,
-                   a.name as name
-            FROM Profile p
-            LEFT JOIN p.allergies a
-            WHERE p.id = ?1
-            """)
-    Optional<ProfileProjection> findProfileProjectionById(UUID id);
-
-    @Query("""
             SELECT p
             FROM Profile p
             LEFT JOIN FETCH p.allergies

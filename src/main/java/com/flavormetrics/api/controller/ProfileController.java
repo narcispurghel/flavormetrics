@@ -59,7 +59,7 @@ public class ProfileController {
             )
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ProfileProjection> getProfileById(@PathVariable("id") UUID id) {
+    public ResponseEntity<ProfileDto> getProfileById(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(profileService.findById(id));
     }
 

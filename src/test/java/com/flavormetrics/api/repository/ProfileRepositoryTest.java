@@ -24,24 +24,6 @@ class ProfileRepositoryTest {
     private UserRepository userRepository;
 
     @Test
-    void testIf_findProfileById_ReturnsProfileProjection() {
-        Profile profile = new Profile();
-        profile.setDietaryPreference(DietaryPreferenceType.vegan);
-        profile = profileRepository.save(profile);
-        Optional<ProfileProjection> found = profileRepository.findProfileProjectionById(profile.getId());
-        assertTrue(found.isPresent());
-        assertEquals(profile.getId(), found.get().getId());
-        assertEquals(DietaryPreferenceType.vegan, found.get().getDietaryPreference());
-    }
-
-    @Test
-    void testIf_findProfileProjectionById_ReturnsEmpty() {
-        UUID randomId = UUID.randomUUID();
-        Optional<ProfileProjection> found = profileRepository.findProfileProjectionById(randomId);
-        assertFalse(found.isPresent());
-    }
-
-    @Test
     void testIf_findByUserId_ReturnsNotEmpty() {
         var profile = new Profile();
         var user = new User();

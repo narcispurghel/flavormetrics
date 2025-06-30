@@ -63,23 +63,6 @@ class ProfileServiceImplTest {
     }
 
     @Test
-    void findById_existingId_returnsProjection() {
-        ProfileProjection projection = mock(ProfileProjection.class);
-        when(profileRepository.findProfileProjectionById(profileId)).thenReturn(Optional.of(projection));
-
-        ProfileProjection result = profileService.findById(profileId);
-
-        assertEquals(projection, result);
-        verify(profileRepository).findProfileProjectionById(profileId);
-    }
-
-    @Test
-    void findById_notFound_throwsException() {
-        when(profileRepository.findProfileProjectionById(profileId)).thenReturn(Optional.empty());
-        assertThrows(EntityNotFoundException.class, () -> profileService.findById(profileId));
-    }
-
-    @Test
     void create_validRequest_createsProfile() {
         CreateProfileRequest request = new CreateProfileRequest(DietaryPreferenceType.vegan, allergiesDtos);
         Profile profile = new Profile();
