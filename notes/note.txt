@@ -1,0 +1,171 @@
+Core Features (MVP):
+
+User registration/authentication cu profile personalizate
+CRUD pentru rețete (ingredients, steps, photos, cooking time, difficulty)
+Search & filtering (cuisine type, dietary restrictions, ingredients)
+Rating system (1-5 stars) și comment system
+Follow/unfollow users, feed cu rețete de la cei urmăriți
+
+Advanced Features (te diferențiază):
+
+Recipe Recommendation Engine - bazat pe rating-urile anterioare și preferințe
+Smart Shopping List Generator - agregă ingredients din multiple rețete
+Meal Planning Calendar - planifică mese pe săptămâni
+Nutritional Information Calculator - calories, macros per serving
+Social Features - collections/cookbooks, recipe sharing către prieteni
+
+recipe-sharing-platform/
+├── README.md                           # Project overview, setup instructions
+├── CHANGELOG.md                        # Version history
+├── LICENSE                            # Project license
+├── docker-compose.yml                 # Multi-container orchestration
+├── Dockerfile                         # Application containerization
+├── .gitignore                         # Git ignore rules
+├── .github/                           # GitHub Actions workflows
+│   └── workflows/
+│       ├── ci.yml                     # Continuous integration
+│       └── cd.yml                     # Continuous deployment
+├── docs/                              # Project documentation
+│   ├── api/                           # API documentation
+│   ├── architecture/                  # System design docs
+│   ├── deployment/                    # Deployment guides
+│   └── user-guide/                    # User documentation
+├── scripts/                           # Utility scripts
+│   ├── setup.sh                       # Environment setup
+│   ├── deploy.sh                      # Deployment script
+│   └── backup.sh                      # Database backup
+├── pom.xml                            # Maven dependencies and build config
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/company/recipeplatform/
+│   │   │       ├── RecipePlatformApplication.java  # Main Spring Boot class
+│   │   │       ├── config/                         # Configuration classes
+│   │   │       │   ├── SecurityConfig.java
+│   │   │       │   ├── DatabaseConfig.java
+│   │   │       │   ├── RedisConfig.java
+│   │   │       │   ├── S3Config.java
+│   │   │       │   └── SwaggerConfig.java
+│   │   │       ├── controller/                     # REST Controllers
+│   │   │       │   ├── AuthController.java
+│   │   │       │   ├── UserController.java
+│   │   │       │   ├── RecipeController.java
+│   │   │       │   ├── ReviewController.java
+│   │   │       │   └── RecommendationController.java
+│   │   │       ├── dto/                           # Data Transfer Objects
+│   │   │       │   ├── request/
+│   │   │       │   │   ├── LoginRequest.java
+│   │   │       │   │   ├── RegisterRequest.java
+│   │   │       │   │   ├── RecipeCreateRequest.java
+│   │   │       │   │   └── ReviewRequest.java
+│   │   │       │   └── response/
+│   │   │       │       ├── UserResponse.java
+│   │   │       │       ├── RecipeResponse.java
+│   │   │       │       ├── RecipeListResponse.java
+│   │   │       │       └── ApiResponse.java
+│   │   │       ├── entity/                        # JPA Entities
+│   │   │       │   ├── User.java
+│   │   │       │   ├── Recipe.java
+│   │   │       │   ├── Ingredient.java
+│   │   │       │   ├── Review.java
+│   │   │       │   ├── Category.java
+│   │   │       │   ├── UserFollowing.java
+│   │   │       │   └── ShoppingList.java
+│   │   │       ├── repository/                    # Data Access Layer
+│   │   │       │   ├── UserRepository.java
+│   │   │       │   ├── RecipeRepository.java
+│   │   │       │   ├── ReviewRepository.java
+│   │   │       │   ├── CategoryRepository.java
+│   │   │       │   └── custom/                    # Custom queries
+│   │   │       │       ├── RecipeRepositoryCustom.java
+│   │   │       │       └── RecipeRepositoryImpl.java
+│   │   │       ├── service/                       # Business Logic Layer
+│   │   │       │   ├── AuthService.java
+│   │   │       │   ├── UserService.java
+│   │   │       │   ├── RecipeService.java
+│   │   │       │   ├── ReviewService.java
+│   │   │       │   ├── RecommendationService.java
+│   │   │       │   ├── FileStorageService.java
+│   │   │       │   ├── NotificationService.java
+│   │   │       │   └── impl/                      # Service implementations
+│   │   │       │       ├── AuthServiceImpl.java
+│   │   │       │       ├── UserServiceImpl.java
+│   │   │       │       └── RecipeServiceImpl.java
+│   │   │       ├── security/                      # Security components
+│   │   │       │   ├── JwtAuthenticationFilter.java
+│   │   │       │   ├── JwtTokenProvider.java
+│   │   │       │   ├── UserPrincipal.java
+│   │   │       │   └── CustomUserDetailsService.java
+│   │   │       ├── exception/                     # Exception handling
+│   │   │       │   ├── GlobalExceptionHandler.java
+│   │   │       │   ├── ResourceNotFoundException.java
+│   │   │       │   ├── BadRequestException.java
+│   │   │       │   └── UnauthorizedException.java
+│   │   │       ├── util/                          # Utility classes
+│   │   │       │   ├── ValidationUtils.java
+│   │   │       │   ├── FileUtils.java
+│   │   │       │   ├── DateUtils.java
+│   │   │       │   └── Constants.java
+│   │   │       ├── mapper/                        # Object mapping
+│   │   │       │   ├── UserMapper.java
+│   │   │       │   ├── RecipeMapper.java
+│   │   │       │   └── ReviewMapper.java
+│   │   │       └── aspect/                        # Cross-cutting concerns
+│   │   │           ├── LoggingAspect.java
+│   │   │           └── PerformanceAspect.java
+│   │   └── resources/
+│   │       ├── application.yml                    # Main configuration
+│   │       ├── application-dev.yml                # Development config
+│   │       ├── application-prod.yml               # Production config
+│   │       ├── application-test.yml               # Test config
+│   │       ├── db/migration/                      # Flyway migrations
+│   │       │   ├── V1__Create_users_table.sql
+│   │       │   ├── V2__Create_recipes_table.sql
+│   │       │   ├── V3__Create_reviews_table.sql
+│   │       │   └── V4__Add_indexes.sql
+│   │       ├── static/                            # Static resources
+│   │       │   ├── css/
+│   │       │   ├── js/
+│   │       │   └── images/
+│   │       └── templates/                         # Email templates
+│   │           ├── welcome-email.html
+│   │           └── password-reset.html
+│   └── test/
+│       ├── java/
+│       │   └── com/company/recipeplatform/
+│       │       ├── controller/                    # Controller tests
+│       │       │   ├── AuthControllerTest.java
+│       │       │   ├── RecipeControllerTest.java
+│       │       │   └── UserControllerTest.java
+│       │       ├── service/                       # Service tests
+│       │       │   ├── AuthServiceTest.java
+│       │       │   ├── RecipeServiceTest.java
+│       │       │   └── UserServiceTest.java
+│       │       ├── repository/                    # Repository tests
+│       │       │   ├── RecipeRepositoryTest.java
+│       │       │   └── UserRepositoryTest.java
+│       │       ├── integration/                   # Integration tests
+│       │       │   ├── RecipeIntegrationTest.java
+│       │       │   └── AuthIntegrationTest.java
+│       │       └── TestDataBuilder.java           # Test data factory
+│       └── resources/
+│           ├── application-test.yml               # Test configuration
+│           └── test-data/                         # Test fixtures
+│               ├── users.json
+│               └── recipes.json
+├── frontend/                                      # Frontend application (if included)
+│   ├── public/
+│   ├── src/
+│   ├── package.json
+│   └── README.md
+├── infrastructure/                                # Infrastructure as Code
+│   ├── terraform/                                 # Terraform configs
+│   ├── ansible/                                   # Ansible playbooks
+│   └── kubernetes/                                # K8s manifests
+├── monitoring/                                    # Monitoring configs
+│   ├── prometheus/
+│   ├── grafana/
+│   └── alerts/
+└── performance/                                   # Performance testing
+    ├── jmeter/
+    └── gatling/
