@@ -1,57 +1,77 @@
 package com.flavormetrics.api.service.impl;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
-import com.flavormetrics.api.model.Data;
-import com.flavormetrics.api.model.user.UserDto;
-import com.flavormetrics.api.model.user.impl.NutritionistDto;
-import com.flavormetrics.api.model.user.impl.RegularUserDto;
-import com.flavormetrics.api.repository.NutritionistRepository;
-import com.flavormetrics.api.repository.RegularUserRepository;
+import com.flavormetrics.api.exception.UserNotFoundException;
+import com.flavormetrics.api.mapper.UserMapper;
+import com.flavormetrics.api.model.UserDetailsImpl;
+import com.flavormetrics.api.model.UserDto;
 import com.flavormetrics.api.repository.UserRepository;
 import com.flavormetrics.api.service.UserService;
-import com.flavormetrics.api.util.ModelConverter;
+import org.hibernate.dialect.lock.OptimisticEntityLockException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final NutritionistRepository nutritionistRepository;
-    private final RegularUserRepository regularUserRepository;
 
-    public UserServiceImpl(UserRepository userRepository,
-                           NutritionistRepository nutritionistRepository,
-                           RegularUserRepository regularUserRepository) {
+    public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.nutritionistRepository = nutritionistRepository;
-        this.regularUserRepository = regularUserRepository;
     }
 
     @Override
-    public Data<List<UserDto>> getAllUsers() {
-        List<UserDto> users = userRepository.findAll()
+    @Transactional(readOnly = true)
+    public Set<UserDto> findAllUsers() {
+        return userRepository.findAllComplete()
                 .stream()
-                .map(ModelConverter::toUserDto)
-                .toList();
-        return Data.body(users);
+                .map(UserMapper::toUserDto)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override
-    public Data<List<RegularUserDto>> getAllRegularUsers() {
-        List<RegularUserDto> regularUsers = regularUserRepository.findAll()
-                .stream()
-                .map(ModelConverter::toRegularUserDto)
-                .toList();
-        return Data.body(regularUsers);
+    @Transactional(readOnly = true)
+    public UserDto findUserById(UUID id) {
+        return userRepository.findByIdEager(id)
+                .map(UserMapper::toUserDto)
+                .orElseThrow(UserNotFoundException::new);
+    }
+
+
+    @Override
+    @Transactional
+    public UserDetailsImpl lockUserById(UUID id) {
+        return userRepository.findById(id)
+                .map(u -> {
+                    u.setAccountNonLocked(false);
+                    return userRepository.save(u);
+                })
+                .map(UserDetailsImpl::new)
+                .orElseThrow(UserNotFoundException::new);
     }
 
     @Override
-    public Data<List<NutritionistDto>> getAllNutritionistUsers() {
-        List<NutritionistDto> nutritionists = nutritionistRepository.findAll()
-                .stream()
-                .map(ModelConverter::toNutritionistDto)
-                .toList();
-        return Data.body(nutritionists);
+    @Transactional
+    public void deleteUserById(UUID id) {
+        try {
+            userRepository.deleteById(id);
+        } catch (OptimisticEntityLockException e) {
+            throw new UserNotFoundException();
+        }
     }
+
+    @Override
+    @Transactional
+    public UserDetailsImpl unlockUserById(UUID id) {
+        return userRepository.findById(id)
+                .map(u -> {
+                    u.setAccountNonLocked(true);
+                    return userRepository.save(u);
+                })
+                .map(UserDetailsImpl::new)
+                .orElseThrow(UserNotFoundException::new);
+    }
+
 }

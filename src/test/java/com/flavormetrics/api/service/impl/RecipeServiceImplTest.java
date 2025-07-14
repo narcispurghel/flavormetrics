@@ -1,190 +1,251 @@
 package com.flavormetrics.api.service.impl;
 
-import com.flavormetrics.api.entity.Authority;
 import com.flavormetrics.api.entity.Email;
 import com.flavormetrics.api.entity.Recipe;
-import com.flavormetrics.api.entity.user.impl.Nutritionist;
+import com.flavormetrics.api.entity.User;
+import com.flavormetrics.api.exception.RecipeNotFoundException;
+import com.flavormetrics.api.exception.UnAuthorizedException;
+import com.flavormetrics.api.factory.AllergyFactory;
+import com.flavormetrics.api.factory.IngredientFactory;
 import com.flavormetrics.api.factory.RecipeFactory;
-import com.flavormetrics.api.model.Data;
-import com.flavormetrics.api.model.IngredientDto;
-import com.flavormetrics.api.model.RecipeDto;
-import com.flavormetrics.api.model.enums.*;
+import com.flavormetrics.api.factory.TagFactory;
+import com.flavormetrics.api.mapper.RecipeMapper;
+import com.flavormetrics.api.model.*;
+import com.flavormetrics.api.enums.DietaryPreferenceType;
+import com.flavormetrics.api.enums.DifficultyType;
 import com.flavormetrics.api.model.request.AddRecipeRequest;
-import com.flavormetrics.api.model.response.RecipesByNutritionistResponse;
-import com.flavormetrics.api.repository.*;
-import com.flavormetrics.api.service.RecipeService;
-import com.flavormetrics.api.util.ModelConverter;
+import com.flavormetrics.api.repository.RecipeRepository;
+import com.flavormetrics.api.repository.UserRepository;
+import com.flavormetrics.api.service.ImageKitService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class RecipeServiceImplTest {
     private static final UUID RECIPE_ID = UUID.randomUUID();
-    private static final String NUTRITIONIST_USERNAME = "Test";
-    private static final String NUTRITIONIST_PASSWORD = "testpassword";
-    private static final RoleType NUTRITIONIST_ROLE = RoleType.ROLE_NUTRITIONIST;
-    private static final String NAME = "Test";
-    private static final List<IngredientDto> INGREDIENTS = List.of(
-            IngredientDto.builder()
-                    .name("Salt")
-                    .build()
-    );
-    private static final String IMAGE_URL = "Test";
-    private static final String INSTRUCTIONS = "Test";
-    private static final Integer PREP_TIME_MINUTES = 30;
-    private static final Integer COOK_TIME_MINUTES = 60;
-    private static final DifficultyType DIFFICULTY = DifficultyType.MEDIUM;
-    private static final Integer ESTIMATED_CALORIES = 600;
-    private static final List<TagType> TAGS = List.of(
-            TagType.ITALIAN,
-            TagType.HEALTHY
-    );
-    private static final List<AllergyType> ALLERGIES = List.of(
-            AllergyType.EGGS,
-            AllergyType.WHEAT
-    );
-    private static final List<DietaryPreferenceType> DIETARY_PREFERENCES = List.of(
-            DietaryPreferenceType.NONE
-    );
+    private static final UUID USER_ID = UUID.randomUUID();
+    private Recipe recipe;
+    private UserDetailsImpl principal;
 
     @Mock
     private RecipeRepository recipeRepository;
 
     @Mock
-    private IngredientRepository ingredientRepository;
+    private RecipeFactory recipeFactory;
 
     @Mock
-    private NutritionistRepository nutritionistRepository;
+    private IngredientFactory ingredientFactory;
+
+    @Mock
+    private AllergyFactory allergyFactory;
 
     @Mock
     private UserRepository userRepository;
 
     @Mock
-    private ProfileRepository profileRepository;
+    private TagFactory tagFactory;
 
-    private RecipeService recipeService;
+    @Mock
+    private ImageKitService imageKitService;
+
+    @InjectMocks
+    private RecipeServiceImpl recipeService;
 
     @BeforeEach
     void setUp() {
-        recipeService = new RecipeServiceImpl(
-                recipeRepository,
-                ingredientRepository,
-                nutritionistRepository,
-                userRepository,
-                profileRepository
-        );
-    }
-
-    @Test
-    void testAddRecipe() {
-        final AddRecipeRequest request = new AddRecipeRequest(
-                NAME,
-                INGREDIENTS,
-                IMAGE_URL,
-                INSTRUCTIONS,
-                PREP_TIME_MINUTES,
-                COOK_TIME_MINUTES,
-                DIFFICULTY,
-                ESTIMATED_CALORIES,
-                TAGS,
-                ALLERGIES,
-                DIETARY_PREFERENCES
-        );
-        final Email email = new Email(NUTRITIONIST_USERNAME);
-        final Nutritionist nutritionist = new Nutritionist(NUTRITIONIST_PASSWORD, email);
-        nutritionist.setAuthorities(List.of(new Authority(NUTRITIONIST_ROLE)));
-        final Recipe recipe = RecipeFactory.getRecipe(request, nutritionist);
+        User user = new User();
+        user.setId(USER_ID);
+        Email email = new Email();
+        email.setAddress("test@email.com");
+        email.setUser(user);
+        user.setEmail(email);
+        recipe = new Recipe();
+        recipe.setUser(user);
         recipe.setId(RECIPE_ID);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(nutritionist, null, nutritionist.getAuthorities());
-        Mockito.when(nutritionistRepository.getByUsername_Value(NUTRITIONIST_USERNAME))
-                .thenReturn(Optional.of(nutritionist));
-        Mockito.when(ingredientRepository.existsByName(INGREDIENTS.getFirst().name()))
-                .thenReturn(false);
-        Mockito.when(ingredientRepository.save(ModelConverter.toIngredient(INGREDIENTS.getFirst())))
-                .thenReturn(ModelConverter.toIngredient(INGREDIENTS.getFirst()));
-        Mockito.when(recipeRepository.save(any(Recipe.class)))
-                .thenReturn(recipe);
-        final Data<RecipeDto> response = recipeService.add(request, authentication);
-        assertNotNull(response);
-        assertNotNull(response.data());
-        assertEquals(NUTRITIONIST_USERNAME, response.data().nutritionist());
-        assertEquals(RECIPE_ID, response.data().id());
-        assertEquals(NAME, response.data().name());
-        assertEquals(INSTRUCTIONS, response.data().instructions());
-        assertEquals(IMAGE_URL, response.data().imageUrl());
-        assertEquals(PREP_TIME_MINUTES, response.data().prepTimeMinutes());
-        assertEquals(COOK_TIME_MINUTES, response.data().cookTimeMinutes());
-        assertEquals(DIFFICULTY, response.data().difficulty());
-        assertEquals(ESTIMATED_CALORIES, response.data().estimatedCalories());
-        assertNull(response.data().averageRating());
-        assertFalse(LocalDateTime.now().isBefore(response.data().createdAt()));
-        assertFalse(LocalDateTime.now().isBefore(response.data().updatedAt()));
+        principal = new UserDetailsImpl(user);
+        var auth = new TestingAuthenticationToken(principal, null);
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
     @Test
-    void getById() {
-        final AddRecipeRequest request = new AddRecipeRequest(
-                NAME,
-                INGREDIENTS,
-                IMAGE_URL,
-                INSTRUCTIONS,
-                PREP_TIME_MINUTES,
-                COOK_TIME_MINUTES,
-                DIFFICULTY,
-                ESTIMATED_CALORIES,
-                TAGS,
-                ALLERGIES,
-                DIETARY_PREFERENCES
-        );
-        final Email email = new Email(NUTRITIONIST_USERNAME);
-        final Nutritionist nutritionist = new Nutritionist(NUTRITIONIST_PASSWORD, email);
-        nutritionist.setAuthorities(List.of(new Authority(NUTRITIONIST_ROLE)));
-        final Recipe recipe = RecipeFactory.getRecipe(request, nutritionist);
-        recipe.setId(RECIPE_ID);
-        Mockito.when(recipeRepository.getRecipeById(RECIPE_ID))
-                .thenReturn(Optional.of(recipe));
-        final Data<RecipeDto> response = recipeService.getById(RECIPE_ID);
-        assertNotNull(response);
-        assertNotNull(response.data());
-        assertEquals(NUTRITIONIST_USERNAME, response.data().nutritionist());
-        assertEquals(RECIPE_ID, response.data().id());
-        assertEquals(NAME, response.data().name());
-        assertEquals(INSTRUCTIONS, response.data().instructions());
-        assertEquals(IMAGE_URL, response.data().imageUrl());
-        assertEquals(PREP_TIME_MINUTES, response.data().prepTimeMinutes());
-        assertEquals(COOK_TIME_MINUTES, response.data().cookTimeMinutes());
-        assertEquals(DIFFICULTY, response.data().difficulty());
-        assertEquals(ESTIMATED_CALORIES, response.data().estimatedCalories());
-        assertNull(response.data().averageRating());
-        assertFalse(LocalDateTime.now().isBefore(response.data().createdAt()));
-        assertFalse(LocalDateTime.now().isBefore(response.data().updatedAt()));
+    void create_validRequest_returnsId() {
+        AddRecipeRequest req = mock(AddRecipeRequest.class);
+        UUID expectedId = UUID.randomUUID();
+        when(recipeFactory.create(req, USER_ID)).thenReturn(expectedId);
+        UUID result = recipeService.create(req);
+        assertEquals(expectedId, result);
+        verify(recipeFactory).create(req, USER_ID);
     }
 
     @Test
-    void getByNutritionist() {
-        Mockito.when(userRepository.existsByUsername_Value(NUTRITIONIST_USERNAME))
-                .thenReturn(true);
-        Mockito.when(recipeRepository.getRecipesByNutritionist_Username_Value(NUTRITIONIST_USERNAME))
-                .thenReturn(List.of());
-        final Data<RecipesByNutritionistResponse> response = recipeService.getByNutritionist(NUTRITIONIST_USERNAME);
-        assertNotNull(response);
-        assertNotNull(response.data());
-        assertEquals(NUTRITIONIST_USERNAME, response.data().username());
-        assertNotNull(response.data().recipes());
+    void getById_existingRecipe_returnsDto() {
+        RecipeDto dto = new RecipeDto(recipe);
+        when(recipeRepository.getRecipeByIdEager(RECIPE_ID)).thenReturn(Optional.of(recipe));
+        RecipeDto result = recipeService.getById(RECIPE_ID);
+        assertEquals(dto, result);
     }
 
+    @Test
+    void getById_notFound_throwsException() {
+        when(recipeRepository.getRecipeByIdEager(RECIPE_ID)).thenReturn(Optional.empty());
+        assertThrows(RecipeNotFoundException.class, () -> recipeService.getById(RECIPE_ID));
+    }
+
+    @Test
+    void updateById_authorized_updatesAndReturnsDto() {
+        AddRecipeRequest req = mock(AddRecipeRequest.class);
+        when(recipeRepository.getRecipeByIdEager(RECIPE_ID)).thenReturn(Optional.of(recipe));
+        when(ingredientFactory.checkIfExistsOrElseSave(req)).thenReturn(Set.of());
+        when(allergyFactory.checkIfExistsOrElseSave(any())).thenReturn(Set.of());
+        when(tagFactory.checkIfExistsOrElseSave(req)).thenReturn(Set.of());
+        when(recipeRepository.save(any())).thenReturn(recipe);
+        RecipeDto result = recipeService.updateById(RECIPE_ID, req);
+        assertEquals(new RecipeDto(recipe), result);
+    }
+
+    @Test
+    void updateById_unauthorized_throwsException() {
+        AddRecipeRequest req = mock(AddRecipeRequest.class);
+        Recipe recipe = new Recipe();
+        User otherUser = new User();
+        Email email = new Email();
+        email.setAddress("other@example.com");
+        otherUser.setEmail(email);
+        recipe.setUser(otherUser);
+        when(recipeRepository.getRecipeByIdEager(RECIPE_ID)).thenReturn(Optional.of(recipe));
+        assertThrows(UnAuthorizedException.class, () -> recipeService.updateById(RECIPE_ID, req));
+    }
+
+    @Test
+    void deleteById_callsRepositoryDelete() {
+        recipeService.deleteById(RECIPE_ID);
+        verify(recipeRepository).deleteById(RECIPE_ID);
+    }
+
+    @Test
+    void findAll_returnsPaginatedData() {
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Recipe> recipes = List.of(recipe);
+        when(recipeRepository.findAll(pageable)).thenReturn(new PageImpl<>(recipes));
+        DataWithPagination<List<RecipeDto>> result = recipeService.findAll(0, 10);
+        assertEquals(1, result.data().size());
+    }
+
+    @Test
+    void findAllByUserEmail_returnsPaginatedOwnerData() {
+        try (MockedStatic<RecipeMapper> mockedRecipeMapper = mockStatic(RecipeMapper.class)) {
+            Pageable pageable = PageRequest.of(0, 10);
+            String email = "test@example.com";
+            List<Recipe> recipes = List.of(recipe);
+            List<RecipeDto> recipesDto = recipes.stream().map(RecipeDto::new).toList();
+            when(recipeRepository.findByOwner(email, pageable)).thenReturn(new PageImpl<>(recipes));
+            when(RecipeMapper.toRecipeByOwner(any(), eq(email))).thenReturn(new RecipeByOwner(email, recipesDto));
+            DataWithPagination<RecipeByOwner> result = recipeService.findAllByUserEmail(email, 0, 10);
+            assertEquals(1, result.data().recipes().size());
+            assertEquals(email, result.data().owner());
+        }
+    }
+
+    @Test
+    void findAllByRecipeFilter_returnsFilteredPaginatedData() {
+        Pageable pageable = PageRequest.of(0, 10);
+        RecipeFilter filter = new RecipeFilter(10, 10, 200, DifficultyType.easy, DietaryPreferenceType.vegan);
+        List<Recipe> recipes = List.of(recipe);
+        when(recipeRepository.findAllByFilter(10, 10, 200, DifficultyType.easy, DietaryPreferenceType.vegan, pageable))
+                .thenReturn(new PageImpl<>(recipes));
+        DataWithPagination<List<RecipeDto>> result = recipeService.findAllByRecipeFilter(filter, 0, 10);
+        assertEquals(1, result.data().size());
+    }
+
+    @Test
+    void getRecommendations_returnsPaginatedData() {
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Recipe> recipes = List.of(recipe);
+        when(userRepository.hasProfile(any())).thenReturn(true);
+        when(recipeRepository.findAllRecommendations(USER_ID, pageable)).thenReturn(new PageImpl<>(recipes));
+        DataWithPagination<Set<RecipeDto>> result = recipeService.getRecommendations(0, 10);
+        assertEquals(1, result.data().size());
+    }
+
+    @Test
+    void updateRecipeImageById_WithUploadImage_ReturnsUpdatedRecipe() {
+        var req = new UploadImage("mock-url", "mock-name");
+        when(imageKitService.upload(req.url(), req.name())).thenReturn("https://imagekit.io/mock-image.jpg");
+        when(recipeRepository.getRecipeByIdEager(RECIPE_ID)).thenReturn(Optional.of(recipe));
+        when(recipeRepository.save(any())).thenReturn(recipe);
+        RecipeDto result = recipeService.updateRecipeImageById(RECIPE_ID, req);
+        assertThat(result).isNotNull();
+        assertThat(result.imageUrl()).isNotNull();
+        assertThat(result.imageUrl()).isEqualTo("https://imagekit.io/mock-image.jpg");
+        assertThat(result.imageUrl()).isEqualTo(recipe.getImageUrl());
+    }
+
+    @Test
+    void updateRecipeImageById_RecipeNotFound_ThrowsRecipeNotFoundException() {
+        var req = new UploadImage("mock-url", "mock-name");
+        when(recipeRepository.getRecipeByIdEager(RECIPE_ID)).thenReturn(Optional.empty());
+        assertThrows(RecipeNotFoundException.class, () -> recipeService.updateRecipeImageById(RECIPE_ID, req));
+    }
+
+    @Test
+    void updateRecipeImageById_RecipeNotFound_ThrowsUnAuthorizedException() {
+        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class)) {
+            var otherUser = new User();
+            var otherEmail = new Email("mock-address");
+            otherUser.setEmail(otherEmail);
+            otherUser.setId(UUID.randomUUID());
+            var principal = new UserDetailsImpl(otherUser);
+            var auth = new TestingAuthenticationToken(principal, null);
+            var req = new UploadImage("mock-url", "mock-name");
+            SecurityContext context = new SecurityContextImpl(auth);
+            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(context);
+            when(recipeRepository.getRecipeByIdEager(RECIPE_ID)).thenReturn(Optional.of(recipe));
+            assertThrows(UnAuthorizedException.class, () -> recipeService.updateRecipeImageById(RECIPE_ID, req));
+        }
+    }
+
+    @Test
+    void updateRecipeImageById_WithMultipartFile_ReturnsUpdatedRecipe() {
+        try (MockedStatic<SecurityContextHolder> mockedSecurityContextHolder = mockStatic(SecurityContextHolder.class);
+             MockedStatic<ImageIO> mockedImageIO = mockStatic(ImageIO.class)
+        ) {
+            SecurityContext context = new SecurityContextImpl(new TestingAuthenticationToken(principal, null));
+            mockedSecurityContextHolder.when(SecurityContextHolder::getContext).thenReturn(context);
+            when(recipeRepository.save(any())).thenReturn(recipe);
+            when(recipeRepository.getRecipeByIdEager(RECIPE_ID)).thenReturn(Optional.of(recipe));
+            MultipartFile file = mock(MultipartFile.class);
+            mockedImageIO.when(() -> ImageIO.read(file.getInputStream())).thenReturn(new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB));
+            when(imageKitService.upload(file, file.getOriginalFilename())).thenReturn("mock-url");
+            RecipeDto result = recipeService.updateRecipeImageById(RECIPE_ID, file);
+            assertThat(result).isNotNull();
+            assertThat(result.imageUrl()).isNotNull();
+            assertThat(result.imageUrl()).isEqualTo("mock-url");
+            assertThat(result.imageUrl()).isEqualTo(recipe.getImageUrl());
+        }
+    }
 }

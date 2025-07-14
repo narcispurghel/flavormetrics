@@ -1,16 +1,20 @@
 package com.flavormetrics.api.service;
 
-import com.flavormetrics.api.model.Data;
-import com.flavormetrics.api.model.user.UserDto;
-import com.flavormetrics.api.model.user.impl.NutritionistDto;
-import com.flavormetrics.api.model.user.impl.RegularUserDto;
+import com.flavormetrics.api.model.UserDetailsImpl;
+import com.flavormetrics.api.model.UserDto;
 
-import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public interface UserService {
-    Data<List<UserDto>> getAllUsers();
 
-    Data<List<RegularUserDto>> getAllRegularUsers();
+    Set<UserDto> findAllUsers();
 
-    Data<List<NutritionistDto>> getAllNutritionistUsers();
+    UserDto findUserById(UUID id);
+
+    UserDetailsImpl lockUserById(UUID id);
+
+    void deleteUserById(UUID id);
+
+    UserDetailsImpl unlockUserById(@org.hibernate.validator.constraints.UUID UUID id);
 }

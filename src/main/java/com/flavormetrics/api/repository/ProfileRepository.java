@@ -1,15 +1,24 @@
 package com.flavormetrics.api.repository;
 
-import com.flavormetrics.api.entity.Profile;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
 import java.util.UUID;
 
+import com.flavormetrics.api.model.projection.ProfileProjection;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.flavormetrics.api.entity.Profile;
+
 @Repository
 public interface ProfileRepository extends JpaRepository<Profile, UUID> {
-    Optional<Profile> findByUser_Username_Value(String userUsernameValue);
 
-    boolean existsByUser_Username_Value(String userUsernameValue);
+    @Query("""
+            SELECT p
+            FROM Profile p
+            LEFT JOIN FETCH p.allergies
+            LEFT JOIN FETCH p.user u
+            WHERE u.id = ?1
+            """)
+    Optional<Profile> findByIdUserId(UUID id);
 }

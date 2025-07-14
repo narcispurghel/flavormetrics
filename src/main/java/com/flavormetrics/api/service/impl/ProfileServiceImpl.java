@@ -1,57 +1,90 @@
 package com.flavormetrics.api.service.impl;
 
+import com.flavormetrics.api.entity.Allergy;
 import com.flavormetrics.api.entity.Profile;
-import com.flavormetrics.api.entity.user.impl.RegularUser;
-import com.flavormetrics.api.exception.impl.ProfileAlreadyCreatedException;
-import com.flavormetrics.api.model.Data;
+import com.flavormetrics.api.entity.User;
+import com.flavormetrics.api.exception.ProfileExistsException;
+import com.flavormetrics.api.exception.ProfileNotFoundException;
+import com.flavormetrics.api.factory.AllergyFactory;
+import com.flavormetrics.api.mapper.ProfileMapper;
 import com.flavormetrics.api.model.ProfileDto;
+import com.flavormetrics.api.model.UserDetailsImpl;
 import com.flavormetrics.api.model.request.CreateProfileRequest;
 import com.flavormetrics.api.repository.ProfileRepository;
-import com.flavormetrics.api.repository.RegularUserRepository;
+import com.flavormetrics.api.repository.UserRepository;
 import com.flavormetrics.api.service.ProfileService;
-import com.flavormetrics.api.util.ModelConverter;
-import jakarta.transaction.Transactional;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class ProfileServiceImpl implements ProfileService {
     private final ProfileRepository profileRepository;
-    private final RegularUserRepository regularUserRepository;
+    private final UserRepository userRepository;
+    private final AllergyFactory allergyFactory;
 
     public ProfileServiceImpl(ProfileRepository profileRepository,
-                              RegularUserRepository regularUserRepository) {
+                              UserRepository userRepository,
+                              AllergyFactory allergyFactory) {
         this.profileRepository = profileRepository;
-        this.regularUserRepository = regularUserRepository;
+        this.userRepository = userRepository;
+        this.allergyFactory = allergyFactory;
     }
 
     @Override
-    public Data<ProfileDto> getProfile(Authentication authentication) {
-        Profile profile = profileRepository.findByUser_Username_Value(authentication.getName())
-                .orElse(null);
-        return Data.body(ModelConverter.toProfileDto(profile));
+    @Transactional(readOnly = true)
+    public ProfileDto findById(UUID id) {
+        return profileRepository.findById(id)
+                .map(ProfileMapper::toDto)
+                .orElseThrow(ProfileNotFoundException::new);
     }
 
     @Override
     @Transactional
-    public Data<ProfileDto> createProfile(CreateProfileRequest data, Authentication authentication) {
-        if (data == null) {
-            return null;
+    public UUID create(CreateProfileRequest request) {
+        var principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (request == null) {
+            throw new IllegalArgumentException("CreateProfileRequest cannot be null");
         }
-        boolean exists = profileRepository.existsByUser_Username_Value(authentication.getName());
-        if (exists) {
-            throw new ProfileAlreadyCreatedException(
-                    "Bad request", "User profile exists", HttpStatus.BAD_REQUEST, "profile");
+        if (userRepository.hasProfile(principal.id())) {
+            throw new ProfileExistsException();
         }
-        final RegularUser regularUser = regularUserRepository.getByUsername_Value(authentication.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("Cannot find a user account associated with username " + authentication.getName()));
-        Profile newProfile = ModelConverter.toProfile(data);
-        newProfile.setUser(regularUser);
-        newProfile = profileRepository.save(newProfile);
-        regularUser.setProfile(newProfile);
-        regularUserRepository.save(regularUser);
-        return Data.body(ModelConverter.toProfileDto(newProfile));
+        Profile profile = new Profile();
+        profile.setDietaryPreference(request.dietaryPreference());
+        Set<Allergy> allergies = allergyFactory.checkIfExistsOrElseSave(request.allergies());
+        profile.setAllergies(allergies);
+        User user = userRepository.getReferenceById(principal.id());
+        profile.setUser(user);
+        profile = profileRepository.save(profile);
+        user.setProfile(profile);
+        userRepository.save(user);
+        return Optional.of(profile)
+                .map(Profile::getId)
+                .orElseThrow();
     }
+
+    @Override
+    public ProfileDto updateById(CreateProfileRequest request) {
+        var principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Profile profile = profileRepository.findByIdUserId(principal.id()).orElseThrow(ProfileNotFoundException::new);
+        profile.setDietaryPreference(request.dietaryPreference());
+        Set<Allergy> allergies = allergyFactory.checkIfExistsOrElseSave(request.allergies());
+        profile.setAllergies(allergies);
+        return Optional.of(profileRepository.save(profile))
+                .map(ProfileMapper::toDto)
+                .get();
+    }
+
+    @Override
+    @Transactional
+    public void remove() {
+        var principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UUID profileId = userRepository.getProfileId(principal.id()).orElseThrow(ProfileNotFoundException::new);
+        profileRepository.deleteById(profileId);
+    }
+
 }

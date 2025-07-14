@@ -1,122 +1,110 @@
 package com.flavormetrics.api.entity;
 
-import com.flavormetrics.api.entity.user.impl.Nutritionist;
-import com.flavormetrics.api.exception.impl.InvalidArgumentException;
-import com.flavormetrics.api.model.enums.DietaryPreferenceType;
-import com.flavormetrics.api.model.enums.DifficultyType;
+import com.flavormetrics.api.enums.DietaryPreferenceType;
+import com.flavormetrics.api.enums.DifficultyType;
 import jakarta.persistence.*;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
-@Table(name = "receipe")
-public class Recipe implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
-
+@Table(name = "recipes")
+public class Recipe {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @NotBlank
+    @Size(max = 255)
     @Column(name = "name", nullable = false)
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "nutritionist_id")
-    private Nutritionist nutritionist;
-
-    @Column(name = "instructions")
+    @NotBlank
+    @Size(min = 15, max = 2500)
+    @Column(name = "instructions", nullable = false)
     private String instructions;
 
     @Column(name = "image_url")
     private String imageUrl;
 
     @Column(name = "prep_time_minutes")
-    private Integer prepTimeMinutes;
+    private int prepTimeMinutes;
 
     @Column(name = "cook_time_minutes")
-    private Integer cookTimeMinutes;
+    private int cookTimeMinutes;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "difficulty")
     private DifficultyType difficulty;
 
     @Column(name = "estimated_calories")
-    private Integer estimatedCalories;
+    private int estimatedCalories;
 
-    @Column(name = "average_rating")
-    private Double averageRating;
+    @NotNull
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "dietary_preferences")
+    private DietaryPreferenceType dietaryPreferences;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @UpdateTimestamp
+    @Column(name = "updated_at", columnDefinition = "timestamp not null default current_timestamp")
+    private LocalDateTime updatedAt;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false, columnDefinition = "timestamp not null default current_timestamp")
+    private LocalDateTime createdAt;
 
-    @ManyToMany(cascade = CascadeType.PERSIST)
-    @JoinTable(
-            name = "receipe_tag",
-            joinColumns = {
-                    @JoinColumn(name = "receipe_id")
-            },
-            inverseJoinColumns = {
-                    @JoinColumn(name = "tag_id")
-            }
-    )
-    @Column(name = "tags")
-    private List<Tag> tags;
+    @NotNull
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
+    @JoinTable(name = "recipes_tags",
+            joinColumns = @JoinColumn(name = "recipe_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    private Set<Tag> tags = new HashSet<>();
 
-    @ManyToMany(cascade = CascadeType.PERSIST)
-    @JoinTable(
-            name = "receipe_ingredient",
-            joinColumns = {
-                    @JoinColumn(name = "receipe_id")
-            },
-            inverseJoinColumns = {
-                    @JoinColumn(name = "ingredient_id")
-            }
-    )
-    private List<Ingredient> ingredients = new ArrayList<>();
+    @NotNull
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
+    @JoinTable(name = "recipes_ingredients",
+            joinColumns = @JoinColumn(name = "recipe_id"),
+            inverseJoinColumns = @JoinColumn(name = "ingredient_id"))
+    private Set<Ingredient> ingredients = new HashSet<>();
 
-    @OneToMany(mappedBy = "recipe", cascade = CascadeType.PERSIST)
-    private List<Rating> ratings = new ArrayList<>();
+    @NotNull
+    @OneToMany(mappedBy = "recipe", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+    private Set<Rating> ratings = new HashSet<>();
 
-    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<Allergy> allergies = new ArrayList<>();
+    @NotNull
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
+    @JoinTable(name = "recipes_allergies",
+            joinColumns = @JoinColumn(name = "recipe_id"),
+            inverseJoinColumns = @JoinColumn(name = "allergy_id"))
+    private Set<Allergy> allergies = new HashSet<>();
 
-    private List<DietaryPreferenceType> dietaryPreferences = new ArrayList<>();
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public Recipe() {
-        // No args constructor for JPA
+        // for JPA
     }
 
-    public Recipe(String name, List<Ingredient> ingredients) {
-        if (name == null || name.isBlank()) {
-            throw new InvalidArgumentException(
-                    "Invalid name",
-                    "name must be non-null and non-blank",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "recipe.name"
-            );
+    public Float getAverageRating() {
+        if (ratings.isEmpty()) {
+            return 0f;
         }
-
-        if (ingredients == null || ingredients.isEmpty()) {
-            throw new InvalidArgumentException(
-                    "Invalid ingredients",
-                    "ingredients must be non-null and non-empty",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "recipe.ingredients"
-            );
+        float sum = 0f;
+        for (Rating r : ratings) {
+            sum += r.getScore();
         }
-
-        this.name = name;
-        this.ingredients = ingredients;
+        if (sum == 0) {
+            return 0f;
+        }
+        return sum / ratings.size();
     }
 
     public UUID getId() {
@@ -133,22 +121,6 @@ public class Recipe implements Serializable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Nutritionist getNutritionist() {
-        return nutritionist;
-    }
-
-    public void setNutritionist(Nutritionist nutritionist) {
-        this.nutritionist = nutritionist;
-    }
-
-    public List<Ingredient> getIngredients() {
-        return ingredients;
-    }
-
-    public void setIngredients(List<Ingredient> ingredients) {
-        this.ingredients = new ArrayList<>(ingredients);
     }
 
     public String getInstructions() {
@@ -199,30 +171,16 @@ public class Recipe implements Serializable {
         this.estimatedCalories = estimatedCalories;
     }
 
-    public Double getAverageRating() {
-        if (ratings.isEmpty()) {
-            return null;
-        }
-        Rating accumulator = new Rating();
-        accumulator.setValue(0);
-        int sum = ratings.stream()
-                .reduce(accumulator, (a, b) -> {
-                    a.setValue(a.getValue() + b.getValue());
-                    return a;
-                }).getValue();
-        return (double) sum / ratings.size();
+    public DietaryPreferenceType getDietaryPreferences() {
+        return dietaryPreferences;
     }
 
-    public void setAverageRating(Double averageRating) {
-        this.averageRating = averageRating;
+    public void setDietaryPreferences(DietaryPreferenceType dietaryPreferences) {
+        this.dietaryPreferences = dietaryPreferences;
     }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 
     public LocalDateTime getUpdatedAt() {
@@ -233,35 +191,89 @@ public class Recipe implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public List<Tag> getTags() {
-        return tags;
+    public Set<Tag> getTags() {
+        return new HashSet<>(tags);
     }
 
-    public void setTags(List<Tag> tags) {
-        this.tags = new ArrayList<>(tags);
+    public void setTags(Set<Tag> tags) {
+        this.tags = Optional.ofNullable(tags).map(HashSet::new).orElse(new HashSet<>());
     }
 
-    public List<Rating> getRatings() {
-        return ratings;
+    public Set<Ingredient> getIngredients() {
+        return ingredients;
     }
 
-    public void setRatings(List<Rating> ratings) {
-        this.ratings = new ArrayList<>(ratings);
+    public void setIngredients(Set<Ingredient> ingredients) {
+        this.ingredients = Optional.ofNullable(ingredients).map(HashSet::new).orElse(new HashSet<>());
     }
 
-    public List<DietaryPreferenceType> getDietaryPreferences() {
-        return dietaryPreferences;
+    public Set<Rating> getRatings() {
+        return new HashSet<>(ratings);
     }
 
-    public void setDietaryPreferences(List<DietaryPreferenceType> dietaryPreferences) {
-        this.dietaryPreferences = new ArrayList<>(dietaryPreferences);
+    public void setRatings(Set<Rating> ratings) {
+        this.ratings = Optional.ofNullable(ratings).map(HashSet::new).orElse(new HashSet<>());
     }
 
-    public List<Allergy> getAllergies() {
-        return allergies;
+    public Set<Allergy> getAllergies() {
+        return new HashSet<>(allergies);
     }
 
-    public void setAllergies(List<Allergy> allergies) {
-        this.allergies = allergies;
+    public void setAllergies(Set<Allergy> allergies) {
+        this.allergies = Optional.ofNullable(allergies).map(HashSet::new).orElse(new HashSet<>());
     }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Recipe recipe)) {
+            return false;
+        }
+        return Objects.equals(name, recipe.name) &&
+               Objects.equals(instructions, recipe.instructions) &&
+               Objects.equals(imageUrl, recipe.imageUrl) &&
+               Objects.equals(prepTimeMinutes, recipe.prepTimeMinutes) &&
+               Objects.equals(cookTimeMinutes, recipe.cookTimeMinutes) &&
+               difficulty == recipe.difficulty &&
+               Objects.equals(estimatedCalories, recipe.estimatedCalories) &&
+               dietaryPreferences == recipe.dietaryPreferences;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, instructions, imageUrl, prepTimeMinutes, cookTimeMinutes,
+                difficulty, estimatedCalories, dietaryPreferences);
+    }
+
+    @Override
+    @SuppressWarnings("StringBufferReplaceableByString")
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Recipe{");
+        sb.append("id=").append(id);
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", instructions='").append(instructions).append('\'');
+        sb.append(", imageUrl='").append(imageUrl).append('\'');
+        sb.append(", prepTimeMinutes=").append(prepTimeMinutes);
+        sb.append(", cookTimeMinutes=").append(cookTimeMinutes);
+        sb.append(", difficulty=").append(difficulty);
+        sb.append(", estimatedCalories=").append(estimatedCalories);
+        sb.append(", dietaryPreference=").append(dietaryPreferences);
+        sb.append(", createdAt=").append(createdAt);
+        sb.append(", updatedAt=").append(updatedAt);
+        sb.append(", tags=").append(tags.size());
+        sb.append(", ingredients=").append(ingredients.size());
+        sb.append(", ratings=").append(ratings.size());
+        sb.append(", allergies=").append(allergies.size());
+        sb.append(", user=").append(user == null ? "null" : user.getEmail());
+        sb.append('}');
+        return sb.toString();
+    }
+
 }

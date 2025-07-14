@@ -1,23 +1,27 @@
 package com.flavormetrics.api.model.request;
 
-import com.flavormetrics.api.model.enums.RoleType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 
 @Schema(description = "Register request")
 public record RegisterRequest(
         @Schema(description = "Unique identifier", example = "narcis@email.com")
-        String username,
+        @Email(regexp = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+")
+        @NotEmpty
+        String email,
 
         @Schema(description = "User first name", example = "Narcis")
+        @NotEmpty
         String firstName,
 
         @Schema(description = "User last name", example = "Purghel")
+        @NotEmpty
         String lastName,
 
         @Schema(description = "User credentials", example = "strongPassword")
-        String password,
-
-        @Schema(description = "User role should not be ADMIN in case you will not be able to register", example = "ROLE_USER")
-        RoleType role) {
-
-}
+        @NotEmpty
+        @Size(min = 8, max = 1000)
+        String password
+) {}

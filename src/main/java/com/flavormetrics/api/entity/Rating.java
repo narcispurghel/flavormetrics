@@ -1,37 +1,44 @@
 package com.flavormetrics.api.entity;
 
-import com.flavormetrics.api.entity.user.User;
-import com.flavormetrics.api.exception.impl.InvalidArgumentException;
-import jakarta.persistence.*;
-import org.springframework.http.HttpStatus;
-
-import java.io.Serial;
-import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
-@Entity
-@Table(name = "rating")
-public class Rating implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+@Entity
+@Table(name = "ratings")
+public class Rating {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "value", nullable = false)
-    private Integer value;
+    @Column(name = "score", nullable = false)
+    private int score;
 
-    @ManyToOne
+    @UpdateTimestamp
+    @Column(name = "updated_at", columnDefinition = "timestamp not null default current_timestamp")
+    private LocalDateTime updatedAt;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false, columnDefinition = "timestamp not null default current_timestamp")
+    private LocalDateTime createdAt;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recipe_id")
     private Recipe recipe;
 
     public Rating() {
-        // No args constructor for JPA
+        // for JPA
     }
 
     public UUID getId() {
@@ -50,25 +57,33 @@ public class Rating implements Serializable {
         this.recipe = recipe;
     }
 
-    public Integer getValue() {
-        return value;
+    public int getScore() {
+        return score;
     }
 
     /**
-     * Sets rating's value
-     * @param value must be in the interval [0, 5]
-     * @throws InvalidArgumentException in case the value 
-     * is not in the range [0, 5]
+     * Sets rating's score
+     * @param score must be in the interval [0, 5]
+     * @throws IllegalArgumentException if the score exceeds
+     * the interval
      */
-    public void setValue(Integer value) {
-        if (value > 5 || value < 0) {
-            throw new InvalidArgumentException(
-                    "Invalid value",
-                    "Rating's value must be in interval [0, 5]",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "rating.value");
+    public void setScore(int score) {
+        if (score > 5 || score < 0) {
+            throw new IllegalArgumentException("Value must be between 0 and 5");
         }
-        this.value = value;
+        this.score = score;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     public User getUser() {
@@ -78,4 +93,32 @@ public class Rating implements Serializable {
     public void setUser(User user) {
         this.user = user;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Rating rating)) {
+            return false;
+        }
+        return score == rating.score;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(score);
+    }
+
+    @Override
+    @SuppressWarnings("StringBufferReplaceableByString")
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Rating{");
+        sb.append("id=").append(id);
+        sb.append(", score=").append(score);
+        sb.append(", updatedAt=").append(updatedAt);
+        sb.append(", createdAt=").append(createdAt);
+        sb.append(", user=").append(user == null ? "null" : user.getId());
+        sb.append(", recipe=").append(recipe == null ? "null" : recipe.getId());
+        sb.append('}');
+        return sb.toString();
+    }
+
 }

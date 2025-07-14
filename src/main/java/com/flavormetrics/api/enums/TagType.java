@@ -1,0 +1,33 @@
+package com.flavormetrics.api.enums;
+
+public enum TagType {
+    VEGAN,
+    VEGETARIAN,
+    GLUTEN_FREE,
+    LACTOSE_FREE,
+    LOW_CARB,
+    HIGH_PROTEIN,
+    BREAKFAST,
+    LUNCH,
+    DINNER,
+    SNACK,
+    DESSERT,
+    APPETIZER,
+    QUICK,
+    THIRTY_MINUTES_OR_LESS,
+    EASY,
+    MEDIUM,
+    ADVANCED,
+    ITALIAN,
+    MEXICAN,
+    INDIAN,
+    CHINESE,
+    JAPANESE,
+    MEDITERRANEAN,
+    ROMANIAN,
+    SPICY,
+    SWEET,
+    LOW_FAT,
+    HIGH_FIBER,
+    GREEK, ASIAN, HEALTHY, LOW_SUGAR
+}

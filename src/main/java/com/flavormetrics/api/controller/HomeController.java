@@ -20,13 +20,14 @@ public class HomeController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Login success",
-                    content = @Content(schema = @Schema(implementation = LoginResponse.class), mediaType = "application/json")
+                    description = "Success",
+                    content = @Content(schema = @Schema(implementation = String.class), mediaType = "application/json")
             ),
             @ApiResponse(
                     responseCode = "500",
                     description = "Internal Server Error",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorResponse.class))
             )
     })
     @GetMapping

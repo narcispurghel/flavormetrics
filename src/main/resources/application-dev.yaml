@@ -1,0 +1,48 @@
+server:
+  tomcat:
+    threads:
+      max: 200
+spring:
+  application:
+    name: FlavorMetrics API
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      auto-commit: false
+      maximum-pool-size: 75
+      idle-timeout: 30000
+      connection-timeout: 30000
+  jpa:
+    database: postgresql
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        '[format_sql]': true
+        '[highlight_sql]': true
+        '[generate_statistics]': false
+  main:
+    lazy-initialization: true
+  threads:
+    virtual:
+      enabled: true
+
+logging:
+  level:
+    '[org.hibernate]': off
+    '[org.springframework.security]': debug
+    '[com.flavormetrics.api]': debug
+
+security:
+  jwt:
+    key: ${JWT_SECURITY_KEY}}
+
+imagekit:
+  url: ${IMAGE_KIT_URL}
+  private-key: ${IMAGE_KIT_PRIVATE_KEY}
+  public-key: ${IMAGE_KIT_PUBLIC_KEY}

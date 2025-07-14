@@ -1,9 +1,15 @@
 package com.flavormetrics.api.model.request;
 
-import com.flavormetrics.api.model.enums.AllergyType;
-import com.flavormetrics.api.model.enums.DietaryPreferenceType;
+import com.flavormetrics.api.model.AllergyDto;
+import com.flavormetrics.api.enums.DietaryPreferenceType;
+import jakarta.validation.constraints.NotNull;
 
-import java.util.List;
+import java.util.Set;
 
-public record CreateProfileRequest(DietaryPreferenceType dietaryPreference, List<AllergyType> allergies) {
-}
+public record CreateProfileRequest(
+        @NotNull
+        DietaryPreferenceType dietaryPreference,
+
+        @NotNull
+        Set<AllergyDto> allergies
+) {}

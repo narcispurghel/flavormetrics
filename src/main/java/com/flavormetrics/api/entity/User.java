@@ -1,214 +1,237 @@
 package com.flavormetrics.api.entity;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import com.flavormetrics.api.exception.impl.MissingAuthorizationElementException;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-
+import java.util.*;
 
 @Entity
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Table(name = "users")
-public class User implements UserDetails {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    
+
+    @NotBlank
+    @Size(min = 8, max = 2000)
+    @Column(nullable = false, columnDefinition = "text")
+    private String passwordHash;
+
+    @NotBlank
+    @Size(max = 255)
     @Column(nullable = false)
     private String firstName;
-    
+
+    @NotBlank
+    @Size(max = 255)
     @Column(nullable = false)
     private String lastName;
-    
-    @Column(nullable = false)
+
+    @Column(columnDefinition = "boolean not null default true")
     private boolean isAccountNonExpired = true;
-    
-    @Column(nullable = false)
+
+    @Column(columnDefinition = "boolean not null default true")
     private boolean isAccountNonLocked = true;
-    
-    @Column(nullable = false)
+
+    @Column(columnDefinition = "boolean not null default true")
     private boolean isCredentialsNonExpired = true;
-    
-    @Column(nullable = false)
+
+    @Column(columnDefinition = "boolean not null default false")
     private boolean isEnabled = true;
-    
-    @Column(nullable = false)
-    private String password;
-    
-    @Column(name = "email")
-    private String email;
-    
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
-    
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
-    
-    @OneToMany(mappedBy = "user",
-               cascade = CascadeType.PERSIST,
-               fetch = FetchType.EAGER)
-    private List<Authority> authorities = new ArrayList<>();
-    
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", columnDefinition = "timestamp not null default current_timestamp")
+    private LocalDateTime updatedAt;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false, columnDefinition = "timestamp not null default current_timestamp")
+    private LocalDateTime createdAt;
+
+    @OneToOne(mappedBy = "user")
+    private Profile profile;
+
+    @NotNull
+    @OneToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @JoinColumn(name = "email_id", nullable = false, unique = true)
+    private Email email;
+
+    @NotNull
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "authority_id"))
+    private Set<Authority> authorities = new HashSet<>();
+
+    @NotNull
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.REMOVE})
+    private Set<Rating> ratings = new HashSet<>();
+
+    @NotNull
     @OneToMany(mappedBy = "user")
-    private List<Rating> ratings = new ArrayList<>();
-    
-    protected User() {
+    private Set<Recipe> recipes = new HashSet<>();
+
+    public User() {
+        // for JPA
     }
-    
-    /**
-     * This method cannot return null because of
-     * org.springframework.security.core.userdetails.User contract
-     *
-     * @return a collection of Authority
-     */
-    @Override
-    public List<Authority> getAuthorities() {
-        if (authorities == null) {
-            throw new MissingAuthorizationElementException("Invalid " +
-                                                           "authorities",
-                                                           "authorities " +
-                                                           "should be a " +
-                                                           "non-null and " +
-                                                           "non-empty value",
-                                                           HttpStatus.INTERNAL_SERVER_ERROR,
-                                                           "user.authorities");
-        }
-        return authorities;
-    }
-    
-    @Override
-    public String getPassword() {
-        return password;
-    }
-    
-    /**
-     * This method cannot return null because of
-     * org.springframework.security.core.userdetails.User contract
-     */
-    @Override
-    public String getUsername() {
-        if (email == null) {
-            throw new MissingAuthorizationElementException("Invalid username",
-                                                           "username should " +
-                                                           "be a non-null and" +
-                                                           " non-blank value",
-                                                           HttpStatus.INTERNAL_SERVER_ERROR,
-                                                           "user" +
-                                                           ".username");
-        }
-        return email;
-    }
-    
+
     public UUID getId() {
         return id;
     }
-    
-    public String getFirstName() {
-        return firstName;
-    }
-    
-    public String getLastName() {
-        return lastName;
-    }
-    
-    @Override
-    public boolean isAccountNonExpired() {
-        return isAccountNonExpired;
-    }
-    
-    @Override
-    public boolean isAccountNonLocked() {
-        return isAccountNonLocked;
-    }
-    
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return isCredentialsNonExpired;
-    }
-    
-    @Override
-    public boolean isEnabled() {
-        return isEnabled;
-    }
-    
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
+
     public void setId(UUID id) {
         this.id = id;
     }
-    
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = Objects.requireNonNull(passwordHash);
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
-    
+
+    public String getLastName() {
+        return lastName;
+    }
+
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
-    
-    public void setAccountNonExpired(boolean isAccountNonExpired) {
-        this.isAccountNonExpired = isAccountNonExpired;
+
+    public boolean isAccountNonExpired() {
+        return isAccountNonExpired;
     }
-    
-    public void setAccountNonLocked(boolean isAccountNonLocked) {
-        this.isAccountNonLocked = isAccountNonLocked;
+
+    public void setAccountNonExpired(boolean accountNonExpired) {
+        isAccountNonExpired = accountNonExpired;
     }
-    
-    public void setCredentialsNonExpired(boolean isCredentialsNonExpired) {
-        this.isCredentialsNonExpired = isCredentialsNonExpired;
+
+    public boolean isAccountNonLocked() {
+        return isAccountNonLocked;
     }
-    
-    public void setEnabled(boolean isEnabled) {
-        this.isEnabled = isEnabled;
+
+    public void setAccountNonLocked(boolean accountNonLocked) {
+        isAccountNonLocked = accountNonLocked;
     }
-    
-    public void setPassword(String password) {
-        this.password = password;
+
+    public boolean isCredentialsNonExpired() {
+        return isCredentialsNonExpired;
     }
-    
-    public void setEmail(String email) {
-        this.email = email;
+
+    public void setCredentialsNonExpired(boolean credentialsNonExpired) {
+        isCredentialsNonExpired = credentialsNonExpired;
     }
-    
+
+    public boolean isEnabled() {
+        return isEnabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        isEnabled = enabled;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
-    
-    public void setAuthorities(List<Authority> authorities) {
-        this.authorities = authorities;
+
+    public Email getEmail() {
+        return email;
     }
-    
-    public List<Rating> getRatings() {
-        return ratings;
+
+    public void setEmail(Email email) {
+        this.email = email;
     }
-    
-    public void setRatings(List<Rating> ratings) {
-        this.ratings = ratings;
+
+    public Set<Authority> getAuthorities() {
+        return new HashSet<>(authorities);
     }
+
+    public void setAuthorities(Set<Authority> authorities) {
+        this.authorities = Optional.ofNullable(authorities).map(HashSet::new).orElse(new HashSet<>());
+    }
+
+    public Set<Rating> getRatings() {
+        return new HashSet<>(ratings);
+    }
+
+    public void setRatings(Set<Rating> ratings) {
+        this.ratings = Optional.ofNullable(ratings).map(HashSet::new).orElse(new HashSet<>());
+    }
+
+    public Profile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(Profile profile) {
+        this.profile = profile;
+    }
+
+    public Set<Recipe> getRecipes() {
+        return new HashSet<>(recipes);
+    }
+
+    public void setRecipes(Set<Recipe> recipes) {
+        this.recipes = Optional.ofNullable(recipes).map(HashSet::new).orElse(new HashSet<>());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof User user)) {
+            return false;
+        }
+        return isAccountNonExpired == user.isAccountNonExpired &&
+               isAccountNonLocked == user.isAccountNonLocked &&
+               isCredentialsNonExpired == user.isCredentialsNonExpired &&
+               isEnabled == user.isEnabled &&
+               Objects.equals(passwordHash, user.passwordHash) &&
+               Objects.equals(firstName, user.firstName) &&
+               Objects.equals(lastName, user.lastName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(passwordHash, firstName, lastName, isAccountNonExpired,
+                isAccountNonLocked, isCredentialsNonExpired, isEnabled);
+    }
+
+    @Override
+    @SuppressWarnings("StringBufferReplaceableByString")
+    public String toString() {
+        StringBuilder sb = new StringBuilder("User{");
+        sb.append("id=").append(id);
+        sb.append(", firstName='").append(firstName).append('\'');
+        sb.append(", lastName='").append(lastName).append('\'');
+        sb.append(", isAccountNonExpired=").append(isAccountNonExpired);
+        sb.append(", isAccountNonLocked=").append(isAccountNonLocked);
+        sb.append(", isCredentialsNonExpired=").append(isCredentialsNonExpired);
+        sb.append(", isEnabled=").append(isEnabled);
+        sb.append(", updatedAt=").append(updatedAt);
+        sb.append(", createdAt=").append(createdAt);
+        sb.append(", email=").append(email != null ? email.getAddress() : "null");
+        sb.append(", authorities=").append(authorities.size());
+        sb.append(", ratings=").append(ratings.size());
+        sb.append(", profile=").append(profile == null ? "null" : profile.getId());
+        sb.append('}');
+        return sb.toString();
+    }
+
 }

@@ -1,4 +1,12 @@
 package com.flavormetrics.api.model;
 
-public record UploadImage(String url, String name) {
-}
+import jakarta.validation.constraints.NotBlank;
+import org.hibernate.validator.constraints.URL;
+
+public record UploadImage(
+        @URL
+        String url,
+
+        @NotBlank
+        String name
+) {}

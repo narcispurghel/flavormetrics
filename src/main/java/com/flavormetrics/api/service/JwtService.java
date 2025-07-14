@@ -1,18 +1,44 @@
 package com.flavormetrics.api.service;
 
-import com.flavormetrics.api.entity.user.User;
-import com.nimbusds.jose.jwk.RSAKey;
+import java.time.Instant;
 
-import java.util.UUID;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.flavormetrics.api.enums.JwtTokens;
+import com.flavormetrics.api.exception.JwtException;
+
+import com.flavormetrics.api.model.JwtPayload;
+import jakarta.servlet.http.HttpServletRequest;
 
 public interface JwtService {
-    String generateToken(User details);
 
-    UUID getId();
+    /**
+     * @param email user's unique identifier who will be stored in the token
+     * @param type a score from {@link JwtTokens}
+     * @return a string representing a valid JWT token of null if payload or type are null
+     */
+    String generateToken(String email, JwtTokens type);
 
-    RSAKey getPublicKey();
+    /**
+     * @param refreshToken above to expire
+     * @return new JWT token with fresh expire score
+     * @throws JwtException if @param refreshToken is not valid
+     */
+    String generateNewAccessToken(String refreshToken) throws JwtException;
 
-    boolean isTokenValid(String token);
+    /**
+     * @param token The JWT token
+     * @return a decoded of type {@link DecodedJWT}
+     * @throws JwtException if the token is not valid
+     */
+    DecodedJWT decodeToken(String token) throws JwtException;
 
-    String extractUsername(String token);
+    /**
+     * @param token JWT token
+     * @return score of the claims sub if presented otherwise null
+     */
+    String extractUsername(String token) throws JwtException;
+
+    String getCookieValueFromRequest(HttpServletRequest request, String name);
+
+    boolean isAboveThreshold(Instant expire);
 }

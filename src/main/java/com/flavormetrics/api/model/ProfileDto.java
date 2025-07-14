@@ -1,57 +1,63 @@
 package com.flavormetrics.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.flavormetrics.api.model.enums.DietaryPreferenceType;
+import com.flavormetrics.api.enums.DietaryPreferenceType;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.Set;
 
 public record ProfileDto(
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)
         UUID id,
+
+        String bio,
+
         DietaryPreferenceType dietaryPreference,
-        List<AllergyDto> allergies,
-        @JsonIgnore
-        UUID userId
+
+        Set<AllergyDto> allergies,
+
+        @NotNull
+        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+        UUID userId,
+
+        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+        LocalDateTime createdAt,
+
+        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+        LocalDateTime updatedAt
 ) {
-    public static Builder builder() {
-        return new Builder();
-    }
 
-    public static final class Builder {
-        private UUID id;
-        private DietaryPreferenceType dietaryPreference = DietaryPreferenceType.NONE; // Default value
-        private List<AllergyDto> allergies = new ArrayList<>();
-        private UUID userId;
-
-        private Builder() {
-            // Prevent instantiation
+        @Override
+        public boolean equals(Object o) {
+                if (!(o instanceof ProfileDto that)) {
+                        return false;
+                }
+            return Objects.equals(bio, that.bio) && Objects.equals(userId, that.userId) &&
+                       dietaryPreference == that.dietaryPreference;
         }
 
-        public Builder id(UUID id) {
-            this.id = id;
-            return this;
+        @Override
+        public int hashCode() {
+                return Objects.hash(bio, dietaryPreference, userId);
         }
 
-        public Builder dietaryPreference(DietaryPreferenceType dietaryPreference) {
-            this.dietaryPreference = dietaryPreference;
-            return this;
+        @Override
+        @NonNull
+        @SuppressWarnings("StringBufferReplaceableByString")
+        public String toString() {
+                StringBuilder sb = new StringBuilder("ProfileDto{");
+                sb.append("id=").append(id);
+                sb.append(", bio='").append(bio).append('\'');
+                sb.append(", dietaryPreference=").append(dietaryPreference);
+                sb.append(", allergies=").append(allergies == null ? "null" : allergies.size());
+                sb.append(", userId=").append(userId);
+                sb.append(", createdAt=").append(createdAt);
+                sb.append(", updatedAt=").append(updatedAt);
+                sb.append('}');
+                return sb.toString();
         }
-
-        public Builder allergies(List<AllergyDto> allergies) {
-            this.allergies = new ArrayList<>(allergies);
-            return this;
-        }
-
-        public Builder userId(UUID userId) {
-            this.userId = userId;
-            return this;
-        }
-
-        public ProfileDto build() {
-            return new ProfileDto(id, dietaryPreference, allergies, userId);
-        }
-    }
 }
