@@ -11,25 +11,29 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
-    private static final Logger log = LoggerFactory.getLogger(UserDetailsServiceImpl.class);
 
-    private final UserRepository userRepository;
+  private static final Logger log = LoggerFactory.getLogger(
+    UserDetailsServiceImpl.class
+  );
 
-    public UserDetailsServiceImpl(
-            UserRepository userRepository) {
-        this.userRepository = userRepository;
+  private final UserRepository userRepository;
+
+  public UserDetailsServiceImpl(UserRepository userRepository) {
+    this.userRepository = userRepository;
+  }
+
+  @Override
+  public UserDetails loadUserByUsername(String email)
+    throws UsernameNotFoundException {
+    try {
+      log.debug("Searching for user '{}'", email);
+      return userRepository
+        .findByEmailWithAuthoritiesAndEmail(email)
+        .map(UserDetailsImpl::new)
+        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    } catch (UsernameNotFoundException e) {
+      log.debug("User not found");
+      throw e;
     }
-
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        try {
-            log.debug("Searching for user '{}'", email);
-            return userRepository.findByEmailWithAuthoritiesAndEmail(email)
-                    .map(UserDetailsImpl::new)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        } catch (UsernameNotFoundException e) {
-            log.debug("User not found");
-            throw e;
-        }
-    }
+  }
 }

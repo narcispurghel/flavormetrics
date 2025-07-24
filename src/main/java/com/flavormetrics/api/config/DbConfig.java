@@ -12,18 +12,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Configuration
 public class DbConfig {
-    private static final Logger log = LoggerFactory.getLogger(DbConfig.class);
 
-    @Bean
-    @Transactional
-    CommandLineRunner initDatabase(AuthorityRepository authorityRepository) {
-        return args -> {
-            log.info("Initializing Database...");
-            if (authorityRepository.findAuthorityByType(RoleType.ROLE_USER).isEmpty()) {
-                var authority = new Authority(RoleType.ROLE_USER);
-                authorityRepository.save(authority);
-            }
-            log.info("Database initialized.");
-        };
-    }
+  private static final Logger log = LoggerFactory.getLogger(DbConfig.class);
+
+  @Bean
+  @Transactional
+  CommandLineRunner initDatabase(AuthorityRepository authorityRepository) {
+    return args -> {
+      log.info("Initializing Database...");
+      if (
+        authorityRepository.findAuthorityByType(RoleType.ROLE_USER).isEmpty()
+      ) {
+        var authority = new Authority(RoleType.ROLE_USER);
+        authorityRepository.save(authority);
+      }
+      log.info("Database initialized.");
+    };
+  }
 }

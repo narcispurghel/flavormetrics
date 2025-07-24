@@ -1,48 +1,33 @@
 package com.flavormetrics.api.model.request;
 
+import com.flavormetrics.api.enums.DietaryPreferenceType;
+import com.flavormetrics.api.enums.DifficultyType;
 import com.flavormetrics.api.model.AllergyDto;
 import com.flavormetrics.api.model.IngredientDto;
 import com.flavormetrics.api.model.TagDto;
-import com.flavormetrics.api.enums.DietaryPreferenceType;
-import com.flavormetrics.api.enums.DifficultyType;
 import jakarta.validation.constraints.*;
-
 import java.util.Set;
 
 public record AddRecipeRequest(
-        @NotBlank
-        String name,
+  @NotBlank String name,
 
-        @NotEmpty
-        Set<IngredientDto> ingredients,
+  @NotEmpty Set<IngredientDto> ingredients,
 
-        String imageUrl,
+  String imageUrl,
 
-        @NotBlank
-        @Size(min = 15, max = 2000)
-        String instructions,
+  @NotBlank @Size(min = 15, max = 2000) String instructions,
 
-        @Min(0)
-        @Max(2000)
-        int prepTimeMinutes,
+  @Min(0) @Max(2000) int prepTimeMinutes,
 
-        @Min(0)
-        @Max(2000)
-        int cookTimeMinutes,
+  @Min(0) @Max(2000) int cookTimeMinutes,
 
-        @NotNull
-        DifficultyType difficulty,
+  @NotNull DifficultyType difficulty,
 
-        @Min(0)
-        @Max(2000)
-        int estimatedCalories,
+  @Min(0) @Max(2000) int estimatedCalories,
 
-        @NotNull
-        Set<TagDto> tags,
+  @NotNull Set<TagDto> tags,
 
-        @NotNull
-        Set<AllergyDto> allergies,
+  @NotNull Set<AllergyDto> allergies,
 
-        @NotNull
-        DietaryPreferenceType dietaryPreference
+  @NotNull DietaryPreferenceType dietaryPreference
 ) {}

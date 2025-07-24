@@ -8,11 +8,9 @@ import com.flavormetrics.api.model.response.RegisterResponse;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
+  RegisterResponse signup(RegisterRequest request);
 
-    RegisterResponse signup(RegisterRequest request);
+  UserDetailsImpl authenticate(LoginRequest req, HttpServletResponse res);
 
-    UserDetailsImpl authenticate(LoginRequest req, HttpServletResponse res);
-
-    String logout(HttpServletResponse response);
-
+  String logout(HttpServletResponse response);
 }

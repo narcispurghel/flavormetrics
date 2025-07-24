@@ -3,6 +3,8 @@ server:
     threads:
       max: 200
 spring:
+  config:
+    import: file:.env.local[.properties]
   application:
     name: FlavorMetrics API
   datasource:
@@ -15,6 +17,9 @@ spring:
       maximum-pool-size: 75
       idle-timeout: 30000
       connection-timeout: 30000
+  output:
+    ansi:
+      enabled: always
   jpa:
     database: postgresql
     show-sql: true
@@ -33,9 +38,12 @@ spring:
       enabled: true
 
 logging:
+  pattern:
+    console: "%d{HH:mm:ss} %clr(%-5level){${LOG_LEVEL_PATTERN_COLOR}} %thread %clr(%logger{20}){cyan} - %msg%n"
   level:
     '[org.hibernate]': off
     '[org.springframework.security]': debug
+    '[org.springframework]': debug
     '[com.flavormetrics.api]': debug
 
 security:

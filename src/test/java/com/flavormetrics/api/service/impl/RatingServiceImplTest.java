@@ -1,5 +1,9 @@
 package com.flavormetrics.api.service.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
 import com.flavormetrics.api.entity.Email;
 import com.flavormetrics.api.entity.Rating;
 import com.flavormetrics.api.entity.Recipe;
@@ -13,6 +17,11 @@ import com.flavormetrics.api.repository.RatingRepository;
 import com.flavormetrics.api.repository.RecipeRepository;
 import com.flavormetrics.api.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,104 +31,107 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class RatingServiceImplTest {
-    private UUID userId;
-    private UUID recipeId;
-    private User user;
-    private Recipe recipe;
-    private Rating rating;
 
-    @Mock
-    private UserRepository userRepository;
+  private UUID userId;
+  private UUID recipeId;
+  private User user;
+  private Recipe recipe;
+  private Rating rating;
 
-    @Mock
-    private RecipeRepository recipeRepository;
+  @Mock
+  private UserRepository userRepository;
 
-    @Mock
-    private RatingRepository ratingRepository;
+  @Mock
+  private RecipeRepository recipeRepository;
 
-    @InjectMocks
-    private RatingServiceImpl ratingService;
+  @Mock
+  private RatingRepository ratingRepository;
 
-    @BeforeEach
-    void setUp() {
-        userId = UUID.randomUUID();
-        recipeId = UUID.randomUUID();
+  @InjectMocks
+  private RatingServiceImpl ratingService;
 
-        var email = new Email();
-        user = new User();
-        email.setAddress("test@email.com");
-        user.setEmail(email);
-        user.setId(userId);
-        recipe = new Recipe();
-        recipe.setId(recipeId);
-        recipe.setRatings(new HashSet<>());
+  @BeforeEach
+  void setUp() {
+    userId = UUID.randomUUID();
+    recipeId = UUID.randomUUID();
 
-        rating = new Rating();
-        rating.setId(UUID.randomUUID());
-        rating.setUser(user);
-        rating.setRecipe(recipe);
+    var email = new Email();
+    user = new User();
+    email.setAddress("test@email.com");
+    user.setEmail(email);
+    user.setId(userId);
+    recipe = new Recipe();
+    recipe.setId(recipeId);
+    recipe.setRatings(new HashSet<>());
 
-        var principal = new UserDetailsImpl(user);
-        SecurityContextHolder.getContext().setAuthentication(new TestingAuthenticationToken(principal, null));
-    }
+    rating = new Rating();
+    rating.setId(UUID.randomUUID());
+    rating.setUser(user);
+    rating.setRecipe(recipe);
 
-    @Test
-    void addRecipeRating_success() {
-        when(recipeRepository.getReferenceById(recipeId)).thenReturn(recipe);
-        when(ratingRepository.isRecipeAlreadyRatedByUser(userId, recipeId)).thenReturn(false);
-        when(userRepository.getReferenceById(userId)).thenReturn(user);
+    var principal = new UserDetailsImpl(user);
+    SecurityContextHolder.getContext().setAuthentication(
+      new TestingAuthenticationToken(principal, null)
+    );
+  }
 
-        Map<String, String> result = ratingService.addRecipeRating(recipeId, 5);
+  @Test
+  void addRecipeRating_success() {
+    when(recipeRepository.getReferenceById(recipeId)).thenReturn(recipe);
+    when(
+      ratingRepository.isRecipeAlreadyRatedByUser(userId, recipeId)
+    ).thenReturn(false);
+    when(userRepository.getReferenceById(userId)).thenReturn(user);
 
-        assertEquals("Recipe has been rated", result.get("message"));
-        verify(ratingRepository).save(any(Rating.class));
-        verify(recipeRepository).save(recipe);
-    }
+    Map<String, String> result = ratingService.addRecipeRating(recipeId, 5);
 
-    @Test
-    void addRecipeRating_recipeNotFound_throwsException() {
-        when(recipeRepository.getReferenceById(recipeId)).thenThrow(new EntityNotFoundException());
+    assertEquals("Recipe has been rated", result.get("message"));
+    verify(ratingRepository).save(any(Rating.class));
+    verify(recipeRepository).save(recipe);
+  }
 
-        assertThrows(RecipeNotFoundException.class, () -> ratingService.addRecipeRating(recipeId, 4));
-    }
+  @Test
+  void addRecipeRating_recipeNotFound_throwsException() {
+    when(recipeRepository.getReferenceById(recipeId)).thenThrow(
+      new EntityNotFoundException()
+    );
 
-    @Test
-    void addRecipeRating_alreadyRated_throwsException() {
-        when(recipeRepository.getReferenceById(recipeId)).thenReturn(recipe);
-        when(ratingRepository.isRecipeAlreadyRatedByUser(userId, recipeId)).thenReturn(true);
+    assertThrows(RecipeNotFoundException.class, () ->
+      ratingService.addRecipeRating(recipeId, 4)
+    );
+  }
 
-        assertThrows(MaximumNumberOfRatingException.class, () -> ratingService.addRecipeRating(recipeId, 3));
-    }
+  @Test
+  void addRecipeRating_alreadyRated_throwsException() {
+    when(recipeRepository.getReferenceById(recipeId)).thenReturn(recipe);
+    when(
+      ratingRepository.isRecipeAlreadyRatedByUser(userId, recipeId)
+    ).thenReturn(true);
 
-    @Test
-    void findAllRatingsByRecipeId_returnsSet() {
-        Set<RatingDto> expected = Set.of(new RatingDto(rating));
-        when(ratingRepository.findAllByRecipeId(recipeId)).thenReturn(expected);
+    assertThrows(MaximumNumberOfRatingException.class, () ->
+      ratingService.addRecipeRating(recipeId, 3)
+    );
+  }
 
-        Set<RatingDto> result = ratingService.findAllRatingsByRecipeId(recipeId);
+  @Test
+  void findAllRatingsByRecipeId_returnsSet() {
+    Set<RatingDto> expected = Set.of(new RatingDto(rating));
+    when(ratingRepository.findAllByRecipeId(recipeId)).thenReturn(expected);
 
-        assertEquals(expected, result);
-    }
+    Set<RatingDto> result = ratingService.findAllRatingsByRecipeId(recipeId);
 
-    @Test
-    void findAllRatingsByUserId_returnsSet() {
-        Set<RatingDto> expected = Set.of(new RatingDto(rating));
-        when(ratingRepository.findAllRatingsByUserId(userId)).thenReturn(expected);
+    assertEquals(expected, result);
+  }
 
-        Set<RatingDto> result = ratingService.findAllRatingsByUserId(userId);
+  @Test
+  void findAllRatingsByUserId_returnsSet() {
+    Set<RatingDto> expected = Set.of(new RatingDto(rating));
+    when(ratingRepository.findAllRatingsByUserId(userId)).thenReturn(expected);
 
-        assertEquals(expected, result);
-    }
+    Set<RatingDto> result = ratingService.findAllRatingsByUserId(userId);
+
+    assertEquals(expected, result);
+  }
 }
