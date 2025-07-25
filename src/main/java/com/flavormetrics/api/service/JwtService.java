@@ -3,7 +3,6 @@ package com.flavormetrics.api.service;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.flavormetrics.api.enums.JwtTokens;
 import com.flavormetrics.api.exception.JwtException;
-import com.flavormetrics.api.model.JwtPayload;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 

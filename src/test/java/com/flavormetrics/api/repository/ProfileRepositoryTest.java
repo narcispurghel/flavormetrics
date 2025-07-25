@@ -1,12 +1,11 @@
 package com.flavormetrics.api.repository;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.flavormetrics.api.entity.Email;
 import com.flavormetrics.api.entity.Profile;
 import com.flavormetrics.api.entity.User;
-import com.flavormetrics.api.enums.DietaryPreferenceType;
-import com.flavormetrics.api.model.projection.ProfileProjection;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,7 @@ class ProfileRepositoryTest {
     var profile = new Profile();
     var user = new User();
     var email = new Email();
-    email.setAddress("mock-email-address");
+    email.setAddress("email@mock.com");
     user.setEmail(email);
     user.setFirstName("mock-first-name");
     user.setLastName("mock-last-name");

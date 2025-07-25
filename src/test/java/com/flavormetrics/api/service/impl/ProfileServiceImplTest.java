@@ -1,7 +1,11 @@
 package com.flavormetrics.api.service.impl;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.flavormetrics.api.entity.Allergy;
 import com.flavormetrics.api.entity.Profile;
@@ -13,16 +17,18 @@ import com.flavormetrics.api.exception.ProfileNotFoundException;
 import com.flavormetrics.api.factory.AllergyFactory;
 import com.flavormetrics.api.model.AllergyDto;
 import com.flavormetrics.api.model.UserDetailsImpl;
-import com.flavormetrics.api.model.projection.ProfileProjection;
 import com.flavormetrics.api.model.request.CreateProfileRequest;
 import com.flavormetrics.api.repository.ProfileRepository;
 import com.flavormetrics.api.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -72,7 +78,6 @@ class ProfileServiceImplTest {
       DietaryPreferenceType.vegan,
       allergiesDtos
     );
-    Profile profile = new Profile();
     Set<Allergy> allergies = new HashSet<>();
     Profile saved = new Profile();
     saved.setId(profileId);

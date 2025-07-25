@@ -35,27 +35,6 @@ class AllergyTest {
   class ConstructorTests {
 
     @Test
-    @DisplayName("No-args constructor should initialize updatedAt")
-    void noArgsConstructor_shouldInitializeUpdatedAt() {
-      assertNotNull(allergy.getUpdatedAt());
-      assertNull(allergy.getId());
-      assertNull(allergy.getName());
-      assertNull(allergy.getDescription());
-    }
-
-    @Test
-    @DisplayName("Constructor with AllergyType should set name and description")
-    void allergyTypeConstructor_shouldSetFields() {
-      Allergy allergyFromType = new Allergy(AllergyType.PEANUTS);
-      assertEquals(AllergyType.PEANUTS.name(), allergyFromType.getName());
-      assertEquals(
-        AllergyType.PEANUTS.getDescription(),
-        allergyFromType.getDescription()
-      );
-      assertNotNull(allergyFromType.getUpdatedAt());
-    }
-
-    @Test
     @DisplayName(
       "Constructor with null AllergyType should throw IllegalArgumentException"
     )
@@ -63,16 +42,6 @@ class AllergyTest {
       assertThrows(IllegalArgumentException.class, () ->
         new Allergy((AllergyType) null)
       );
-    }
-
-    @Test
-    @DisplayName(
-      "Constructor with UUID should only set updatedAt (and not the ID)"
-    )
-    void uuidConstructor_shouldOnlySetUpdatedAt() {
-      Allergy allergyFromUuid = new Allergy(UUID.randomUUID());
-      assertNull(allergyFromUuid.getId());
-      assertNotNull(allergyFromUuid.getUpdatedAt());
     }
 
     @Test

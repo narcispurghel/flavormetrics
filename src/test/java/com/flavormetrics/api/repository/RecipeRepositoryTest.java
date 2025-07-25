@@ -3,9 +3,18 @@ package com.flavormetrics.api.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.flavormetrics.api.entity.*;
+import com.flavormetrics.api.entity.Allergy;
+import com.flavormetrics.api.entity.Email;
+import com.flavormetrics.api.entity.Ingredient;
+import com.flavormetrics.api.entity.Profile;
+import com.flavormetrics.api.entity.Recipe;
+import com.flavormetrics.api.entity.Tag;
+import com.flavormetrics.api.entity.User;
 import com.flavormetrics.api.enums.DietaryPreferenceType;
 import com.flavormetrics.api.enums.DifficultyType;
+import com.flavormetrics.api.enums.UnitType;
+
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +26,8 @@ import org.springframework.data.domain.PageRequest;
 
 @DataJpaTest
 class RecipeRepositoryTest {
+
+  private static final String EMAIL_ADDRESS = "mock-email@mock.com";
 
   @Autowired
   private RecipeRepository recipeRepository;
@@ -43,7 +54,7 @@ class RecipeRepositoryTest {
   @BeforeEach
   void setUp() {
     Email email = new Email();
-    email.setAddress("mock-email");
+    email.setAddress(EMAIL_ADDRESS);
     user = new User();
     user.setFirstName("mock-first-name");
     user.setLastName("mock-last-name");
@@ -53,6 +64,9 @@ class RecipeRepositoryTest {
 
     Ingredient ing = new Ingredient();
     ing.setName("mock-ing-name");
+    ing.setQuantity(0);
+    ing.setUnit(UnitType.milliliters);
+    ing.setUpdatedAt(LocalDateTime.now());
     ing = ingredientRepository.save(ing);
 
     Tag tag = new Tag();
@@ -72,6 +86,7 @@ class RecipeRepositoryTest {
     recipe.setDifficulty(DifficultyType.easy);
     recipe.setDietaryPreferences(DietaryPreferenceType.vegan);
     recipe.setUser(user);
+    recipe.setInstructions("mock-instructions mock-instructions mock-instructions");
     recipe.setIngredients(Set.of(ing));
     recipe.setTags(Set.of(tag));
     recipe.setAllergies(Set.of(allergy));
@@ -96,7 +111,6 @@ class RecipeRepositoryTest {
 
   @Test
   void testIf_FindAllByFilter_ReturnsNotEmpty() {
-    var result = recipeRepository.getRecipeByIdEager(recipe.getId());
     Page<Recipe> page = recipeRepository.findAllByFilter(
       10,
       300,
@@ -126,7 +140,7 @@ class RecipeRepositoryTest {
   @Test
   void testIf_FindByOwner_ReturnsNotEmpty() {
     Page<Recipe> page = recipeRepository.findByOwner(
-      "mock-email",
+      EMAIL_ADDRESS,
       PageRequest.of(0, 5)
     );
     assertThat(page.getContent()).isNotEmpty();
@@ -144,12 +158,12 @@ class RecipeRepositoryTest {
 
   @Test
   void testIf_findAllRecommendations_ReturnsNotEmpty() {
-    var allergy = new Allergy();
-    allergy.setName("mock-allergy-for-profile");
-    allergy.setDescription("mock-allergy-description-for-profile");
-    allergy = allergyRepository.save(allergy);
+    var allergyP = new Allergy();
+    allergyP.setName("mock-allergy-for-profile");
+    allergyP.setDescription("mock-allergy-description-for-profile");
+    allergyP = allergyRepository.save(allergyP);
     var profile = new Profile();
-    profile.setAllergies(Set.of(allergy));
+    profile.setAllergies(Set.of(allergyP));
     profile.setUser(user);
     profileRepository.save(profile);
     Page<Recipe> page = recipeRepository.findAllRecommendations(

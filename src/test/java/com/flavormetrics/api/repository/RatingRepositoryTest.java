@@ -6,6 +6,8 @@ import com.flavormetrics.api.entity.Email;
 import com.flavormetrics.api.entity.Rating;
 import com.flavormetrics.api.entity.Recipe;
 import com.flavormetrics.api.entity.User;
+import com.flavormetrics.api.enums.DietaryPreferenceType;
+import com.flavormetrics.api.enums.DifficultyType;
 import com.flavormetrics.api.model.RatingDto;
 import java.util.Set;
 import java.util.UUID;
@@ -17,7 +19,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 @DataJpaTest
 class RatingRepositoryTest {
 
-  private static final String EMAIL_ADDRESS = "mock-address";
+  private static final String EMAIL_ADDRESS = "mock-address@mock.com";
 
   @Autowired
   private RatingRepository ratingRepository;
@@ -47,6 +49,9 @@ class RatingRepositoryTest {
     Recipe recipe = new Recipe();
     recipe.setName("mock-recipe-name");
     recipe.setUser(user);
+    recipe.setDietaryPreferences(DietaryPreferenceType.diabetic_friendly);
+    recipe.setInstructions("mock-instruction mock-instruction mock-instruction");
+    recipe.setDifficulty(DifficultyType.easy);
     recipe = recipeRepository.save(recipe);
     recipeId = recipe.getId();
   }

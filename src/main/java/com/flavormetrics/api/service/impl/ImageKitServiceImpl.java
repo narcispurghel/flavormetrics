@@ -7,7 +7,6 @@ import io.imagekit.sdk.config.Configuration;
 import io.imagekit.sdk.models.FileCreateRequest;
 import io.imagekit.sdk.models.results.Result;
 import jakarta.annotation.PostConstruct;
-import java.io.IOException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

@@ -28,9 +28,9 @@ spring:
     open-in-view: false
     properties:
       hibernate:
-        '[format_sql]': true
-        '[highlight_sql]': true
-        '[generate_statistics]': false
+        "[format_sql]": true
+        "[highlight_sql]": true
+        "[generate_statistics]": false
   main:
     lazy-initialization: true
   threads:
@@ -41,10 +41,10 @@ logging:
   pattern:
     console: "%d{HH:mm:ss} %clr(%-5level){${LOG_LEVEL_PATTERN_COLOR}} %thread %clr(%logger{20}){cyan} - %msg%n"
   level:
-    '[org.hibernate]': off
-    '[org.springframework.security]': debug
-    '[org.springframework]': debug
-    '[com.flavormetrics.api]': debug
+    "[org.hibernate]": debug
+    "[org.springframework.security]": debug
+    "[org.springframework]": debug
+    "[com.flavormetrics.api]": debug
 
 security:
   jwt:

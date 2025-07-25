@@ -1,7 +1,6 @@
 package com.flavormetrics.api.controller;
 
 import com.flavormetrics.api.model.response.ApiErrorResponse;
-import com.flavormetrics.api.model.response.LoginResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

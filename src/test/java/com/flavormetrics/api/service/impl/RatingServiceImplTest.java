@@ -2,7 +2,9 @@ package com.flavormetrics.api.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.flavormetrics.api.entity.Email;
 import com.flavormetrics.api.entity.Rating;
@@ -11,7 +13,6 @@ import com.flavormetrics.api.entity.User;
 import com.flavormetrics.api.exception.MaximumNumberOfRatingException;
 import com.flavormetrics.api.exception.RecipeNotFoundException;
 import com.flavormetrics.api.model.RatingDto;
-import com.flavormetrics.api.model.RecipeDto;
 import com.flavormetrics.api.model.UserDetailsImpl;
 import com.flavormetrics.api.repository.RatingRepository;
 import com.flavormetrics.api.repository.RecipeRepository;
@@ -19,9 +20,9 @@ import com.flavormetrics.api.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -79,7 +80,7 @@ class RatingServiceImplTest {
 
   @Test
   void addRecipeRating_success() {
-    when(recipeRepository.getReferenceById(recipeId)).thenReturn(recipe);
+    when(recipeRepository.getRecipeByIdEager(recipeId)).thenReturn(Optional.of(recipe));
     when(
       ratingRepository.isRecipeAlreadyRatedByUser(userId, recipeId)
     ).thenReturn(false);
@@ -94,9 +95,7 @@ class RatingServiceImplTest {
 
   @Test
   void addRecipeRating_recipeNotFound_throwsException() {
-    when(recipeRepository.getReferenceById(recipeId)).thenThrow(
-      new EntityNotFoundException()
-    );
+    when(recipeRepository.getRecipeByIdEager(recipeId)).thenReturn(Optional.empty());
 
     assertThrows(RecipeNotFoundException.class, () ->
       ratingService.addRecipeRating(recipeId, 4)
@@ -105,7 +104,7 @@ class RatingServiceImplTest {
 
   @Test
   void addRecipeRating_alreadyRated_throwsException() {
-    when(recipeRepository.getReferenceById(recipeId)).thenReturn(recipe);
+    when(recipeRepository.getRecipeByIdEager(recipeId)).thenReturn(Optional.of(recipe));
     when(
       ratingRepository.isRecipeAlreadyRatedByUser(userId, recipeId)
     ).thenReturn(true);

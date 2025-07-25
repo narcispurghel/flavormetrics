@@ -1,7 +1,6 @@
 package com.flavormetrics.api.repository;
 
 import com.flavormetrics.api.entity.Profile;
-import com.flavormetrics.api.model.projection.ProfileProjection;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

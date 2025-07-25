@@ -27,7 +27,7 @@ class UserRepositoryTest {
   @BeforeEach
   void setUp() {
     Email email = new Email();
-    email.setAddress("mock-email-address");
+    email.setAddress("mock-email-address@mock.com");
     user = new User();
     user.setFirstName("test_first_name");
     user.setLastName("test_last_name");
